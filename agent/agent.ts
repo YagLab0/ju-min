@@ -2,6 +2,6 @@ import { google } from "@ai-sdk/google";
 import { defineAgent } from "eve";
 
 export default defineAgent({
-  model: google("gemini-3.8-flash"),
+  model: google("gemini-3.5-flash"),
   modelContextWindowTokens: 1_048_576,
 });
