@@ -47,17 +47,80 @@ const globalCompras = globalThis as unknown as {
   __juMinFuenteCompras?: Promise<FuenteDatosCompras>;
 };
 
+/** Tope de espera al sondear Supabase: un host apagado tarda ~1 minuto en
+ * rechazar la conexión TCP y el demo no puede esperar eso. */
+const ESPERA_SONDA_MS = 8000;
+
+type ModoFuente = "auto" | "memoria" | "supabase";
+
+/** JUMIN_FUENTE_DATOS: auto (default), memoria o supabase. */
+function modoFuente(): ModoFuente {
+  const modo = process.env.JUMIN_FUENTE_DATOS;
+  if (modo === "auto" || modo === "memoria" || modo === "supabase") return modo;
+  if (modo) {
+    console.warn(
+      `[compras] JUMIN_FUENTE_DATOS="${modo}" no es válido (auto|memoria|supabase); se usa "auto".`,
+    );
+  }
+  return "auto";
+}
+
 function fuenteDatos(): Promise<FuenteDatosCompras> {
-  globalCompras.__juMinFuenteCompras ??= (async () => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (url && serviceKey) {
-      const { AdaptadorSupabase } = await import("./adaptador-supabase");
-      return new AdaptadorSupabase(url, serviceKey);
-    }
-    return new FuenteDatosMemoria();
-  })();
+  globalCompras.__juMinFuenteCompras ??= crearFuenteDatos();
   return globalCompras.__juMinFuenteCompras;
+}
+
+/** Resuelve la fuente una vez por proceso. En modo "auto" el demo nunca
+ * queda en pantalla vacía: si Supabase está configurado pero no responde o
+ * no tiene el seed cargado, se cae al seed en memoria con un aviso en el
+ * log del servidor. Con "supabase" los errores se propagan sin fallback
+ * (pipeline real); con "memoria" se ignora Supabase aunque haya env vars. */
+async function crearFuenteDatos(): Promise<FuenteDatosCompras> {
+  const modo = modoFuente();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (modo === "memoria" || !url || !serviceKey) {
+    return new FuenteDatosMemoria();
+  }
+
+  const { AdaptadorSupabase } = await import("./adaptador-supabase");
+  const supabase = new AdaptadorSupabase(url, serviceKey);
+  if (modo === "supabase") return supabase;
+
+  try {
+    const t = await sondear(supabase);
+    if (t.proveedores.length === 0) {
+      console.warn(
+        `[compras] Supabase responde pero no tiene el seed cargado ` +
+          `(pnpm supabase db reset). Se usa el seed en memoria para el demo.`,
+      );
+      return new FuenteDatosMemoria();
+    }
+    console.info(`[compras] Fuente de datos: Supabase (${url}).`);
+    return supabase;
+  } catch (error) {
+    console.warn(
+      `[compras] Supabase no responde en ${url} ` +
+        `(${error instanceof Error ? error.message : String(error)}). ` +
+        `Se usa el seed en memoria para el demo.`,
+    );
+    return new FuenteDatosMemoria();
+  }
+}
+
+async function sondear(fuente: FuenteDatosCompras): Promise<TablasCompras> {
+  let timer: ReturnType<typeof setTimeout>;
+  const expira = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`sin respuesta en ${ESPERA_SONDA_MS / 1000}s`)),
+      ESPERA_SONDA_MS,
+    );
+  });
+  try {
+    return await Promise.race([fuente.leerTablas(), expira]);
+  } finally {
+    clearTimeout(timer!);
+  }
 }
 
 async function tablas(): Promise<TablasCompras> {

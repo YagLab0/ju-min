@@ -497,13 +497,13 @@ join (values
    'pendiente')
 ) as q(mensaje, respuesta, estado) on m.nombre = 'Sales de Jujuy S.A.';
 
-insert into recomendaciones (consulta_id, proveedor_id, insumo_id, justificacion, puntaje)
-select c.id, p.id, i.id, r.jus, r.puntaje
+insert into recomendaciones (consulta_id, proveedor_id, insumo_id, justificacion, puntaje, estado)
+select c.id, p.id, i.id, r.jus, r.puntaje, r.estado::estado_recomendacion
 from (values
-  ('ACERIAS 4C SA',  'Bola de acero forjado para molienda 3"',       'Único homologado en Bolas de Molino; EN 10204 3.1 verificado; trust score alto', 92.0),
-  ('SEGURIDAD PUNA SRL','Guante de nitrilo industrial (caja x100)',  'Lead time 3 días, local (Jujuy), registro provincial aprobado',                 88.0),
-  ('BAC DALL ARGENTINA SA','Guante de nitrilo industrial (caja x100)','Precio ~12% menor, EPP certificado IRAM/NIOSH verificado',                    90.5)
-) as r(prov, ins, jus, puntaje)
+  ('ACERIAS 4C SA',  'Bola de acero forjado para molienda 3"',       'Único homologado en Bolas de Molino; EN 10204 3.1 verificado; trust score alto', 92.0, 'aprobada'),
+  ('SEGURIDAD PUNA SRL','Guante de nitrilo industrial (caja x100)',  'Lead time 3 días, local (Jujuy), registro provincial aprobado',                 88.0, 'pendiente'),
+  ('BAC DALL ARGENTINA SA','Guante de nitrilo industrial (caja x100)','Precio ~12% menor, EPP certificado IRAM/NIOSH verificado',                    90.5, 'rechazada')
+) as r(prov, ins, jus, puntaje, estado)
 join proveedores p on p.razon_social = r.prov
 join insumos i on i.nombre = r.ins
 join consultas c on
