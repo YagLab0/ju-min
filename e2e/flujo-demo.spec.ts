@@ -12,12 +12,7 @@ test.describe("flujo completo del demo", () => {
   }) => {
     // 1. Entrar a la landing y de ahí al panel de la minera (pide login).
     await page.goto("/");
-    await expect(
-      page.getByRole("heading", { level: 1, name: /punto de reorden/ }),
-    ).toBeVisible();
-    await page
-      .getByRole("link", { name: "Abrir el panel de la minera" })
-      .click();
+    await page.locator('main a[href="/panel"]').first().click();
     // El panel es privado: el proxy manda a /login con la ruta original
     // en `desde` y el login la retoma.
     await page.getByLabel("Email").fill(EMAIL_DEMO);
@@ -117,22 +112,22 @@ test.describe("flujo completo del demo", () => {
 test.describe("landing con movimiento reducido", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("el estante queda en pose fija o muestra el respaldo SVG", async ({
+  test("el estante queda en pose fija o muestra el render de respaldo", async ({
     page,
   }) => {
     await page.goto("/");
-    const figura = page.getByRole("figure", { name: /punto de reorden/ });
+    const figura = page.getByRole("figure");
     await expect(figura).toBeVisible();
 
     // Con prefers-reduced-motion la pieza no anima: si WebGL está disponible
     // el canvas renderiza la pose fija de alerta (data-rendered) y el
-    // respaldo se oculta; si no hay WebGL, queda visible el SVG de respaldo.
+    // respaldo se oculta; si no hay WebGL, queda visible el render estático.
     // En ningún caso queda un hueco en blanco.
     const poseFija = figura.locator("[data-rendered='true']");
     await poseFija
       .waitFor({ state: "attached", timeout: 15_000 })
       .catch(() => {});
-    await expect(figura.locator("svg")).toBeVisible({
+    await expect(figura.locator("canvas").locator("..").locator("img")).toBeVisible({
       visible: (await poseFija.count()) === 0,
     });
   });

@@ -2,35 +2,17 @@ import type * as Three from "three";
 
 export type EstanteScene = {
   resize: () => void;
-  /** Aplica el estado de la secuencia para un instante del ciclo (segundos). */
   pose: (tiempo: number) => void;
   render: () => boolean;
   dispose: () => void;
 };
 
-export const DURACION_CICLO = 14;
-/** Instante del ciclo con la alerta encendida y la recomendación visible. */
+export const DURACION_CICLO = 16;
+/** Pose estática: stock bajo y recomendación pendiente de decisión humana. */
 export const INSTANTE_ALERTA = 8.6;
 
-// Tiempos del ciclo: stock lleno → drenado → alerta → recomendación → reposición.
-const T_DRENA_INI = 1.4;
-const T_DRENA_FIN = 6.0;
-const NIVEL_FINAL = 0.36; // el nivel queda apenas por debajo del punto de reorden
-const PUNTO_REORDEN = 0.4;
-const T_ALERTA_FIN = 11.7;
-const T_TARJETA_INI = 6.4;
-const T_TARJETA_DUR = 0.9;
-const T_TARJETA_FIN = 11.7;
-const T_REPONE_INI = 12.0;
-const T_REPONE_FIN = 13.1;
-
-const TAMBORES = 4;
-const TAMBOR_H = 0.62;
-const TAMBOR_R = 0.24;
-const NIVEL_H = 0.72;
-
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const ease = (t: number) => t * t * (3 - 2 * t);
+const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+const ease = (value: number) => value * value * (3 - 2 * value);
 
 export function createEstanteScene(
   three: typeof Three,
@@ -41,552 +23,456 @@ export function createEstanteScene(
   if (!context) return null;
 
   const renderer = new three.WebGLRenderer({
-    canvas,
-    context,
-    alpha: true,
-    antialias: true,
-    powerPreference: "low-power",
+    canvas, context, alpha: true, antialias: true, powerPreference: "low-power",
   });
   const geometries = new Set<Three.BufferGeometry>();
   const materials = new Set<Three.Material>();
   const textures = new Set<Three.Texture>();
-  const ownGeometry = <T extends Three.BufferGeometry>(geometry: T): T => {
-    geometries.add(geometry);
-    return geometry;
+  let environment: Three.WebGLRenderTarget | null = null;
+  const geometry = <T extends Three.BufferGeometry>(value: T): T => {
+    geometries.add(value);
+    return value;
   };
-  const ownMaterial = <T extends Three.Material>(material: T): T => {
-    materials.add(material);
-    return material;
+  const material = <T extends Three.Material>(value: T): T => {
+    materials.add(value);
+    return value;
   };
   function dispose() {
-    geometries.forEach((geometry) => geometry.dispose());
-    materials.forEach((material) => material.dispose());
-    textures.forEach((texture) => texture.dispose());
+    geometries.forEach((value) => value.dispose());
+    materials.forEach((value) => value.dispose());
+    textures.forEach((value) => value.dispose());
+    environment?.dispose();
     renderer.dispose();
     renderer.forceContextLoss();
   }
 
   try {
     const computed = getComputedStyle(host);
-    function cssColor(token: string) {
-      const value = computed.getPropertyValue(token).trim() || "#000000";
-      // setStyle interpreta hex/rgb() del CSS y convierte al espacio de trabajo.
-      return { css: value, color: new three.Color().setStyle(value) };
-    }
-    const tinta = cssColor("--escena-tinta");
-    const marco = cssColor("--escena-estante");
-    const piso = cssColor("--escena-piso");
-    const claro = cssColor("--escena-claro");
-    const tenue = cssColor("--escena-tenue");
-    const senal = cssColor("--escena-senal");
-    const cobre = cssColor("--escena-cobre");
-    const panel = cssColor("--escena-panel");
-    const textoSuave = cssColor("--escena-texto-suave");
+    const css = (token: string) => computed.getPropertyValue(token).trim();
+    const ink = new three.Color(css("--color-tinta"));
+    const paper = new three.Color(css("--color-papel"));
+    const white = new three.Color(css("--color-ficha"));
+    const stone = new three.Color(css("--color-piedra"));
+    const line = new three.Color(css("--color-linea"));
+    const yellow = new three.Color(css("--color-senal"));
+    const copper = new three.Color(css("--color-cobre"));
+    const standard = (tint: Three.Color, roughness = 0.6, metalness = 0) =>
+      material(new three.MeshStandardMaterial({ color: tint, roughness, metalness }));
+    const ivory = standard(paper, 0.72);
+    const steel = standard(stone.clone().lerp(ink, 0.5), 0.32, 0.72);
+    const zinc = standard(line, 0.28, 0.78);
+    const dark = standard(ink, 0.7, 0.12);
+    const beam = standard(yellow, 0.32, 0.18);
+    const bronze = standard(copper, 0.34, 0.55);
+    const timber = standard(copper.clone().lerp(paper, 0.52), 0.88);
+    const carton = standard(line.clone().lerp(copper, 0.14), 0.95);
+    const ore = standard(stone, 0.95);
+    const oreLight = standard(stone.clone().lerp(line, 0.24), 0.92);
+    const boxCache = new Map<string, Three.BufferGeometry>();
 
+    // Geometría biselada compartida: las aristas capturan los reflejos del estudio.
+    function box(w: number, h: number, d: number, radius = 0.012) {
+      const r = Math.min(radius, w / 4, h / 4, d / 4);
+      const key = `${w},${h},${d},${r}`;
+      const cached = boxCache.get(key);
+      if (cached) return cached;
+      const x = w / 2 - r / 2;
+      const y = h / 2 - r / 2;
+      const corner = r / 2;
+      const shape = new three.Shape();
+      shape.moveTo(-x + corner, -y);
+      shape.lineTo(x - corner, -y);
+      shape.quadraticCurveTo(x, -y, x, -y + corner);
+      shape.lineTo(x, y - corner);
+      shape.quadraticCurveTo(x, y, x - corner, y);
+      shape.lineTo(-x + corner, y);
+      shape.quadraticCurveTo(-x, y, -x, y - corner);
+      shape.lineTo(-x, -y + corner);
+      shape.quadraticCurveTo(-x, -y, -x + corner, -y);
+      const result = geometry(new three.ExtrudeGeometry(shape, {
+        depth: d - r, bevelEnabled: true, bevelSegments: 3,
+        bevelSize: r / 2, bevelThickness: r / 2, steps: 1, curveSegments: 4,
+      }));
+      result.translate(0, 0, -d / 2 + r / 2);
+      boxCache.set(key, result);
+      return result;
+    }
+    const cylinder = (r: number, h: number, segments = 48) =>
+      geometry(new three.CylinderGeometry(r, r, h, segments));
+    function mesh(
+      shape: Three.BufferGeometry, finish: Three.Material, parent: Three.Object3D,
+      x = 0, y = 0, z = 0
+    ) {
+      const part = new three.Mesh(shape, finish);
+      part.position.set(x, y, z);
+      part.castShadow = true;
+      part.receiveShadow = true;
+      parent.add(part);
+      return part;
+    }
     const scene = new three.Scene();
-    const camera = new three.PerspectiveCamera(30, 1, 0.1, 40);
-    renderer.setClearColor(tinta.color, 0);
+    const camera = new three.OrthographicCamera(-3.35, 3.35, 2.5, -2.5, 0.1, 40);
+    camera.position.set(5.6, 4.15, 8.5);
+    camera.lookAt(0, 1.08, 0);
+    renderer.setClearColor(paper, 0);
     renderer.outputColorSpace = three.SRGBColorSpace;
+    renderer.toneMapping = three.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = three.PCFShadowMap;
 
-    scene.add(new three.HemisphereLight(claro.color, tinta.color, 1.1));
-    const keyLight = new three.DirectionalLight(claro.color, 1.9);
-    keyLight.position.set(-3.5, 6, 4.5);
-    scene.add(keyLight);
-    const fillLight = new three.DirectionalLight(tenue.color, 0.5);
-    fillLight.position.set(4, 1.5, -2);
-    scene.add(fillLight);
-
-    const matRoca = ownMaterial(
-      new three.MeshStandardMaterial({ color: marco.color, roughness: 0.85 })
-    );
-    const matOscuro = ownMaterial(
-      new three.MeshStandardMaterial({ color: tinta.color, roughness: 0.9 })
-    );
-    const matCobre = ownMaterial(
-      new three.MeshStandardMaterial({
-        color: cobre.color,
-        roughness: 0.55,
-        metalness: 0.25,
-      })
-    );
-    const matSal = ownMaterial(
-      new three.MeshStandardMaterial({ color: claro.color, roughness: 0.7 })
-    );
-    const matBruma = ownMaterial(
-      new three.MeshStandardMaterial({ color: tenue.color, roughness: 0.95 })
-    );
-    const matSenal = ownMaterial(
-      new three.MeshStandardMaterial({
-        color: senal.color,
-        roughness: 0.5,
-        emissive: senal.color,
-        emissiveIntensity: 0.25,
-      })
-    );
-
-    const box = (w: number, h: number, d: number) =>
-      ownGeometry(new three.BoxGeometry(w, h, d));
-    const cylinder = (rt: number, rb: number, h: number, seg = 24) =>
-      ownGeometry(new three.CylinderGeometry(rt, rb, h, seg));
-
-    // --- Estantería industrial: montantes, largueros cobre y bandejas ---
-    const estante = new three.Group();
-    scene.add(estante);
-
-    const MEDIA_ANCHURA = 1.6;
-    const MEDIA_PROF = 0.42;
-    const NIVELES = [0.24, 1.26, 2.28];
-    const ALTURA_MONTANTE = 2.58;
-
-    const montanteGeo = box(0.09, ALTURA_MONTANTE, 0.09);
-    for (const x of [-MEDIA_ANCHURA, MEDIA_ANCHURA]) {
-      for (const z of [-MEDIA_PROF, MEDIA_PROF]) {
-        const montante = new three.Mesh(montanteGeo, matRoca);
-        montante.position.set(x, ALTURA_MONTANTE / 2, z);
-        estante.add(montante);
-      }
+    // Reflejos de softboxes precalculados una sola vez, sin HDR remoto ni postprocesado.
+    const studio = new three.Scene();
+    studio.background = paper.clone().multiplyScalar(0.55);
+    const panelGeometry = geometry(new three.PlaneGeometry(1, 1));
+    function softbox(x: number, y: number, z: number, w: number, h: number, intensity: number) {
+      const panel = new three.Mesh(panelGeometry, material(new three.MeshBasicMaterial({
+        color: white.clone().multiplyScalar(intensity), side: three.DoubleSide, toneMapped: false,
+      })));
+      panel.position.set(x, y, z);
+      panel.scale.set(w, h, 1);
+      panel.lookAt(0, 1, 0);
+      studio.add(panel);
     }
-    const largueroGeo = box(MEDIA_ANCHURA * 2 + 0.09, 0.12, 0.07);
-    const bandejaGeo = box(MEDIA_ANCHURA * 2 - 0.06, 0.035, MEDIA_PROF * 2 - 0.04);
-    for (const y of NIVELES) {
-      for (const z of [-MEDIA_PROF, MEDIA_PROF]) {
-        const larguero = new three.Mesh(largueroGeo, matCobre);
-        larguero.position.set(0, y, z);
-        estante.add(larguero);
-      }
-      const bandeja = new three.Mesh(bandejaGeo, matRoca);
-      bandeja.position.set(0, y + 0.077, 0);
-      estante.add(bandeja);
+    softbox(-4, 5, 4, 4, 6, 7);
+    softbox(4, 3, 1, 2, 5, 4);
+    softbox(0, 5, -4, 4, 2, 5);
+    const generator = new three.PMREMGenerator(renderer);
+    try {
+      environment = generator.fromScene(studio, 0.04, 0.1, 30, { size: 128 });
+      scene.environment = environment.texture;
+      scene.environmentIntensity = 0.6;
+    } finally {
+      generator.dispose();
     }
-    const nivelY = (i: number) => NIVELES[i] + 0.095;
+    scene.add(new three.HemisphereLight(white, stone, 0.85));
+    const keyLight = new three.DirectionalLight(white, 3.2);
+    keyLight.position.set(-3.5, 7, 4.5);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    Object.assign(keyLight.shadow.camera, { left: -3.8, right: 3.8, top: 3.8, bottom: -3.8, near: 0.5, far: 16 });
+    keyLight.shadow.normalBias = 0.012;
+    keyLight.shadow.bias = -0.0001;
+    keyLight.shadow.radius = 3;
+    keyLight.target.position.set(0, 0.7, 0);
+    scene.add(keyLight, keyLight.target);
+    const rim = new three.DirectionalLight(paper, 1.8);
+    rim.position.set(3, 4, -3);
+    scene.add(rim);
 
-    // Sombra suave bajo el estante.
+    const miniature = new three.Group();
+    scene.add(miniature);
+    mesh(box(5, 0.17, 3.05, 0.06), ivory, miniature, 0, -0.105);
+    mesh(box(4.96, 0.025, 3.01, 0.04), zinc, miniature, 0, -0.2);
+    // Juntas del pavimento y marcas de circulación, a escala de la plataforma.
+    for (const x of [-1.65, 0, 1.65]) mesh(box(0.006, 0.002, 2.9), carton, miniature, x, -0.018);
+    for (const z of [-0.5, 0.5]) mesh(box(4.85, 0.002, 0.006), carton, miniature, 0, -0.018, z);
+    for (const x of [-2.25, 2.25]) mesh(box(0.025, 0.003, 2.5), beam, miniature, x, -0.016);
+
     const shadowCanvas = document.createElement("canvas");
-    shadowCanvas.width = shadowCanvas.height = 128;
-    const shadowCtx = shadowCanvas.getContext("2d")!;
-    const grad = shadowCtx.createRadialGradient(64, 64, 4, 64, 64, 64);
-    grad.addColorStop(0, "rgba(0,0,0,0.5)");
-    grad.addColorStop(1, "rgba(0,0,0,0)");
-    shadowCtx.fillStyle = grad;
-    shadowCtx.fillRect(0, 0, 128, 128);
+    shadowCanvas.width = shadowCanvas.height = 256;
+    const shadowContext = shadowCanvas.getContext("2d");
+    if (!shadowContext) { dispose(); return null; }
+    const gradient = shadowContext.createRadialGradient(128, 128, 20, 128, 128, 128);
+    gradient.addColorStop(0, "rgba(41,36,28,0.28)");
+    gradient.addColorStop(0.55, "rgba(41,36,28,0.12)");
+    gradient.addColorStop(1, "rgba(41,36,28,0)");
+    shadowContext.fillStyle = gradient;
+    shadowContext.fillRect(0, 0, 256, 256);
     const shadowTexture = new three.CanvasTexture(shadowCanvas);
     textures.add(shadowTexture);
-    const shadow = new three.Mesh(
-      ownGeometry(new three.PlaneGeometry(5.4, 2.2)),
-      ownMaterial(
-        new three.MeshBasicMaterial({
-          map: shadowTexture,
-          transparent: true,
-          depthWrite: false,
-        })
-      )
-    );
+    const shadow = mesh(geometry(new three.PlaneGeometry(6.8, 4.7)),
+      material(new three.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false })),
+      scene, 0.1, -0.225, 0.1);
     shadow.rotation.x = -Math.PI / 2;
-    shadow.position.y = 0.002;
-    scene.add(shadow);
-    // Base del estante: piso apenas más claro que el fondo.
-    const pisoMesh = new three.Mesh(
-      ownGeometry(new three.PlaneGeometry(5.4, 2.2)),
-      ownMaterial(
-        new three.MeshStandardMaterial({ color: piso.color, roughness: 1 })
-      )
-    );
-    pisoMesh.rotation.x = -Math.PI / 2;
-    pisoMesh.position.y = 0;
-    scene.add(pisoMesh);
-    shadow.position.y = 0.004;
+    shadow.castShadow = false;
+    shadow.receiveShadow = false;
 
-    // --- Insumos ---
-    // Tambor de 200 L: cilindro con dos aros de refuerzo y tapa.
-    const tamborBody = cylinder(TAMBOR_R, TAMBOR_R, TAMBOR_H);
-    const tamborAro = ownGeometry(new three.TorusGeometry(TAMBOR_R + 0.005, 0.016, 8, 32));
-    const tamborTapa = cylinder(TAMBOR_R - 0.02, TAMBOR_R - 0.02, 0.02);
-    function crearTambor() {
-      const g = new three.Group();
-      g.add(new three.Mesh(tamborBody, matCobre));
-      for (const y of [-0.15, 0.13]) {
-        const aro = new three.Mesh(tamborAro, matOscuro);
-        aro.rotation.x = Math.PI / 2;
-        aro.position.y = y;
-        g.add(aro);
+    // Etiquetas propias de alta resolución: texto, lote y código de barras, no texturas externas.
+    function labelTexture(kind: "drum" | "crate") {
+      const label = document.createElement("canvas");
+      label.width = 512;
+      label.height = 384;
+      const ctx = label.getContext("2d");
+      if (!ctx) throw new Error("No se pudo generar la etiqueta del insumo");
+      ctx.fillStyle = css("--color-papel");
+      ctx.fillRect(0, 0, 512, 384);
+      ctx.fillStyle = css("--color-senal");
+      ctx.fillRect(0, 0, 512, 62);
+      ctx.fillStyle = css("--color-tinta");
+      ctx.font = "bold 27px sans-serif";
+      ctx.fillText("JUMIN / SUMINISTROS", 28, 41);
+      ctx.font = "bold 43px sans-serif";
+      ctx.fillText(kind === "drum" ? "LUBRICANTE" : "REPUESTOS", 28, 125);
+      ctx.font = "25px sans-serif";
+      ctx.fillText(kind === "drum" ? "ISO VG 46 · 200 L" : "USO INDUSTRIAL", 28, 167);
+      ctx.strokeStyle = css("--color-linea");
+      ctx.beginPath(); ctx.moveTo(28, 195); ctx.lineTo(484, 195); ctx.stroke();
+      ctx.font = "19px monospace";
+      ctx.fillText("ALM-01 / LOTE 0042", 28, 230);
+      for (let i = 0; i < 65; i++) {
+        const width = i % 4 === 0 ? 4 : i % 3 === 0 ? 2 : 1;
+        ctx.fillRect(30 + i * 5, 260, width, 65);
       }
-      const tapa = new three.Mesh(tamborTapa, matOscuro);
-      tapa.position.y = TAMBOR_H / 2 + 0.005;
-      g.add(tapa);
-      return g;
+      ctx.font = "17px monospace";
+      ctx.fillText("INSUMO DE DEMOSTRACIÓN", 28, 357);
+      const texture = new three.CanvasTexture(label);
+      texture.colorSpace = three.SRGBColorSpace;
+      texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+      textures.add(texture);
+      return texture;
+    }
+    const drumLabel = material(new three.MeshStandardMaterial({ map: labelTexture("drum"), roughness: 0.82 }));
+    const crateLabel = material(new three.MeshStandardMaterial({ map: labelTexture("crate"), roughness: 0.9 }));
+    const labelPlane = geometry(new three.PlaneGeometry(0.29, 0.22));
+    const boltGeometry = cylinder(0.022, 0.018, 6);
+    function bolt(parent: Three.Object3D, x: number, y: number, z: number) {
+      const part = mesh(boltGeometry, zinc, parent, x, y, z);
+      part.rotation.x = Math.PI / 2;
     }
 
-    // Casco de seguridad: media esfera achatada con ala y cresta.
-    function crearCasco() {
-      const g = new three.Group();
-      const cupula = new three.Mesh(
-        ownGeometry(
-          new three.SphereGeometry(0.21, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2)
-        ),
-        matSal
-      );
-      cupula.scale.y = 0.78;
-      g.add(cupula);
-      const ala = new three.Mesh(cylinder(0.27, 0.27, 0.025), matSal);
-      ala.position.y = 0.012;
-      g.add(ala);
-      const cresta = new three.Mesh(box(0.045, 0.05, 0.3), matSal);
-      cresta.position.y = 0.15;
-      g.add(cresta);
-      return g;
+    const rack = new three.Group();
+    rack.position.set(-0.12, 0, -0.63);
+    miniature.add(rack);
+    const levels = [0.22, 1.24, 2.26];
+    const postGeometry = box(0.11, 2.72, 0.1);
+    const postReturn = box(0.055, 2.72, 0.015);
+    const footGeometry = box(0.24, 0.035, 0.22);
+    const holes = new three.InstancedMesh(box(0.026, 0.047, 0.004, 0.006), dark, 48);
+    const matrix = new three.Matrix4();
+    let holeIndex = 0;
+    for (const x of [-1.52, 1.52]) {
+      for (const z of [-0.48, 0.48]) {
+        mesh(postGeometry, steel, rack, x, 1.36, z);
+        mesh(postReturn, zinc, rack, x + 0.065, 1.36, z - 0.038);
+        mesh(footGeometry, steel, rack, x, 0.015, z);
+        for (let i = 0; i < 12; i++) {
+          matrix.makeTranslation(x, 0.25 + i * 0.2, z + 0.052);
+          holes.setMatrixAt(holeIndex++, matrix);
+        }
+        for (const dx of [-0.075, 0.075]) {
+          const anchor = mesh(boltGeometry, zinc, rack, x + dx, 0.043, z + 0.06);
+          anchor.rotation.y = Math.PI / 6;
+        }
+        // Protección de impacto en la base del montante.
+        mesh(box(0.135, 0.28, 0.12), beam, rack, x, 0.19, z + 0.015);
+      }
+      for (const sign of [-1, 1]) {
+        const brace = mesh(box(0.026, 1.48, 0.026), zinc, rack, x, 0.78, 0);
+        brace.rotation.x = sign * 0.65;
+      }
     }
-
-    // Bolsa de reactivo: cuerpo de tela con cuello recogido.
-    function crearBolsa() {
-      const g = new three.Group();
-      const cuerpo = new three.Mesh(box(0.5, 0.52, 0.42), matBruma);
-      cuerpo.position.y = 0.26;
-      g.add(cuerpo);
-      const cuello = new three.Mesh(cylinder(0.09, 0.14, 0.12), matBruma);
-      cuello.position.y = 0.57;
-      g.add(cuello);
-      const asaGeo = ownGeometry(new three.TorusGeometry(0.05, 0.012, 6, 12, Math.PI));
-      for (const x of [-0.19, 0.19]) {
-        for (const z of [-0.15, 0.15]) {
-          const asa = new three.Mesh(asaGeo, matBruma);
-          asa.position.set(x, 0.53, z);
-          asa.rotation.z = -x * 1.4;
-          g.add(asa);
+    holes.instanceMatrix.needsUpdate = true;
+    rack.add(holes);
+    for (const y of levels) {
+      mesh(box(3.02, 0.04, 0.96), zinc, rack, 0, y + 0.066);
+      for (const z of [-0.5, 0.5]) {
+        mesh(box(3.12, 0.14, 0.08), steel, rack, 0, y, z);
+        mesh(box(3.09, 0.018, 0.012), beam, rack, 0, y + 0.045, z + 0.045);
+        for (const x of [-1.42, 1.42]) {
+          mesh(box(0.17, 0.2, 0.015), bronze, rack, x, y, z + 0.055);
+          for (const dy of [-0.05, 0.05]) bolt(rack, x, y + dy, z + 0.07);
         }
       }
-      const etiqueta = new three.Mesh(
-        ownGeometry(new three.PlaneGeometry(0.3, 0.18)),
-        matSal
-      );
-      etiqueta.position.set(0, 0.28, 0.213);
-      g.add(etiqueta);
-      return g;
+      for (const x of [-1.49, 1.49]) mesh(box(0.065, 0.13, 0.98), steel, rack, x, y);
+      mesh(box(0.4, 0.08, 0.012), ivory, rack, -0.92, y - 0.005, 0.55);
+      for (let i = 0; i < 12; i++) mesh(box(i % 3 === 0 ? 0.008 : 0.003, 0.035, 0.003), dark, rack, -1.05 + i * 0.018, y - 0.005, 0.558);
     }
 
-    // Filtro de aire: cartucho con aletas radiales y tapas.
-    function crearFiltro() {
-      const g = new three.Group();
-      const cuerpo = new three.Mesh(cylinder(0.15, 0.15, 0.42), matSal);
-      g.add(cuerpo);
-      const aletaGeo = box(0.02, 0.4, 0.05);
-      for (let i = 0; i < 10; i++) {
-        const a = (i / 10) * Math.PI * 2;
-        const aleta = new three.Mesh(aletaGeo, matBruma);
-        aleta.position.set(Math.cos(a) * 0.15, 0, Math.sin(a) * 0.15);
-        aleta.rotation.y = -a;
-        g.add(aleta);
+    // Tambores de chapa embutida: perfil torneado, aros, tapas y etiquetas curvas.
+    const profile: Three.Vector2[] = [];
+    for (const [radius, height] of [
+      [0.255, 0], [0.275, 0.014], [0.28, 0.033], [0.272, 0.05],
+      [0.272, 0.19], [0.285, 0.205], [0.285, 0.225], [0.272, 0.24],
+      [0.272, 0.54], [0.285, 0.555], [0.285, 0.575], [0.272, 0.59],
+      [0.272, 0.735], [0.28, 0.75], [0.28, 0.77], [0.255, 0.785],
+    ]) profile.push(new three.Vector2(radius, height));
+    const drumBody = geometry(new three.LatheGeometry(profile, 64));
+    const drumLid = cylinder(0.257, 0.012);
+    const hoopGeometry = geometry(new three.TorusGeometry(0.275, 0.009, 8, 64));
+    const labelCurve = geometry(new three.CylinderGeometry(0.274, 0.274, 0.3, 32, 1, true, -0.62, 1.24));
+    function drum() {
+      const group = new three.Group();
+      mesh(drumBody, bronze, group);
+      for (const y of [0.025, 0.215, 0.565, 0.76]) {
+        const hoop = mesh(hoopGeometry, zinc, group, 0, y);
+        hoop.rotation.x = Math.PI / 2;
       }
-      for (const y of [-0.22, 0.22]) {
-        const tapa = new three.Mesh(cylinder(0.17, 0.17, 0.04), matOscuro);
-        tapa.position.y = y;
-        g.add(tapa);
+      mesh(drumLid, steel, group, 0, 0.78);
+      mesh(drumLid, dark, group, 0, 0.007);
+      mesh(cylinder(0.038, 0.018, 24), zinc, group, 0.13, 0.797, 0.06);
+      mesh(cylinder(0.017, 0.02, 6), dark, group, -0.11, 0.798, -0.085);
+      mesh(labelCurve, drumLabel, group, 0, 0.395);
+      return group;
+    }
+    const drums: Three.Group[] = [];
+    for (let i = 0; i < 4; i++) {
+      const group = drum();
+      group.position.set(-1.1 + i * 0.73, 0.31, 0);
+      group.rotation.y = i % 2 === 0 ? -0.1 : 0.06;
+      rack.add(group);
+      drums.push(group);
+    }
+
+    function crate(width: number, height: number, depth: number) {
+      const group = new three.Group();
+      mesh(box(width, height, depth, 0.018), carton, group, 0, height / 2);
+      // Junta de tapa, cantoneras y cinchas textiles; sin listones gruesos de juguete.
+      mesh(box(width - 0.015, 0.004, 0.008), timber, group, 0, height + 0.002);
+      for (const x of [-width * 0.31, width * 0.31]) {
+        mesh(box(0.025, height + 0.008, depth + 0.008), dark, group, x, height / 2);
+        mesh(box(0.028, 0.003, depth + 0.012), steel, group, x, height + 0.006);
       }
-      return g;
+      mesh(labelPlane, crateLabel, group, 0, height * 0.52, depth / 2 + 0.006);
+      return group;
+    }
+    for (let i = 0; i < 2; i++) {
+      const group = crate(0.76, 0.59, 0.65);
+      group.position.set(-0.92 + i * 0.91, 1.33, 0);
+      rack.add(group);
+    }
+    const filterBody = cylinder(0.135, 0.51);
+    const finGeometry = box(0.008, 0.46, 0.025, 0.002);
+    for (const x of [0.77, 1.13]) {
+      const filter = new three.Group();
+      mesh(filterBody, ivory, filter, 0, 0.285);
+      for (let i = 0; i < 32; i++) {
+        const angle = i / 32 * Math.PI * 2;
+        const fin = mesh(finGeometry, carton, filter, Math.sin(angle) * 0.14, 0.285, Math.cos(angle) * 0.14);
+        fin.rotation.y = angle;
+      }
+      for (const y of [0.025, 0.545]) {
+        mesh(cylinder(0.158, 0.035), zinc, filter, 0, y);
+        mesh(cylinder(0.065, 0.04), dark, filter, 0, y + 0.01);
+      }
+      filter.position.set(x, 1.33, 0);
+      rack.add(filter);
     }
 
-    // Bidón de lubricante: cuerpo, pico y manija.
-    function crearBidon() {
-      const g = new three.Group();
-      const cuerpo = new three.Mesh(box(0.26, 0.36, 0.15), matCobre);
-      cuerpo.position.y = 0.18;
-      g.add(cuerpo);
-      const manija = new three.Mesh(box(0.18, 0.04, 0.05), matOscuro);
-      manija.position.y = 0.39;
-      g.add(manija);
-      const pico = new three.Mesh(cylinder(0.03, 0.045, 0.09), matOscuro);
-      pico.position.set(0.08, 0.4, 0);
-      pico.rotation.z = -0.5;
-      g.add(pico);
-      return g;
+    const domeGeometry = geometry(new three.SphereGeometry(0.265, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2));
+    const brimGeometry = cylinder(0.32, 0.024, 64);
+    const helmetRib = geometry(new three.TorusGeometry(0.267, 0.012, 8, 48, Math.PI));
+    function helmet() {
+      const group = new three.Group();
+      const dome = mesh(domeGeometry, beam, group, 0, 0.035);
+      dome.scale.set(0.96, 0.83, 1.08);
+      const brim = mesh(brimGeometry, beam, group, 0, 0.025, 0.025);
+      brim.scale.set(0.95, 1, 1.17);
+      const lining = mesh(cylinder(0.26, 0.018), dark, group, 0, 0.011);
+      lining.scale.z = 1.09;
+      const rib = mesh(helmetRib, beam, group, 0, 0.035);
+      rib.rotation.y = Math.PI / 2;
+      rib.scale.set(1.06, 0.84, 1);
+      mesh(box(0.11, 0.045, 0.005), ivory, group, 0, 0.12, 0.267);
+      for (const x of [-0.15, 0.15]) mesh(box(0.035, 0.012, 0.005), dark, group, x, 0.09, 0.22);
+      return group;
     }
-
-    // Caja de repuestos con cinta.
-    function crearCaja() {
-      const g = new three.Group();
-      const cuerpo = new three.Mesh(box(0.42, 0.3, 0.34), matBruma);
-      cuerpo.position.y = 0.15;
-      g.add(cuerpo);
-      const cinta = new three.Mesh(box(0.43, 0.305, 0.09), matOscuro);
-      cinta.position.y = 0.15;
-      g.add(cinta);
-      return g;
+    for (const x of [-1, -0.24]) {
+      const group = helmet();
+      group.position.set(x, 2.35, 0);
+      group.rotation.y = 0.12;
+      rack.add(group);
     }
+    const spare = crate(0.76, 0.39, 0.64);
+    spare.position.set(0.8, 2.35, 0);
+    rack.add(spare);
 
-    // Nivel 0: los tambores son el insumo protagonista (stock que baja).
-    const tambores: Three.Group[] = [];
-    for (let i = 0; i < TAMBORES; i++) {
-      const tambor = crearTambor();
-      tambor.position.set(-1.02 + i * 0.68, nivelY(0) + TAMBOR_H / 2, 0);
-      tambores.push(tambor);
-      estante.add(tambor);
+    // Jaula galvanizada y mineral irregular: malla fina, patines y carga con volumen.
+    const freight = new three.Group();
+    freight.position.set(1.12, 0, 0.87);
+    freight.rotation.y = -0.12;
+    miniature.add(freight);
+    for (const z of [-0.32, 0.32]) mesh(box(1.22, 0.09, 0.14), timber, freight, 0, 0.045, z);
+    for (let i = 0; i < 6; i++) mesh(box(0.17, 0.045, 0.91), timber, freight, -0.5 + i * 0.2, 0.112);
+    for (const x of [-0.57, 0.57]) {
+      for (const z of [-0.41, 0.41]) mesh(box(0.028, 0.57, 0.028), steel, freight, x, 0.42, z);
     }
-
-    // Nivel 1: bolsas de reactivo, filtro y bidón (insumos de relleno).
-    const bolsaA = crearBolsa();
-    bolsaA.position.set(-0.95, nivelY(1), 0);
-    estante.add(bolsaA);
-    const bolsaB = crearBolsa();
-    bolsaB.position.set(-0.32, nivelY(1), 0);
-    bolsaB.rotation.y = 0.25;
-    estante.add(bolsaB);
-    const filtro = crearFiltro();
-    filtro.position.set(0.62, nivelY(1) + 0.25, 0.05);
-    estante.add(filtro);
-    const bidon = crearBidon();
-    bidon.position.set(1.15, nivelY(1), -0.08);
-    bidon.rotation.y = -0.15;
-    estante.add(bidon);
-
-    // Nivel 2: casco y caja de repuestos.
-    const casco = crearCasco();
-    casco.position.set(-0.45, nivelY(2), 0.05);
-    casco.rotation.y = 0.4;
-    estante.add(casco);
-    const caja = crearCaja();
-    caja.position.set(0.45, nivelY(2), -0.05);
-    caja.rotation.y = -0.12;
-    estante.add(caja);
-
-    // --- Columna de nivel con la marca del punto de reorden ---
-    const gauge = new three.Group();
-    gauge.position.set(1.42, nivelY(0), 0.36);
-    estante.add(gauge);
-    const placa = new three.Mesh(box(0.17, NIVEL_H + 0.08, 0.03), matOscuro);
-    placa.position.y = NIVEL_H / 2;
-    gauge.add(placa);
-    const matNivelOk = ownMaterial(
-      new three.MeshStandardMaterial({ color: claro.color, roughness: 0.6 })
-    );
-    const matNivelBajo = ownMaterial(
-      new three.MeshStandardMaterial({
-        color: senal.color,
-        roughness: 0.5,
-        emissive: senal.color,
-        emissiveIntensity: 0.5,
-      })
-    );
-    const fill = new three.Mesh(box(0.06, 1, 0.045), matNivelOk);
-    fill.position.set(0, NIVEL_H / 2, 0.045);
-    fill.scale.y = NIVEL_H;
-    gauge.add(fill);
-    const marca = new three.Mesh(box(0.22, 0.025, 0.05), matSenal);
-    marca.position.set(0, NIVEL_H * PUNTO_REORDEN, 0.05);
-    gauge.add(marca);
-
-    // --- Balizamiento de alerta sobre la bandeja superior ---
-    const baliza = new three.Group();
-    baliza.position.set(1.42, nivelY(2) + 0.005, 0.3);
-    estante.add(baliza);
-    const base = new three.Mesh(cylinder(0.09, 0.11, 0.06), matOscuro);
-    base.position.y = 0.03;
-    baliza.add(base);
-    const matDomo = ownMaterial(
-      new three.MeshStandardMaterial({
-        color: senal.color,
-        emissive: senal.color,
-        emissiveIntensity: 0.15,
-        roughness: 0.35,
-      })
-    );
-    const domo = new three.Mesh(
-      ownGeometry(
-        new three.SphereGeometry(0.085, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2)
-      ),
-      matDomo
-    );
-    domo.position.y = 0.06;
-    baliza.add(domo);
-    const matHalo = ownMaterial(
-      new three.MeshBasicMaterial({
-        color: senal.color,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-      })
-    );
-    const halo = new three.Mesh(
-      ownGeometry(new three.SphereGeometry(0.15, 16, 10)),
-      matHalo
-    );
-    halo.position.y = 0.09;
-    baliza.add(halo);
-
-    // Franja de señalización bajo el nivel de los tambores cuando hay alerta.
-    const matFranja = ownMaterial(
-      new three.MeshBasicMaterial({
-        color: senal.color,
-        transparent: true,
-        opacity: 0,
-      })
-    );
-    const franja = new three.Mesh(
-      box(MEDIA_ANCHURA * 2 - 0.1, 0.03, 0.02),
-      matFranja
-    );
-    franja.position.set(0, NIVELES[0] + 0.062, MEDIA_PROF + 0.036);
-    estante.add(franja);
-
-    // --- Tarjeta del agente: recomendación dibujada en una textura canvas ---
-    const cardCanvas = document.createElement("canvas");
-    cardCanvas.width = 512;
-    cardCanvas.height = 336;
-    const cardCtx = cardCanvas.getContext("2d");
-    if (!cardCtx) {
-      dispose();
-      return null;
+    for (const y of [0.16, 0.69]) {
+      for (const z of [-0.41, 0.41]) mesh(box(1.17, 0.025, 0.025), steel, freight, 0, y, z);
+      for (const x of [-0.57, 0.57]) mesh(box(0.025, 0.025, 0.84), steel, freight, x, y);
     }
-    cardCtx.fillStyle = panel.css;
-    cardCtx.fillRect(0, 0, 512, 336);
-    cardCtx.fillStyle = senal.css;
-    cardCtx.fillRect(0, 0, 12, 336);
-    cardCtx.textBaseline = "middle";
-    cardCtx.fillStyle = textoSuave.css;
-    cardCtx.font = "500 25px Arial, sans-serif";
-    cardCtx.fillText("Agente Jumin", 40, 46);
-    cardCtx.fillStyle = tinta.css;
-    cardCtx.font = "700 42px Arial, sans-serif";
-    cardCtx.fillText("Recomendación", 40, 100);
-    cardCtx.font = "600 30px Arial, sans-serif";
-    cardCtx.fillText("Comprar 6 tambores de 200 L", 40, 158);
-    cardCtx.fillStyle = textoSuave.css;
-    cardCtx.font = "500 26px Arial, sans-serif";
-    cardCtx.fillText("Lubricantes del Norte · Jujuy", 40, 206);
-    cardCtx.fillStyle = senal.css;
-    cardCtx.fillRect(40, 242, 350, 56);
-    cardCtx.fillStyle = tinta.css;
-    cardCtx.font = "700 26px Arial, sans-serif";
-    cardCtx.fillText("Trust score 92 · 4 días", 62, 272);
-    const cardTexture = new three.CanvasTexture(cardCanvas);
-    textures.add(cardTexture);
-    cardTexture.colorSpace = three.SRGBColorSpace;
-    cardTexture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-
-    const matTarjeta = ownMaterial(
-      new three.MeshBasicMaterial({
-        map: cardTexture,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-      })
-    );
-    const matTarjetaFondo = ownMaterial(
-      new three.MeshBasicMaterial({
-        color: tinta.color,
-        transparent: true,
-        opacity: 0,
-        depthWrite: false,
-      })
-    );
-    const tarjeta = new three.Group();
-    const tarjetaFondo = new three.Mesh(
-      ownGeometry(new three.PlaneGeometry(1.16, 0.76)),
-      matTarjetaFondo
-    );
-    tarjetaFondo.position.z = -0.008;
-    tarjeta.add(tarjetaFondo);
-    const tarjetaFrente = new three.Mesh(
-      ownGeometry(new three.PlaneGeometry(1.1, 0.72)),
-      matTarjeta
-    );
-    tarjeta.add(tarjetaFrente);
-    const matConector = ownMaterial(
-      new three.MeshBasicMaterial({
-        color: senal.color,
-        transparent: true,
-        opacity: 0,
-      })
-    );
-    const TARJETA_X = 1.55;
-    tarjeta.position.set(TARJETA_X, 1.58, 0.85);
-    tarjeta.rotation.y = -0.38;
-    scene.add(tarjeta);
-
-    // Línea fina que une la recomendación con la alerta que la originó.
-    const desde = new three.Vector3(1.42, nivelY(0) + NIVEL_H + 0.05, 0.36);
-    const hasta = new three.Vector3(1.02, 1.28, 0.9);
-    const dirConector = hasta.clone().sub(desde);
-    const conector = new three.Mesh(
-      cylinder(0.014, 0.014, dirConector.length(), 8),
-      matConector
-    );
-    conector.position.copy(desde.clone().add(hasta).multiplyScalar(0.5));
-    conector.quaternion.setFromUnitVectors(
-      new three.Vector3(0, 1, 0),
-      dirConector.normalize()
-    );
-    scene.add(conector);
-
-    camera.position.set(2.85, 2.15, 5.0);
-    camera.lookAt(0.15, 1.25, 0);
-
-    function nivelEn(fase: number) {
-      if (fase < T_DRENA_INI) return 1;
-      if (fase < T_DRENA_FIN)
-        return 1 - (1 - NIVEL_FINAL) * ease((fase - T_DRENA_INI) / (T_DRENA_FIN - T_DRENA_INI));
-      if (fase < T_REPONE_INI) return NIVEL_FINAL;
-      if (fase < T_REPONE_FIN)
-        return NIVEL_FINAL + (1 - NIVEL_FINAL) * ease((fase - T_REPONE_INI) / (T_REPONE_FIN - T_REPONE_INI));
-      return 1;
+    const wireVertical = box(0.006, 0.5, 0.006, 0.001);
+    const wireHorizontal = box(1.12, 0.006, 0.006, 0.001);
+    for (const z of [-0.41, 0.41]) {
+      for (let i = 1; i < 12; i++) mesh(wireVertical, zinc, freight, -0.57 + i * 0.095, 0.42, z);
+      for (let i = 1; i < 5; i++) mesh(wireHorizontal, zinc, freight, 0, 0.16 + i * 0.106, z);
     }
+    const rockGeometry = geometry(new three.IcosahedronGeometry(0.22, 1));
+    const positions = rockGeometry.getAttribute("position");
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i), y = positions.getY(i), z = positions.getZ(i);
+      const irregularity = 1 + 0.14 * Math.sin(x * 31 + z * 17) * Math.cos(y * 23);
+      positions.setXYZ(i, x * irregularity, y * irregularity, z * irregularity);
+    }
+    rockGeometry.computeVertexNormals();
+    const rocks = [
+      [-0.34, 0.32, -0.18, 1.05], [0, 0.32, -0.2, 1.1], [0.34, 0.31, -0.17, 0.9],
+      [-0.35, 0.31, 0.16, 0.9], [0, 0.33, 0.14, 1.15], [0.35, 0.3, 0.17, 0.85],
+      [-0.17, 0.52, -0.04, 0.9], [0.18, 0.53, 0.02, 0.95], [0.01, 0.69, -0.06, 0.65],
+    ];
+    rocks.forEach(([x, y, z, scale], index) => {
+      const rock = mesh(rockGeometry, index % 2 ? ore : oreLight, freight, x, y, z);
+      rock.scale.set(scale, scale * 0.8, scale * 0.9);
+      rock.rotation.set(index * 0.73, index * 1.2, index * 0.4);
+    });
+    const foregroundCrate = crate(0.85, 0.52, 0.68);
+    foregroundCrate.position.set(-1.6, 0, 0.87);
+    foregroundCrate.rotation.y = 0.1;
+    miniature.add(foregroundCrate);
+    const foregroundHelmet = helmet();
+    foregroundHelmet.position.set(-1.6, 0.525, 0.87);
+    foregroundHelmet.rotation.y = -0.35;
+    miniature.add(foregroundHelmet);
+    for (let i = 0; i < 3; i++) {
+      const stripe = mesh(box(0.1, 0.003, 0.32), beam, miniature, -0.38 + i * 0.18, -0.016, 1.22);
+      stripe.rotation.y = -0.5;
+    }
+    const beaconMaterial = material(new three.MeshStandardMaterial({ color: yellow, emissive: yellow, emissiveIntensity: 0.1, roughness: 0.25 }));
+    mesh(cylinder(0.085, 0.04), steel, rack, 1.35, 2.37, 0.32);
+    mesh(geometry(new three.SphereGeometry(0.075, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2)), beaconMaterial, rack, 1.35, 2.39, 0.32);
+    const gaugeMaterial = material(new three.MeshStandardMaterial({ color: yellow, emissive: yellow, emissiveIntensity: 0.1 }));
+    mesh(box(0.1, 0.76, 0.025), dark, rack, 1.4, 0.72, 0.57);
+    const gauge = mesh(box(0.035, 1, 0.028), gaugeMaterial, rack, 1.4, 0.72, 0.59);
+    mesh(box(0.15, 0.014, 0.03), beam, rack, 1.4, 0.6, 0.61);
+    let previousPhase = "";
 
     return {
       resize() {
-        const { width, height } = host.getBoundingClientRect();
+        const { width, height } = canvas.getBoundingClientRect();
         if (!width || !height) return;
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        // Sobremuestreo 2× incluso en pantallas 1×; nunca supera 1,6 megapíxeles.
+        renderer.setPixelRatio(Math.min(2, Math.sqrt(1_600_000 / (width * height))));
         renderer.setSize(width, height, false);
-        camera.aspect = width / height;
-        // En pantallas angostas la cámara se aleja para que entre la tarjeta.
-        camera.position
-          .set(2.85, 2.15, 5.0)
-          .multiplyScalar(Math.max(1, 1.2 / camera.aspect));
-        camera.lookAt(0.15, 1.25, 0);
+        const aspect = width / height;
+        const halfWidth = Math.max(3.04, 2.2 * aspect);
+        camera.left = -halfWidth;
+        camera.right = halfWidth;
+        camera.top = halfWidth / aspect;
+        camera.bottom = -halfWidth / aspect;
         camera.updateProjectionMatrix();
       },
-      pose(tiempo) {
-        const fase = tiempo % DURACION_CICLO;
-        const nivel = nivelEn(fase);
-        const alerta = nivel < PUNTO_REORDEN && fase < T_ALERTA_FIN;
-
-        // Los tambores se van de derecha a izquierda siguiendo el nivel;
-        // cada uno se aplasta rápido al cruzar su tramo, no queda a medias.
-        for (let i = 1; i < TAMBORES; i++) {
-          const visible = clamp01((nivel - i / TAMBORES) / 0.08);
-          const tambor = tambores[i];
-          tambor.visible = visible > 0.02;
-          tambor.scale.y = 0.15 + 0.85 * ease(visible);
-          tambor.position.y =
-            nivelY(0) + (TAMBOR_H / 2) * tambor.scale.y;
+      pose(time) {
+        const phase = time % DURACION_CICLO;
+        const draining = ease(clamp01((phase - 1.5) / 4));
+        const replenishing = ease(clamp01((phase - 12.8) / 1.7));
+        const level = 1 - 0.75 * draining * (1 - replenishing);
+        const low = level < 0.4;
+        const state = phase >= 12.8 ? "repuesto" : phase >= 10.8 ? "aprobado" : phase >= 7 ? "propuesta" : low ? "alerta" : "stock";
+        if (state !== previousPhase) {
+          host.dataset.phase = state;
+          previousPhase = state;
         }
-
-        fill.scale.y = Math.max(0.02, nivel * NIVEL_H);
-        fill.position.y = fill.scale.y / 2;
-        fill.material = nivel < PUNTO_REORDEN ? matNivelBajo : matNivelOk;
-
-        const pulso = alerta ? 0.5 + 0.5 * Math.sin(fase * 7) : 0;
-        marca.scale.setScalar(alerta ? 1.2 + pulso * 0.15 : 1);
-        matDomo.emissiveIntensity = alerta ? 0.9 + pulso * 1.4 : 0.15;
-        matHalo.opacity = alerta ? 0.16 + pulso * 0.2 : 0;
-        halo.scale.setScalar(1 + pulso * 0.25);
-        matFranja.opacity = alerta ? 0.35 + pulso * 0.3 : 0;
-
-        const entrada = ease(
-          clamp01((fase - T_TARJETA_INI) / T_TARJETA_DUR)
-        );
-        const salida = ease(
-          clamp01((fase - T_TARJETA_FIN) / 0.6)
-        );
-        const apertura = entrada * (1 - salida);
-        tarjeta.visible = apertura > 0.01;
-        tarjeta.position.x = TARJETA_X + (1 - entrada) * 0.8;
-        tarjeta.position.y = 1.58 - salida * 0.5;
-        tarjeta.rotation.y = -0.38 - (1 - entrada) * 0.45;
-        matTarjeta.opacity = apertura;
-        matTarjetaFondo.opacity = apertura * 0.9;
-        matConector.opacity = apertura * 0.85;
-
-        // Vaivén mínimo para que la pieza se lea como volumen, no como lámina.
-        estante.rotation.y = Math.sin(fase * 0.45) * 0.025;
+        host.style.setProperty("--stock-level", `${level * 100}%`);
+        for (let i = 1; i < drums.length; i++) {
+          const amount = ease(clamp01((level - i * 0.25) / 0.12));
+          drums[i].visible = amount > 0.015;
+          drums[i].scale.setScalar(0.92 + amount * 0.08);
+          drums[i].position.y = 0.31 + (1 - amount) * 0.1;
+        }
+        gauge.scale.y = Math.max(0.025, level * 0.64);
+        gauge.position.y = 0.39 + gauge.scale.y / 2;
+        beaconMaterial.emissiveIntensity = low ? 0.6 + Math.sin(phase * 3) * 0.2 : 0.1;
+        miniature.rotation.y = Math.sin(phase / DURACION_CICLO * Math.PI * 2) * 0.035;
       },
       render() {
         if (context.isContextLost()) return false;
