@@ -23,6 +23,7 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 | [schema-base-de-datos.md](schema-base-de-datos.md) | Decisiones de modelado, diagrama ER, DDL completo, vista del explorer, función `cumple_requisitos()` y mapeo de los mocks a tablas |
 | [usuarios-auth.md](usuarios-auth.md) | Modelo de usuarios sobre Supabase Auth: perfiles, roles, trigger de signup, RLS por minera, usuarios de prueba y uso de la API sin página de login |
 | [supabase-local.md](supabase-local.md) | Cómo levantar Supabase local con la CLI (Docker) o con un docker-compose mínimo, compartir la instancia por LAN y conexión desde Next.js |
+| [troubleshooting-red.md](troubleshooting-red.md) | Workaround para `pnpm install` cuando `registry.npmjs.org` está bloqueado (mirror npmmirror) y fallback de Google Fonts |
 
 ## Plan
 
