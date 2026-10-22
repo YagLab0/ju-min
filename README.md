@@ -30,10 +30,10 @@ justificación → aprobación humana*.
 
 | Ruta | Descripción |
 | --- | --- |
-| `/` | Dashboard de la minera: panel de stock con alertas de punto de reorden, chat con el agente, historial de consultas recientes y cola de recomendaciones pendientes. |
+| `/` | Landing: presenta el producto con el estante 3D protagonista (stock bajando → alerta → recomendación) y entradas al panel y al explorer. |
+| `/panel` | Panel de la minera: stock con alertas de punto de reorden, consultas al agente, cola de recomendaciones pendientes e historial con las decisiones tomadas. |
 | `/proveedores` | Explorer: catálogo de proveedores verificados filtrable por insumo/categoría, con trust score, ubicación y certificaciones. |
 | `/proveedores/[id]` | Ficha del proveedor: insumos ofrecidos con precio y lead time, historial de entregas, desglose del trust score y botón "Contactar" (mock). |
-| `/consultas` | *(opcional)* Feed completo de consultas al agente con recomendaciones y decisiones tomadas. Si el dashboard queda cargado, se extrae aquí. |
 
 ## Modelo de datos (mock)
 
@@ -68,3 +68,20 @@ pnpm dev
 ```
 
 Abrir [http://localhost:3000](http://localhost:3000).
+
+## Tests
+
+```bash
+# Unitarios del dominio y del agente (Vitest)
+pnpm test
+
+# E2E del flujo del demo (Playwright)
+pnpm e2e:install   # solo la primera vez: descarga el browser de Playwright
+pnpm test:e2e
+```
+
+Los tests E2E levantan solos el build de producción en un puerto dedicado
+(`3200`; se puede cambiar con `JUMIN_E2E_PORT`) y no dependen de red externa:
+verifican el flujo completo del demo — alerta de stock → consulta al agente →
+recomendación → ficha del proveedor → contacto simulado → aprobación en el
+historial — y el respaldo del estante con `prefers-reduced-motion`.
