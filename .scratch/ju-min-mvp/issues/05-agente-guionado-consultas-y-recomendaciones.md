@@ -10,13 +10,13 @@ Spec: `docs/orden-desarrollo.md` (sección "Agente"). Vocabulario: `GLOSSARY.md`
 
 **Status:** ready-for-agent
 
-- [ ] Existe una interfaz única del agente: consulta (texto y, opcionalmente, el insumo en alerta que la originó) → cero o más recomendaciones
-- [ ] La interfaz de usuario invoca al agente en el servidor y no conoce su implementación
-- [ ] Para un insumo en alerta, la implementación guionada elige una oferta existente de un proveedor verificado con una regla explícita que combina trust score, lead time y precio
-- [ ] La justificación menciona precio, lead time y trust score de la oferta elegida
-- [ ] Una consulta libre reconocible produce recomendaciones; una no reconocible produce cero recomendaciones con un motivo visible
-- [ ] Desde cada alerta del panel se puede iniciar una consulta con el insumo ya cargado
-- [ ] Las recomendaciones nuevas aparecen en la cola de pendientes del panel
-- [ ] Consultas y recomendaciones se guardan en memoria del servidor durante la sesión del demo
-- [ ] Tests de Vitest del agente por su interfaz: elección determinística, justificación completa, caso sin recomendaciones
-- [ ] `pnpm build`, `pnpm lint` y los tests pasan
+- [x] Existe una interfaz única del agente: consulta (texto y, opcionalmente, el insumo en alerta que la originó) → cero o más recomendaciones
+- [x] La interfaz de usuario invoca al agente en el servidor y no conoce su implementación
+- [x] Para un insumo en alerta, la implementación guionada elige una oferta existente de un proveedor verificado con una regla explícita que combina trust score, lead time y precio
+- [x] La justificación menciona precio, lead time y trust score de la oferta elegida
+- [x] Una consulta libre reconocible produce recomendaciones; una no reconocible produce cero recomendaciones con un motivo visible
+- [x] Desde cada alerta del panel se puede iniciar una consulta con el insumo ya cargado
+- [x] Las recomendaciones nuevas aparecen en la cola de pendientes del panel
+- [x] Consultas y recomendaciones se guardan en memoria del servidor durante la sesión del demo
+- [x] Tests de Vitest del agente por su interfaz: elección determinística, justificación completa, caso sin recomendaciones
+- [x] `pnpm build`, `pnpm lint` y los tests pasan

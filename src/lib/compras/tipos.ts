@@ -187,3 +187,24 @@ export interface Consulta {
   recomendaciones: Recomendacion[];
   creadaEn: string;
 }
+
+/** Requisito de certificación de una categoría de insumo (DOCS.md §3.3):
+ * el proveedor debe acreditarla, verificada y vigente, para poder
+ * recomendarse en insumos de esa categoría. */
+export interface RequisitoCategoria {
+  certificacion: Certificacion;
+  obligatorio: boolean;
+}
+
+/** Recomendación con su insumo, oferta y proveedor ya resueltos, para
+ * mostrarla en el panel sin consultas adicionales. */
+export interface RecomendacionDetallada extends Recomendacion {
+  insumo: Insumo | null;
+  oferta: Oferta | null;
+  proveedor: ProveedorVerificado | null;
+}
+
+/** Consulta con sus recomendaciones detalladas. */
+export interface ConsultaDetallada extends Omit<Consulta, "recomendaciones"> {
+  recomendaciones: RecomendacionDetallada[];
+}
