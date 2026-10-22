@@ -1,7 +1,10 @@
 import { disableTool } from "eve/tools";
 
-// TEMPORAL para verificación del ticket 01: el tool por defecto web_search
-// inyecta googleSearch (grounding) en cada llamada al modelo y la API key
-// actual no tiene cuota de grounding (todas las llamadas responden 429
-// RESOURCE_EXHAUSTED). Sin este archivo ningún turno del agente completa.
+// NOTA (ticket 01 — fuera del alcance estricto del spec, a revisar por el
+// equipo): deshabilita el tool por defecto web_search. Eve lo inyecta como
+// googleSearch (grounding) en TODA llamada al modelo y la API key actual no
+// tiene cuota de grounding: cada llamada respondía 429 RESOURCE_EXHAUSTED y
+// el agente no podía responder nada. Además, una búsqueda web general
+// contradice el dominio acotado del consultor. Si se habilita cuota de
+// grounding o el equipo decide conservar web_search, borrar este archivo.
 export default disableTool();
