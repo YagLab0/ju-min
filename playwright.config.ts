@@ -25,11 +25,12 @@ if (existsSync(pwLibs)) {
 const conLlm = !!process.env.JUMIN_E2E_LLM;
 const puerto = conLlm ? "3000" : (process.env.JUMIN_E2E_PORT ?? "3200");
 const baseURL = `http://localhost:${puerto}`;
-const testChat = "panel-consulta.spec.ts";
+// Specs que necesitan el agente eve + Gemini reales: solo en el modo LLM.
+const testsLlm = ["panel-consulta.spec.ts", "agente-reglas.spec.ts"];
 
 export default defineConfig({
   testDir: "./e2e",
-  ...(conLlm ? { testMatch: testChat } : { testIgnore: testChat }),
+  ...(conLlm ? { testMatch: testsLlm } : { testIgnore: testsLlm }),
   fullyParallel: !conLlm,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
