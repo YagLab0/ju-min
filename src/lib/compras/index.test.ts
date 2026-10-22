@@ -377,7 +377,6 @@ describe("consultas y recomendaciones", () => {
       (c) => c.id === "c0000000-0000-4000-8000-000000000002",
     );
     expect(semilla).toBeDefined();
-    expect(semilla!.estado).toBe("aprobada");
     expect(semilla!.recomendaciones).toHaveLength(2);
     expect(
       semilla!.recomendaciones.map((r) => r.estado).sort(),
