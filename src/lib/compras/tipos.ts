@@ -127,9 +127,15 @@ export interface ProveedorVerificado {
   certificaciones: CertificacionAcreditada[];
 }
 
+/** Oferta con el insumo resuelto: lo que muestra la ficha del proveedor
+ * (precio, unidad, lead time, disponibilidad). */
+export interface OfertaConInsumo extends Oferta {
+  insumo: Insumo;
+}
+
 /** Ficha de un proveedor verificado: el proveedor más sus ofertas. */
 export interface ProveedorVerificadoDetalle extends ProveedorVerificado {
-  ofertas: Oferta[];
+  ofertas: OfertaConInsumo[];
 }
 
 /** Producto genérico que consume la operación minera. */

@@ -150,6 +150,35 @@ describe("obtenerProveedorVerificado", () => {
     );
   });
 
+  it("cada oferta de la ficha trae el insumo con precio, unidad, lead time y disponibilidad", async () => {
+    const proveedor = await obtenerProveedorVerificado(ID_ANDINA);
+    const guante = proveedor!.ofertas.find(
+      (o) => o.insumo.nombre === "Guante de nitrilo industrial",
+    );
+    expect(guante).toBeDefined();
+    expect(guante!.precio).toBe(3800);
+    expect(guante!.moneda).toBe("ARS");
+    expect(guante!.insumo.unidad).toBe("par");
+    expect(guante!.insumo.especificacion).toBe(
+      "Nitrilo 0,38 mm, puño largo",
+    );
+    expect(guante!.leadTimeDias).toBe(7);
+    expect(guante!.disponible).toBe(true);
+  });
+
+  it("la ficha expone certificaciones con estado y vencimiento, y la fuente de verificación", async () => {
+    const proveedor = await obtenerProveedorVerificado(ID_ANDINA);
+    expect(proveedor!.fuente).toBe("capmin");
+    expect(proveedor!.registroJujuyEstado).toBe("aprobado");
+    const iso = proveedor!.certificaciones.find(
+      (c) => c.certificacion.codigo === "ISO 9001",
+    );
+    expect(iso).toBeDefined();
+    expect(iso!.estado).toBe("verificado");
+    expect(iso!.fechaVencimiento).toBe("2027-02-09");
+    expect(iso!.organismo).toBe("IRAM");
+  });
+
   it("devuelve null para una ficha inexistente", async () => {
     const proveedor = await obtenerProveedorVerificado(
       "99999999-9999-4999-8999-999999999999",
