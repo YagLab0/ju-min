@@ -259,7 +259,12 @@ function TarjetaProveedor({ proveedor: p }: { proveedor: ProveedorVerificado }) 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h2 className="truncate font-display font-semibold text-sal">
-                {p.nombreFantasia ?? p.razonSocial}
+                <Link
+                  href={`/proveedores/${p.id}`}
+                  className="transition-colors hover:text-senal"
+                >
+                  {p.nombreFantasia ?? p.razonSocial}
+                </Link>
               </h2>
               {p.estado === "homologado" && (
                 <span className="shrink-0 bg-senal px-1.5 py-0.5 text-micro font-semibold text-grafito">
@@ -327,6 +332,13 @@ function TarjetaProveedor({ proveedor: p }: { proveedor: ProveedorVerificado }) 
           {p.registroJujuyEstado === "aprobado" &&
             " · Registro de Jujuy aprobado"}
         </p>
+
+        <Link
+          href={`/proveedores/${p.id}`}
+          className="mt-1 inline-block w-fit border border-bruma/40 px-4 py-2 font-display text-detalle font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+        >
+          Ver ficha
+        </Link>
       </article>
     </li>
   );

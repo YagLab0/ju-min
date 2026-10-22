@@ -138,11 +138,17 @@ export async function obtenerProveedorVerificado(
   const t = await tablas();
   const fila = t.proveedores.find((p) => p.id === id);
   if (!fila || !ESTADOS_RED.has(fila.estado)) return null;
+  const insumos = new Map(t.insumos.map((i) => [i.id, i]));
   return {
     ...mapearProveedor(fila, t),
     ofertas: t.ofertas
       .filter((o) => o.proveedor_id === id)
-      .map(mapearOferta),
+      .flatMap((o) => {
+        const insumo = insumos.get(o.insumo_id);
+        if (!insumo) return [];
+        return [{ ...mapearOferta(o), insumo: mapearInsumo(insumo) }];
+      })
+      .sort((a, b) => a.insumo.nombre.localeCompare(b.insumo.nombre, "es")),
   };
 }
 
