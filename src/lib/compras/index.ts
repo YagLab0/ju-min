@@ -11,6 +11,7 @@ import type {
   Categoria,
   Certificacion,
   Consulta,
+  ConsultaDetallada,
   DecisionRecomendacion,
   Insumo,
   Minera,
@@ -18,6 +19,8 @@ import type {
   ProveedorVerificado,
   ProveedorVerificadoDetalle,
   Recomendacion,
+  RecomendacionDetallada,
+  RequisitoCategoria,
   StockInsumo,
 } from "./tipos";
 import type {
@@ -166,6 +169,30 @@ export async function listarInsumos(): Promise<Insumo[]> {
     .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }
 
+/** Un insumo del catálogo por id; null si no existe. */
+export async function obtenerInsumo(id: string): Promise<Insumo | null> {
+  const t = await tablas();
+  const fila = t.insumos.find((i) => i.id === id);
+  return fila ? mapearInsumo(fila) : null;
+}
+
+/** Requisitos de certificación de una categoría (DOCS.md §3.3): el agente
+ * solo recomienda proveedores que acreditan los obligatorios, verificados
+ * y vigentes. */
+export async function listarRequisitosDeCategoria(
+  categoriaId: string,
+): Promise<RequisitoCategoria[]> {
+  const t = await tablas();
+  return t.requisitosCategoria
+    .filter((r) => r.categoria_id === categoriaId)
+    .flatMap((r) => {
+      const cert = t.certificaciones.find((c) => c.id === r.certificacion_id);
+      return cert
+        ? [{ certificacion: mapearCertificacion(cert), obligatorio: r.obligatorio }]
+        : [];
+    });
+}
+
 /** Ofertas de un insumo puntual, con el proveedor que las emite. */
 export async function listarOfertasDeInsumo(
   insumoId: string,
@@ -279,6 +306,35 @@ export async function decidirRecomendacion(
   });
   if (!actualizada) throw new Error("recomendacion_inexistente");
   return mapearRecomendacion(actualizada, t);
+}
+
+/** Cola de pendientes del panel: las recomendaciones aún sin decidir, con
+ * insumo, oferta y proveedor ya resueltos. Más nueva primero. */
+export async function listarRecomendacionesPendientes(): Promise<
+  RecomendacionDetallada[]
+> {
+  const t = await tablas();
+  return t.recomendaciones
+    .filter((r) => r.estado === "pendiente")
+    .map((r) => detallarRecomendacion(r, t))
+    .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
+}
+
+/** La consulta más reciente con sus recomendaciones detalladas; null si la
+ * minera todavía no consultó. */
+export async function obtenerUltimaConsulta(): Promise<ConsultaDetallada | null> {
+  const t = await tablas();
+  const ultima = t.consultas.reduce<FilaConsulta | null>(
+    (acc, c) => (acc && acc.created_at > c.created_at ? acc : c),
+    null,
+  );
+  if (!ultima) return null;
+  return {
+    ...mapearConsulta(ultima, [], t),
+    recomendaciones: t.recomendaciones
+      .filter((r) => r.consulta_id === ultima.id)
+      .map((r) => detallarRecomendacion(r, t)),
+  };
 }
 
 /** Historial de consultas con sus recomendaciones, más reciente primero. */
@@ -436,6 +492,22 @@ function mapearRecomendacion(
     puntaje: f.puntaje,
     estado: f.estado,
     creadaEn: f.created_at,
+  };
+}
+
+function detallarRecomendacion(
+  f: FilaRecomendacion,
+  t: TablasCompras,
+): RecomendacionDetallada {
+  const base = mapearRecomendacion(f, t);
+  const oferta = t.ofertas.find((o) => o.id === base.ofertaId);
+  const proveedor = t.proveedores.find((p) => p.id === f.proveedor_id);
+  const insumo = t.insumos.find((i) => i.id === f.insumo_id);
+  return {
+    ...base,
+    insumo: insumo ? mapearInsumo(insumo) : null,
+    oferta: oferta ? mapearOferta(oferta) : null,
+    proveedor: proveedor ? mapearProveedor(proveedor, t) : null,
   };
 }
 

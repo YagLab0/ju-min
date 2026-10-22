@@ -1,28 +1,23 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Suspense } from "react";
 
 import {
+  listarRecomendacionesPendientes,
   listarStockMinera,
   obtenerMinera,
+  obtenerUltimaConsulta,
+  type ConsultaDetallada,
+  type Oferta,
+  type RecomendacionDetallada,
   type StockInsumo,
 } from "@/lib/compras";
+
+import { consultarAlAgenteDesdePanel } from "./acciones";
 
 export const metadata: Metadata = {
   title: "Panel de la minera",
 };
-
-const zonas = [
-  {
-    titulo: "Consultas al agente",
-    texto:
-      "Espacio para hacerle consultas al agente, desde una alerta de stock o con texto libre.",
-  },
-  {
-    titulo: "Recomendaciones pendientes",
-    texto:
-      "La cola de recomendaciones del agente para aprobar o rechazar, separada del historial ya decidido.",
-  },
-] as const;
 
 export default function Panel() {
   return (
@@ -41,28 +36,72 @@ export default function Panel() {
           </p>
         }
       >
-        <PanelStock />
+        <PanelAlertas />
       </Suspense>
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        {zonas.map(({ titulo, texto }) => (
-          <section
-            key={titulo}
-            className="border border-bruma/25 bg-roca p-5"
-          >
-            <h2 className="font-display font-semibold text-sal">{titulo}</h2>
-            <p className="mt-2 text-detalle text-bruma">{texto}</p>
-            <p className="mt-4 w-fit border border-bruma/30 px-2 py-0.5 text-micro text-bruma">
-              En construcción
-            </p>
-          </section>
-        ))}
+
+      <div className="mt-10 grid items-start gap-6 lg:grid-cols-2">
+        <Suspense
+          fallback={
+            <PanelCargando texto="Cargando el espacio de consultas…" />
+          }
+        >
+          <SeccionAgente />
+        </Suspense>
+        <Suspense
+          fallback={
+            <PanelCargando texto="Cargando la cola de pendientes…" />
+          }
+        >
+          <ColaPendientes />
+        </Suspense>
       </div>
+
+      <Suspense
+        fallback={
+          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+            Cargando el detalle del stock…
+          </p>
+        }
+      >
+        <TablaStock />
+      </Suspense>
     </div>
+  );
+}
+
+function PanelCargando({ texto }: { texto: string }) {
+  return (
+    <section className="border border-bruma/25 bg-roca p-5">
+      <p className="text-detalle text-bruma">{texto}</p>
+    </section>
   );
 }
 
 function formatoNumero(n: number): string {
   return n.toLocaleString("es-AR");
+}
+
+function formatoPrecio(oferta: Oferta): string {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: oferta.moneda,
+    maximumFractionDigits: 0,
+  }).format(oferta.precio);
+}
+
+function formatoLead(oferta: Oferta): string {
+  return oferta.leadTimeDias === null
+    ? "sin plazo declarado"
+    : `${oferta.leadTimeDias} días de entrega`;
+}
+
+function formatoFecha(iso: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
 }
 
 const PLURAL_UNIDAD: Record<string, string> = {
@@ -83,7 +122,12 @@ function formatoDias(dias: number | null): string {
   return dias === null ? "—" : `${dias} días`;
 }
 
-async function PanelStock() {
+// ---------- Alertas de stock ----------
+
+async function PanelAlertas() {
+  // Los datos viven en memoria del servidor y cambian durante la sesión del
+  // demo: se leen por request, no en el prerender (ver connection()).
+  await connection();
   // La página solo habla con el módulo de dominio de compras.
   const [minera, stock] = await Promise.all([
     obtenerMinera(),
@@ -99,52 +143,6 @@ async function PanelStock() {
       </p>
 
       {alertas.length > 0 && <SeccionAlertas alertas={alertas} />}
-
-      <section aria-labelledby="stock-insumos" className="mt-10">
-        <div className="flex items-baseline justify-between gap-4">
-          <h2
-            id="stock-insumos"
-            className="font-display text-titulo font-semibold text-sal"
-          >
-            Stock de insumos
-          </h2>
-          <p className="text-detalle text-bruma" role="status">
-            {stock.length} {stock.length === 1 ? "insumo" : "insumos"} ·{" "}
-            {alertas.length} en alerta
-          </p>
-        </div>
-        <div className="mt-4 overflow-x-auto border border-bruma/25 bg-roca">
-          <table className="w-full min-w-[40rem] text-left text-detalle">
-            <thead>
-              <tr className="border-b border-bruma/25 text-micro text-bruma">
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Insumo
-                </th>
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Stock actual
-                </th>
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Punto de reorden
-                </th>
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Consumo mensual
-                </th>
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Días restantes
-                </th>
-                <th scope="col" className="px-5 py-3 font-semibold">
-                  Estado
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {stock.map((s) => (
-                <FilaStock key={s.insumo.id} item={s} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </>
   );
 }
@@ -236,7 +234,289 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
           ? "Sin consumo registrado para estimar días restantes"
           : `≈ ${s.diasRestantes} días de stock al consumo actual`}
       </p>
+
+      {/* La consulta sale con el insumo ya cargado: la minera no escribe el
+          contexto a mano. */}
+      <form action={consultarAlAgenteDesdePanel} className="mt-4">
+        <input type="hidden" name="insumo_id" value={s.insumo.id} />
+        <input
+          type="hidden"
+          name="mensaje"
+          value={`Reponer ${s.insumo.nombre}: stock por debajo del punto de reorden`}
+        />
+        <button
+          type="submit"
+          className="bg-senal px-4 py-2 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+        >
+          Consultar al agente
+        </button>
+      </form>
     </li>
+  );
+}
+
+// ---------- Consultas al agente ----------
+
+async function SeccionAgente() {
+  await connection();
+  const ultima = await obtenerUltimaConsulta();
+
+  return (
+    <section
+      aria-labelledby="consultas-agente"
+      className="border border-bruma/25 bg-roca p-5"
+    >
+      <h2
+        id="consultas-agente"
+        className="font-display text-titulo font-semibold text-sal"
+      >
+        Consultas al agente
+      </h2>
+      <p className="mt-2 text-detalle text-bruma">
+        Preguntale al agente en texto libre, o usá «Consultar al agente» en
+        una alerta para salir con el insumo ya cargado.
+      </p>
+
+      <form action={consultarAlAgenteDesdePanel} className="mt-4">
+        <label
+          htmlFor="mensaje"
+          className="text-detalle font-semibold text-sal"
+        >
+          Consulta libre
+        </label>
+        <div className="mt-1.5 flex flex-col gap-3 sm:flex-row">
+          <input
+            id="mensaje"
+            name="mensaje"
+            type="text"
+            required
+            autoComplete="off"
+            placeholder="Ej.: ¿quién me entrega guantes más rápido?"
+            className="w-full border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal placeholder:text-bruma/60"
+          />
+          <button
+            type="submit"
+            className="shrink-0 bg-senal px-5 py-2 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+          >
+            Consultar
+          </button>
+        </div>
+      </form>
+
+      {ultima && <UltimaRespuesta consulta={ultima} />}
+    </section>
+  );
+}
+
+function UltimaRespuesta({ consulta }: { consulta: ConsultaDetallada }) {
+  return (
+    <article
+      aria-label="Última respuesta del agente"
+      className="mt-6 border border-bruma/25 bg-grafito p-4"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="font-display font-semibold text-sal">
+          Última respuesta del agente
+        </h3>
+        <p className="text-micro text-bruma">
+          {formatoFecha(consulta.creadaEn)}
+        </p>
+      </div>
+      <p className="mt-2 text-detalle text-bruma">
+        Consulta: «{consulta.mensaje}»
+      </p>
+      <p className="mt-2 text-cuerpo text-sal">
+        {consulta.respuesta ?? "Sin respuesta."}
+      </p>
+      {consulta.recomendaciones.length === 0 ? (
+        <p className="mt-3 text-detalle text-bruma">
+          La consulta no produjo recomendaciones.
+        </p>
+      ) : (
+        <ul className="mt-4 grid gap-3">
+          {consulta.recomendaciones.map((r) => (
+            <TarjetaRecomendacion key={r.id} rec={r} />
+          ))}
+        </ul>
+      )}
+    </article>
+  );
+}
+
+// ---------- Cola de pendientes ----------
+
+async function ColaPendientes() {
+  await connection();
+  const pendientes = await listarRecomendacionesPendientes();
+
+  return (
+    <section
+      aria-labelledby="cola-pendientes"
+      className="border border-bruma/25 bg-roca p-5"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2
+          id="cola-pendientes"
+          className="font-display text-titulo font-semibold text-sal"
+        >
+          Recomendaciones pendientes
+        </h2>
+        <p className="text-detalle text-bruma" role="status">
+          {pendientes.length === 1
+            ? "1 pendiente"
+            : `${pendientes.length} pendientes`}
+        </p>
+      </div>
+      <p className="mt-2 text-detalle text-bruma">
+        Las recomendaciones nuevas del agente entran a esta cola para que la
+        minera las revise.
+      </p>
+
+      {pendientes.length === 0 ? (
+        <p className="mt-4 border border-bruma/25 bg-grafito p-4 text-detalle text-bruma">
+          No hay recomendaciones pendientes: las que emita el agente
+          aparecen acá.
+        </p>
+      ) : (
+        <ul className="mt-4 grid gap-4">
+          {pendientes.map((r) => (
+            <TarjetaRecomendacion key={r.id} rec={r} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// ---------- Tarjeta de recomendación ----------
+
+const ETIQUETA_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
+  pendiente: "Pendiente",
+  aprobada: "Aprobada",
+  rechazada: "Rechazada",
+};
+
+function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
+  const proveedor = rec.proveedor;
+  const oferta = rec.oferta;
+
+  return (
+    <li className="border border-bruma/25 bg-grafito p-4">
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="font-display font-semibold text-sal">
+          {rec.insumo?.nombre ?? "Insumo"}
+        </h3>
+        <span
+          className={`shrink-0 px-1.5 py-0.5 text-micro font-semibold ${
+            rec.estado === "pendiente"
+              ? "bg-senal text-grafito"
+              : "border border-bruma/40 text-bruma"
+          }`}
+        >
+          {ETIQUETA_ESTADO[rec.estado]}
+        </span>
+      </div>
+
+      {proveedor && (
+        <p className="mt-1 text-detalle text-bruma">
+          {proveedor.nombreFantasia ?? proveedor.razonSocial}
+          {proveedor.nombreFantasia && ` · ${proveedor.razonSocial}`}
+          {proveedor.estado === "homologado" && (
+            <span className="ml-2 border border-cobre/50 px-1.5 py-0.5 text-micro text-sal">
+              homologado
+            </span>
+          )}
+        </p>
+      )}
+
+      {oferta && proveedor && (
+        <dl className="mt-3 grid grid-cols-3 gap-3 text-detalle">
+          <div>
+            <dt className="text-micro text-bruma">Precio</dt>
+            <dd className="font-display font-semibold text-sal">
+              {formatoPrecio(oferta)}
+              <span className="block text-micro font-normal text-bruma">
+                por {rec.insumo?.unidad}
+              </span>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-micro text-bruma">Lead time</dt>
+            <dd className="font-display font-semibold text-sal">
+              {formatoLead(oferta)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-micro text-bruma">Trust score</dt>
+            <dd className="font-display font-semibold text-sal">
+              {Math.round(proveedor.trustScore.valor)}
+              <span className="text-micro font-normal text-bruma">/100</span>
+            </dd>
+          </div>
+        </dl>
+      )}
+
+      <p className="mt-3 text-detalle text-sal">{rec.justificacion}</p>
+      <p className="mt-2 text-micro text-bruma">
+        {formatoFecha(rec.creadaEn)}
+      </p>
+    </li>
+  );
+}
+
+// ---------- Tabla de stock ----------
+
+async function TablaStock() {
+  await connection();
+  const stock = await listarStockMinera();
+  const alertas = stock.filter((s) => s.estado === "alerta");
+
+  return (
+    <section aria-labelledby="stock-insumos" className="mt-10">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2
+          id="stock-insumos"
+          className="font-display text-titulo font-semibold text-sal"
+        >
+          Stock de insumos
+        </h2>
+        <p className="text-detalle text-bruma" role="status">
+          {stock.length} {stock.length === 1 ? "insumo" : "insumos"} ·{" "}
+          {alertas.length} en alerta
+        </p>
+      </div>
+      <div className="mt-4 overflow-x-auto border border-bruma/25 bg-roca">
+        <table className="w-full min-w-[40rem] text-left text-detalle">
+          <thead>
+            <tr className="border-b border-bruma/25 text-micro text-bruma">
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Insumo
+              </th>
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Stock actual
+              </th>
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Punto de reorden
+              </th>
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Consumo mensual
+              </th>
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Días restantes
+              </th>
+              <th scope="col" className="px-5 py-3 font-semibold">
+                Estado
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {stock.map((s) => (
+              <FilaStock key={s.insumo.id} item={s} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
