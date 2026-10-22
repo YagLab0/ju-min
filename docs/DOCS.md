@@ -31,3 +31,10 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 | Documento | Contenido |
 |---|---|
 | [plan-implementacion.md](plan-implementacion.md) | Fases 0–4 del plan (setup, migraciones, seed, integración en la app, verificación) y decisiones tomadas |
+
+## Pitch
+
+| Documento | Contenido |
+|---|---|
+| [pitch.md](pitch.md) | Guion extendido del pitch (5 min): gancho, solución, demo, defensibilidad, modelo/roadmap y respuestas al jurado |
+| [slide-deck.html](slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — abrir en el navegador |

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ju-min — Deck</title>
+<style>
+  :root {
+    --papel: #f8f6f1;
+    --ficha: #ffffff;
+    --tinta: #29241c;
+    --piedra: #6f675b;
+    --linea: #e7e2d6;
+    --senal: #f5b301;
+    --cobre: #a8662f;
+    --oscuro: #1c1915;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: var(--oscuro); }
+  body {
+    display: grid; place-items: center;
+    font-family: "Saira", "Helvetica Neue", Arial, sans-serif;
+    color: var(--tinta);
+  }
+  .slide {
+    width: min(96vw, 1280px); aspect-ratio: 16/9;
+    background: var(--papel); border-radius: 18px;
+    padding: 4.5% 5%; display: none;
+    grid-template-rows: auto 1fr auto; gap: 3%;
+    box-shadow: 0 40px 90px rgba(0,0,0,.55);
+    position: relative; overflow: hidden;
+  }
+  .slide.activa { display: grid; }
+  .slide::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 10px;
+    background: linear-gradient(180deg, var(--senal), var(--cobre));
+  }
+  header { display: flex; align-items: baseline; justify-content: space-between; }
+  .marca {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(24px, 2.6vw, 42px); font-weight: 700; letter-spacing: -0.5px;
+  }
+  .marca em { font-style: normal; color: var(--cobre); }
+  .tag {
+    font-size: clamp(11px, 1.05vw, 16px); color: var(--piedra);
+    border: 1px solid var(--linea); border-radius: 999px; padding: .45em 1.1em;
+    background: var(--ficha); white-space: nowrap;
+  }
+  .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 4%; align-content: center; }
+  .col h2 {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(14px, 1.3vw, 20px); font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--cobre); margin-bottom: .8em;
+  }
+  .col p, .col li { font-size: clamp(13px, 1.35vw, 20px); line-height: 1.45; }
+  .col ul { list-style: none; display: grid; gap: .7em; }
+  .col li { padding-left: 1.15em; position: relative; }
+  .col li::before {
+    content: ""; position: absolute; left: 0; top: .52em;
+    width: .55em; height: .55em; background: var(--senal); border-radius: 2px;
+  }
+  .hero {
+    display: grid; align-content: center; gap: 1.2em;
+  }
+  .hero h1 {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(48px, 7.5vw, 110px); font-weight: 800; letter-spacing: -2px;
+    line-height: .95;
+  }
+  .hero h1 em { font-style: normal; color: var(--cobre); }
+  .hero p {
+    font-size: clamp(16px, 1.9vw, 28px); color: var(--piedra); max-width: 26em;
+    line-height: 1.35;
+  }
+  .hero .mini {
+    display: flex; gap: .6em; flex-wrap: wrap;
+  }
+  .mini span {
+    font-size: clamp(11px, 1vw, 15px); color: var(--tinta);
+    background: var(--ficha); border: 1px solid var(--linea);
+    border-radius: 999px; padding: .4em 1em;
+  }
+  .flujo { display: grid; gap: .6em; }
+  .paso {
+    display: flex; align-items: center; gap: .8em;
+    background: var(--ficha); border: 1px solid var(--linea);
+    border-radius: 12px; padding: .6em .9em;
+    font-size: clamp(13px, 1.3vw, 19px); font-weight: 500;
+  }
+  .paso b {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    min-width: 1.7em; height: 1.7em; border-radius: 8px;
+    background: var(--tinta); color: var(--senal);
+    display: grid; place-items: center; font-size: .95em; flex-shrink: 0;
+  }
+  .cifras { display: flex; gap: 2.2em; }
+  .cifra { display: flex; flex-direction: column; }
+  .cifra b {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(20px, 2vw, 30px); color: var(--tinta); line-height: 1.1;
+  }
+  .cifra span { font-size: clamp(11px, 1vw, 15px); color: var(--piedra); }
+  .frase {
+    display: grid; place-items: center; text-align: center; align-content: center;
+  }
+  .frase p {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(26px, 3.4vw, 52px); font-weight: 700; line-height: 1.15;
+    max-width: 20em; letter-spacing: -0.5px;
+  }
+  .frase p em { font-style: normal; color: var(--cobre); }
+  .frase small { margin-top: 1.4em; color: var(--piedra); font-size: clamp(13px, 1.3vw, 19px); }
+  .fila { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3%; align-content: center; }
+  .card {
+    background: var(--ficha); border: 1px solid var(--linea); border-radius: 14px;
+    padding: 1.1em 1.2em;
+  }
+  .card h3 {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(15px, 1.4vw, 21px); font-weight: 700; color: var(--tinta);
+    margin-bottom: .5em;
+  }
+  .card p { font-size: clamp(12px, 1.15vw, 17px); color: var(--piedra); line-height: 1.4; }
+  .card .num {
+    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
+    font-size: clamp(30px, 3vw, 46px); font-weight: 800; color: var(--senal);
+    line-height: 1; margin-bottom: .15em;
+  }
+  .peso-barra { display: grid; gap: .55em; }
+  .peso { display: grid; grid-template-columns: 7.5em 1fr 3em; align-items: center; gap: .8em; font-size: clamp(12px, 1.15vw, 17px); }
+  .peso .barra { height: .7em; background: var(--linea); border-radius: 99px; overflow: hidden; }
+  .peso .barra i { display: block; height: 100%; background: linear-gradient(90deg, var(--senal), var(--cobre)); border-radius: 99px; }
+  .peso b { text-align: right; font-family: "Saira Semi Condensed", sans-serif; }
+  footer {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--linea); padding-top: 1.4%;
+    font-size: clamp(11px, 1vw, 15px); color: var(--piedra);
+  }
+  .nav {
+    position: fixed; bottom: 18px; right: 24px;
+    display: flex; gap: .5em; align-items: center;
+    font-family: "Saira Semi Condensed", sans-serif; color: #b8b0a2; font-size: 14px;
+  }
+  .nav .dot { width: 9px; height: 9px; border-radius: 99px; background: #4a443b; }
+  .nav .dot.on { background: var(--senal); }
+</style>
+</head>
+<body>
+
+<!-- ============ 1 · PORTADA ============ -->
+<div class="slide activa">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">Hackathon INNOA — Jujuy</div>
+  </header>
+  <div class="hero">
+    <h1>Comprar insumos<br>en minería,<br><em>con datos.</em></h1>
+    <p>Un consultor inteligente que detecta qué falta, recomienda a qué proveedor verificado comprar y deja la decisión final en manos humanas.</p>
+    <div class="mini">
+      <span>Red verificada</span><span>Trust score</span><span>Alertas de stock</span><span>Aprobación humana</span>
+    </div>
+  </div>
+  <footer>
+    <div></div>
+    <div>Next.js 16 · eve + Gemini · Assistant UI · Supabase</div>
+  </footer>
+</div>
+
+<!-- ============ 2 · PROBLEMA ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">El problema</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>Elegir proveedor no es solo precio</h2>
+      <p>Hay que verificar certificaciones ISO, estándares ESG, habilitaciones regulatorias y aptitud para alta montaña. Hoy ese trabajo es manual:</p>
+      <ul style="margin-top:1em">
+        <li>Listas estáticas y desactualizadas de proveedores</li>
+        <li>Certificaciones que viven en PDFs y correos</li>
+        <li>Nadie sabe si un certificado sigue <b>vigente</b></li>
+        <li>La recompra de insumos depende de memoria y teléfono</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Comprar mal cuesta caro</h2>
+      <p>Un proveedor sin habilitación para alta montaña en la Puna no es un problema de precio: es un <b>riesgo de seguridad</b>. Y una molienda detenida por falta de insumo cuesta más que cualquier sobreprecio.</p>
+      <h2 style="margin-top:1.2em">Lo que falta</h2>
+      <ul>
+        <li>Una vista única del stock vs. punto de reorden</li>
+        <li>Saber quién está <b>realmente habilitado</b> para cada insumo</li>
+        <li>Comparar ofertas con criterios defendibles</li>
+      </ul>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>PDFs</b><span>donde vive hoy la evidencia de compliance</span></div></div>
+    <div>2 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 3 · SOLUCIÓN ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">La solución</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>Tres piezas que hoy están separadas</h2>
+      <ul>
+        <li><b>Red de proveedores verificados</b> — cada uno con trust score 0–100 con desglose por señales: identidad, compliance, desempeño, ESG y capacidad</li>
+        <li><b>Alertas de stock</b> — la minera carga su stock con punto de reorden por insumo; el sistema detecta qué está por faltar y cuántos días quedan</li>
+        <li><b>El agente</b> — consultor en lenguaje natural, acotado a abastecimiento, que recomienda con justificación de precio, lead time y trust score</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>El trust score, transparente</h2>
+      <div class="peso-barra">
+        <div class="peso"><span>Identidad</span><div class="barra"><i style="width:20%"></i></div><b>20%</b></div>
+        <div class="peso"><span>Compliance</span><div class="barra"><i style="width:30%"></i></div><b>30%</b></div>
+        <div class="peso"><span>Desempeño</span><div class="barra"><i style="width:30%"></i></div><b>30%</b></div>
+        <div class="peso"><span>ESG</span><div class="barra"><i style="width:10%"></i></div><b>10%</b></div>
+        <div class="peso"><span>Capacidad</span><div class="barra"><i style="width:10%"></i></div><b>10%</b></div>
+      </div>
+      <h2 style="margin-top:1.2em">Regla dura de homologación</h2>
+      <p>Un proveedor solo puede ser recomendado para un insumo si <b>cumple todos los requisitos obligatorios</b> de su categoría, con certificaciones verificadas y vigentes.</p>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>0–100</b><span>trust score auditable</span></div></div>
+    <div>3 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 4 · DEMO ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">El demo</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>El loop del agente</h2>
+      <div class="flujo">
+        <div class="paso"><b>1</b> Alerta: insumo bajo el punto de reorden</div>
+        <div class="paso"><b>2</b> Consulta: "¿quién me entrega más rápido?"</div>
+        <div class="paso"><b>3</b> Recomendación justificada: precio · lead time · trust score</div>
+        <div class="paso"><b>4</b> La minera aprueba o rechaza — el agente propone, la persona decide</div>
+      </div>
+    </div>
+    <div class="col">
+      <h2>En pantalla</h2>
+      <ul>
+        <li><b>Panel de la minera</b>: stock con alertas, chat con el agente, cola de recomendaciones pendientes</li>
+        <li><b>Explorer de proveedores</b>: catálogo filtrable por categoría, con trust score y certificaciones</li>
+        <li><b>Ficha de proveedor</b>: ofertas, historial de entregas y desglose del puntaje</li>
+      </ul>
+      <h2 style="margin-top:1.2em">Acotado por diseño</h2>
+      <p>Preguntenle "¿cómo está el clima?" — responde con un rechazo fijo. El agente solo responde consultas de abastecimiento y nunca inventa datos.</p>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>3</b><span>insumos en alerta en el seed del demo</span></div></div>
+    <div>4 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 5 · DATOS REALES ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">Datos reales, reglas claras</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>De dónde salen los proveedores</h2>
+      <ul>
+        <li><b>CAPMIN</b> — directorio de la Cámara Argentina de Proveedores Mineros, relevado con scraper propio</li>
+        <li><b>Registro Provincial de Proveedores Mineros de Jujuy</b> — verificación estatal (Decreto 290-DEyP-24)</li>
+        <li><b>CAEM</b> — cámara de empresas mineras: mineras clientes y cobertura provincial</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Qué se verifica de cada uno</h2>
+      <ul>
+        <li>ISO 9001 / 14001 / 45001 y normas de producto (IRAM, GRI-GM13, EN 10204)</li>
+        <li>Habilitaciones regulatorias (explosivos, transporte de peligrosas)</li>
+        <li>Aptitud de personal para altura geográfica — la Puna opera a +4.000 msnm</li>
+      </ul>
+      <h2 style="margin-top:1.2em">Si le falta información, lo dice</h2>
+      <p>El agente nunca inventa: lee solo a través del módulo de dominio y reporta lo que no puede verificar.</p>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras">
+      <div class="cifra"><b>277</b><span>proveedores en la red</span></div>
+      <div class="cifra"><b>188</b><span>categorías relevadas</span></div>
+      <div class="cifra"><b>58</b><span>reglas de requisitos por categoría</span></div>
+    </div>
+    <div>5 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 6 · BAJO EL CAPÓ ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">Bajo el capó</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>Stack</h2>
+      <ul>
+        <li>Next.js 16 + React 19 + TypeScript, Tailwind 4</li>
+        <li><b>eve</b> (agente durable) con Gemini — la versión guionada es el respaldo offline</li>
+        <li>Assistant UI para el chat</li>
+        <li>Supabase local: Postgres + Auth + RLS + Storage</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Decisiones que lo hacen defendible</h2>
+      <ul>
+        <li>La regla de homologación vive en la BD: <code>cumple_requisitos()</code></li>
+        <li>RLS: el público solo ve la "red verificada"; cada minera ve solo sus datos</li>
+        <li>Usuarios por minera con roles: comprador, aprobador, admin</li>
+        <li>Documentos de evidencia en Storage (certificados, auditorías)</li>
+      </ul>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>12</b><span>migraciones versionadas en el repo</span></div></div>
+    <div>6 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 7 · MODELO Y ROADMAP ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">Modelo y roadmap</div>
+  </header>
+  <div class="grid">
+    <div class="col">
+      <h2>Modelo de negocio</h2>
+      <ul>
+        <li><b>Suscripción</b> por minera — consultor de procurement como servicio</li>
+        <li>Escala a <b>pagos automáticos</b> al detectar falta de stock, con la misma aprobación humana configurable</li>
+        <li>Premium: verificación documental asistida para proveedores</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h2>Roadmap</h2>
+      <ul>
+        <li>Verificación real contra registros públicos (Jujuy, AFIP)</li>
+        <li>APIs de compras públicas (ChileCompra y equivalentes)</li>
+        <li>Integración con ERPs y facturación electrónica</li>
+        <li>Scoring en vivo con historial de entregas real</li>
+      </ul>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>SaaS</b><span>suscripción → pagos automáticos</span></div></div>
+    <div>7 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 8 · CIERRE ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">Cierre</div>
+  </header>
+  <div class="frase">
+    <p>El agente propone.<br><em>La minera decide.</em></p>
+    <small>Cada recomendación se defiende con tres números: precio, lead time, trust score.<br>ju-min — Consultor inteligente de compras para minería.</small>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>ju-min</b><span>Hackathon INNOA — Jujuy</span></div></div>
+    <div>8 / 8</div>
+  </footer>
+</div>
+
+<div class="nav" id="nav"></div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const nav = document.getElementById('nav');
+  let i = 0;
+  slides.forEach((_, n) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (n === 0 ? ' on' : '');
+    d.onclick = () => ir(n);
+    nav.appendChild(d);
+  });
+  function ir(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('activa', k === i));
+    nav.querySelectorAll('.dot').forEach((d, k) => d.classList.toggle('on', k === i));
+  }
+  addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) ir(i + 1);
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) ir(i - 1);
+  });
+  addEventListener('click', (e) => { if (e.target.closest('.nav')) return; ir(i + 1); });
+</script>
+</body>
+</html>
