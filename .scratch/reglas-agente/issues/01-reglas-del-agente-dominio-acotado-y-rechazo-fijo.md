@@ -16,7 +16,7 @@ Spec: `.scratch/reglas-agente/spec.md`. Vocabulario: `GLOSSARY.md`. Leer las doc
 - [x] Una consulta mixta (dominio + ajena) responde solo la parte de dominio
 - [x] Se conservan las reglas existentes: español, solo proveedores verificados, justificación precio + lead time + trust score, ninguna compra sin aprobación, nunca inventar datos
 - [x] `GLOSSARY.md` incluye el término "consulta fuera de dominio"
-- [x] Tests de la sesión por HTTP (`/eve/v1` + stream): off-topic → texto fijo; dominio → contenido; meta → contenido; mixta → solo parte de dominio. Test de dev, no CI
+- [ ] Tests de la sesión por HTTP (`/eve/v1` + stream): off-topic → texto fijo; dominio → contenido; meta → contenido; mixta → solo parte de dominio. Test de dev, no CI
 - [x] `pnpm lint` y `pnpm exec tsc --noEmit` pasan
 
 ## Comments

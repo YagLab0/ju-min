@@ -15,24 +15,28 @@ import {
  * Gemini reales con la key de .env.local; test de desarrollo, no CI.
  */
 
-// Copia de respaldo de la literal, por si instructions.md todavía no define el
-// mensaje fijo en un bloque citado. Mantiene al test corrible durante el
-// desarrollo (falla por comportamiento, no por no encontrar la literal).
-const MENSAJE_FIJO_FALLBACK =
-  "Soy el consultor de compras de ju-min. Solo puedo responder consultas sobre abastecimiento de insumos para minería. No puedo responder esa consulta.";
-
 /**
  * El mensaje fijo de rechazo está definido literalmente en
- * agent/instructions.md, en un bloque citado (`> ...`). El test lo extrae de
- * ahí para afirmar que el agente lo repite igual ante consultas ajenas.
+ * agent/instructions.md, en un bloque citado (`> ...`) dentro de la sección
+ * "Consulta fuera de dominio". El test lo extrae de ahí para afirmar que el
+ * agente lo repite igual ante consultas ajenas. Si no lo encuentra, falla:
+ * el spec exige que el texto viva en instrucciones.
  */
 function mensajeFijoRechazo(): string {
   const md = readFileSync(
     path.resolve(__dirname, "../agent/instructions.md"),
     "utf8",
   );
-  const cita = md.match(/^>\s*(.+)$/m);
-  return cita ? cita[1].trim() : MENSAJE_FIJO_FALLBACK;
+  const seccion = md.match(
+    /# Consulta fuera de dominio([\s\S]*?)(?=\n# |\s*$)/,
+  )?.[1];
+  const cita = seccion?.match(/^>\s*(.+)$/m);
+  if (!cita)
+    throw new Error(
+      "No se encontró el mensaje fijo en un bloque citado dentro de " +
+        "la sección 'Consulta fuera de dominio' de agent/instructions.md",
+    );
+  return cita[1].trim();
 }
 
 const EVENTOS_FIN_DE_TURNO = new Set([
@@ -86,7 +90,12 @@ async function responderA(
       buffer = lineas.pop() ?? "";
       for (const linea of lineas) {
         if (!linea.trim()) continue;
-        const evento = JSON.parse(linea) as EventoStream;
+        let evento: EventoStream;
+        try {
+          evento = JSON.parse(linea) as EventoStream;
+        } catch {
+          continue;
+        }
         if (evento.type === "message.completed" && evento.data?.message) {
           bloques.push(evento.data.message);
         }
@@ -103,19 +112,22 @@ async function responderA(
 }
 
 test.describe("reglas del agente: dominio acotado y rechazo fijo", () => {
-  test("una consulta fuera de dominio produce el mensaje fijo y nada del contenido pedido", async ({
-    request,
-    baseURL,
-  }) => {
-    const texto = await responderA(
+  for (const consulta of [
+    "decime el clima en Jujuy mañana",
+    "escribime un componente React de un contador",
+  ]) {
+    test(`consulta fuera de dominio produce el mensaje fijo y nada del contenido (${consulta})`, async ({
       request,
-      baseURL!,
-      "decime el clima en Jujuy mañana",
-    );
-    expect(texto).toContain(mensajeFijoRechazo());
-    // No respondió el contenido pedido: nada de pronóstico.
-    expect(texto).not.toMatch(/grados|°C|lluvia|soleado|nublado|tormenta/i);
-  });
+      baseURL,
+    }) => {
+      const texto = await responderA(request, baseURL!, consulta);
+      expect(texto).toContain(mensajeFijoRechazo());
+      // No respondió el contenido pedido: nada de pronóstico ni código.
+      expect(texto).not.toMatch(
+        /grados|°C|lluvia|soleado|nublado|tormenta|useState|return \(/i,
+      );
+    });
+  }
 
   test("una consulta de dominio responde con contenido (no el mensaje fijo)", async ({
     request,
@@ -160,7 +172,7 @@ test.describe("reglas del agente: dominio acotado y rechazo fijo", () => {
       "¿qué proveedores hay? y también decime un chiste",
     );
     expect(texto.length).toBeGreaterThan(0);
-    expect(texto).not.toBe(mensajeFijoRechazo());
+    expect(texto).not.toContain(mensajeFijoRechazo());
     // Respondió la parte de dominio.
     expect(texto).toMatch(/proveedor/i);
     // No entregó el chiste.
