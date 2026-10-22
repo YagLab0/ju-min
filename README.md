@@ -64,6 +64,8 @@ presenta como "red verificada".
 
 ## Desarrollo
 
+Requiere Node 24 (el agente eve lo exige). Con nvm: `nvm install && nvm use` lee `.nvmrc`.
+
 ```bash
 pnpm install
 echo "GOOGLE_GENERATIVE_AI_API_KEY=<tu-key>" > .env.local  # https://aistudio.google.com/apikey
