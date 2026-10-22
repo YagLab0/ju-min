@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   title: "Panel de la minera",
 };
 
+// El panel es dinámico (sesión + datos por request): no puede producir un
+// shell instantáneo, igual que /login y /proveedores/[id].
+export const instant = false;
+
 export default function Panel() {
   return (
     <div className="mx-auto w-full max-w-7xl px-5 py-10">
