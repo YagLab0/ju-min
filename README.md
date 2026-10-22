@@ -22,7 +22,8 @@ justificación → aprobación humana*.
 - Agente: [eve](https://eve.dev) (Vercel, beta) en `agent/`, montado en Next.js con `withEve` (`/eve/v1/*`)
 - Modelo: Gemini Flash vía Google AI Studio (`@ai-sdk/google`)
 - Package manager: **pnpm**
-- Datos: mocks en archivos TypeScript (no hay base de datos)
+- Datos: seed en memoria (`src/lib/compras/semilla.ts`) o Supabase local
+  (`supabase/`) detrás del mismo adaptador — ver [Fuente de datos](#fuente-de-datos)
 
 > **Nota:** esta versión de Next.js tiene cambios que rompen convenciones
 > conocidas. Antes de escribir código, leer la guía relevante en
@@ -73,6 +74,44 @@ pnpm dev
 ```
 
 Abrir [http://localhost:3000](http://localhost:3000).
+
+## Fuente de datos
+
+El módulo de compras (`src/lib/compras`) lee detrás de un adaptador
+intercambiable con dos implementaciones:
+
+- **Seed en memoria** (default): el demo funciona sin base de datos.
+- **Supabase**: si `.env.local` define `NEXT_PUBLIC_SUPABASE_URL` y
+  `SUPABASE_SERVICE_ROLE_KEY`, la app intenta leer de ahí.
+
+En modo `auto` (default) la app sondea Supabase una vez por proceso: si no
+responde o está sin el seed, **cae al seed en memoria con un aviso en el log
+del servidor** — el demo nunca queda en pantalla vacía. Para cambiar de modo
+hay que reiniciar `pnpm dev`.
+
+`JUMIN_FUENTE_DATOS` fuerza el modo:
+
+| Valor | Comportamiento |
+| --- | --- |
+| `auto` | Supabase si responde con datos; si no, memoria (default). |
+| `memoria` | Seed en memoria siempre, aunque haya env vars de Supabase. |
+| `supabase` | Supabase siempre; los errores se propagan sin fallback (pipeline real). |
+
+### Levantar Supabase local
+
+Requiere Docker corriendo. Las migraciones (`supabase/migrations/*.sql`) se
+aplican solas al arrancar; `supabase/seed.sql` puebla la demo:
+
+```bash
+pnpm supabase start                 # levanta el stack local
+pnpm supabase status                # copia las keys a .env.local (ver .env.example)
+pnpm supabase db reset              # reaplica migraciones + seed (idempotente)
+```
+
+Con el stack arriba y las env vars puestas, `pnpm dev` loguea
+`[compras] Fuente de datos: Supabase (...)`. Si el stack está apagado o sin
+seed, el log muestra `[compras] ... Se usa el seed en memoria para el demo.`
+Detalle del stack en [docs/supabase-local.md](docs/supabase-local.md).
 
 ## Tests
 
