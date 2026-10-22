@@ -49,3 +49,7 @@ _Avoid_: chat, conversación, pregunta, ticket
 **Recomendación**:
 Propuesta concreta del agente de comprar un insumo a través de una oferta, con su justificación. Es lo que la minera aprueba o rechaza.
 _Avoid_: sugerencia, orden de compra, propuesta
+
+**Consulta fuera de dominio**:
+Consulta que no trata de abastecimiento minero ni del producto ju-min. El agente la rechaza con un mensaje fijo, siempre el mismo.
+_Avoid_: off-topic, consulta inválida, spam

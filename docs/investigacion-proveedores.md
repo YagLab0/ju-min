@@ -194,7 +194,12 @@ cuyo informe queda en la plataforma.
 
 ### Proveedores incluidos en el seed
 
-Listado de los proveedores que pueblan `supabase/seed.sql`. Los de
+Listado de los **20 proveedores curados a mano** en `supabase/seed.sql`.
+Además, `scripts/scrape-capmin.ts` scrapea el directorio CAPMIN completo
+(271 proveedores, 183 categorías) y genera `supabase/seed-data/proveedores-capmin.sql`,
+que el seed incluye vía `sql_paths` en `config.toml`: los que tienen
+categorías con requisitos obligatorios quedan `validado` y reciben
+certificaciones sintetizadas (`verificado`). Los de
 `fuente='capmin'` son reales del directorio CAPMIN (nombre, dirección y
 categorías verificados contra el sitio); los `fuente='manual'` son sintéticos
 creados para cubrir categorías sin proveedor real disponible.
