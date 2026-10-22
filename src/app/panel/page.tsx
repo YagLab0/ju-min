@@ -37,15 +37,20 @@ export default function Panel() {
         recomienda el agente y qué decisiones quedan pendientes.
       </p>
       <Suspense
-        fallback={<PanelCargando texto="Cargando el stock de la minera…" />}
+        fallback={
+          <p className="mt-2 text-detalle text-piedra">
+            Cargando la minera…
+          </p>
+        }
       >
-        <PanelAlertas />
+        <CabeceraMinera />
       </Suspense>
 
-      {/* El chat con el agente es el centro de la pantalla: todo lo demás
-          (alertas, consulta guionada, cola de decisiones, historial) orbita
-          alrededor en columnas laterales y secciones compactas. */}
-      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,23rem)]">
+      {/* El chat con el agente es el centro de la pantalla. En la columna
+          lateral va todo el circuito de trabajo: la alerta dispara el
+          pedido de recomendación, la respuesta aparece debajo y la cola de
+          pendientes espera la decisión. */}
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]">
         <div className="min-w-0 space-y-6">
           <ChatAgente />
           <Suspense
@@ -58,9 +63,16 @@ export default function Panel() {
         </div>
         <aside className="min-w-0 space-y-6">
           <Suspense
-            fallback={<PanelCargando texto="Cargando el espacio de consultas…" />}
+            fallback={<PanelCargando texto="Cargando las alertas de stock…" />}
           >
-            <SeccionAgente />
+            <Alertas />
+          </Suspense>
+          <Suspense
+            fallback={
+              <PanelCargando texto="Cargando la última respuesta del agente…" />
+            }
+          >
+            <RespuestaReciente />
           </Suspense>
           <Suspense
             fallback={<PanelCargando texto="Cargando la cola de pendientes…" />}
@@ -91,14 +103,15 @@ function ChatAgente() {
           id="chat-agente"
           className="font-display text-subtitulo font-semibold text-tinta"
         >
-          Conversar con el agente
+          Agente de compras
         </h2>
         <p className="mt-1 text-detalle text-piedra">
-          Chat con el agente eve para preguntas abiertas sobre compras. La
-          conversación se retoma al recargar la página.
+          Conversá con el agente sobre compras, proveedores y certificaciones.
+          Para reponer un insumo concreto usá «Pedir recomendación» en su
+          alerta: la propuesta llega a la cola de pendientes.
         </p>
       </div>
-      <div className="h-[36rem]">
+      <div className="h-[38rem]">
         <Consulta />
       </div>
     </section>
@@ -160,32 +173,33 @@ function formatoDias(dias: number | null): string {
 
 // ---------- Alertas de stock ----------
 
-async function PanelAlertas() {
+async function CabeceraMinera() {
   // Los datos viven en memoria del servidor y cambian durante la sesión del
   // demo: se leen por request, no en el prerender (ver connection()).
   await connection();
   // La página solo habla con el módulo de dominio de compras.
-  const [minera, stock] = await Promise.all([
-    obtenerMinera(),
-    listarStockMinera(),
-  ]);
-  const alertas = stock.filter((s) => s.estado === "alerta");
+  const minera = await obtenerMinera();
 
   return (
-    <>
-      <p className="mt-5 text-detalle text-piedra">
-        {minera.nombre}
-        {minera.ubicacion && ` · ${minera.ubicacion}`}
-      </p>
-
-      {alertas.length > 0 && <SeccionAlertas alertas={alertas} />}
-    </>
+    <p className="mt-2 text-detalle text-piedra">
+      {minera.nombre}
+      {minera.ubicacion && ` · ${minera.ubicacion}`}
+    </p>
   );
+}
+
+async function Alertas() {
+  await connection();
+  const stock = await listarStockMinera();
+  const alertas = stock.filter((s) => s.estado === "alerta");
+  if (alertas.length === 0) return null;
+
+  return <SeccionAlertas alertas={alertas} />;
 }
 
 function SeccionAlertas({ alertas }: { alertas: StockInsumo[] }) {
   return (
-    <section aria-labelledby="alertas-reorden" className="mt-6">
+    <section aria-labelledby="alertas-reorden">
       <div className="overflow-hidden rounded-2xl border border-senal/70 bg-ficha shadow-sm">
         <div className="franja-seguridad h-1.5" aria-hidden="true" />
         <div className="p-5">
@@ -197,11 +211,7 @@ function SeccionAlertas({ alertas }: { alertas: StockInsumo[] }) {
               ? "1 insumo por debajo del punto de reorden"
               : `${alertas.length} insumos por debajo del punto de reorden`}
           </h2>
-          <ul
-            className={`mt-4 grid gap-4 ${
-              alertas.length > 1 ? "sm:grid-cols-2" : ""
-            }`}
-          >
+          <ul className="mt-4 grid gap-4">
             {alertas.map((s) => (
               <TarjetaAlerta key={s.insumo.id} item={s} />
             ))}
@@ -276,7 +286,7 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
           : `≈ ${s.diasRestantes} días de stock al consumo actual`}
       </p>
 
-      {/* La consulta sale con el insumo ya cargado: la minera no escribe el
+      {/* El pedido sale con el insumo ya cargado: la minera no escribe el
           contexto a mano. */}
       <form action={consultarAlAgenteDesdePanel} className="mt-4">
         <input type="hidden" name="insumo_id" value={s.insumo.id} />
@@ -289,71 +299,28 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
           type="submit"
           className="rounded-lg bg-senal px-4 py-2 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
         >
-          Consultar al agente
+          Pedir recomendación
         </button>
       </form>
     </li>
   );
 }
 
-// ---------- Consultas al agente ----------
+// ---------- Última respuesta del agente ----------
 
-async function SeccionAgente() {
+async function RespuestaReciente() {
   await connection();
   const ultima = await obtenerUltimaConsulta();
+  if (!ultima) return null;
 
-  return (
-    <section
-      aria-labelledby="consultas-agente"
-      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
-    >
-      <h2
-        id="consultas-agente"
-        className="font-display text-subtitulo font-semibold text-tinta"
-      >
-        Consultas al agente
-      </h2>
-      <p className="mt-1.5 text-detalle text-piedra">
-        Preguntale al agente en texto libre, o usá «Consultar al agente» en
-        una alerta para salir con el insumo ya cargado.
-      </p>
-
-      <form action={consultarAlAgenteDesdePanel} className="mt-4">
-        <label
-          htmlFor="mensaje"
-          className="text-detalle font-semibold text-tinta"
-        >
-          Consulta libre
-        </label>
-        <div className="mt-1.5 flex flex-col gap-2">
-          <input
-            id="mensaje"
-            name="mensaje"
-            type="text"
-            required
-            autoComplete="off"
-            placeholder="Ej.: ¿quién me entrega guantes más rápido?"
-            className="w-full rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta placeholder:text-piedra/60"
-          />
-          <button
-            type="submit"
-            className="self-start rounded-lg bg-senal px-5 py-2 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
-          >
-            Consultar
-          </button>
-        </div>
-      </form>
-
-      {ultima && <UltimaRespuesta consulta={ultima} />}
-    </section>
-  );
+  return <UltimaRespuesta consulta={ultima} />;
 }
 
 function UltimaRespuesta({ consulta }: { consulta: ConsultaDetallada }) {
   return (
     <article
       aria-label="Última respuesta del agente"
-      className="mt-5 rounded-xl border border-linea bg-papel p-4"
+      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-display font-semibold text-tinta">
@@ -422,7 +389,9 @@ async function ColaPendientes() {
           aparecen acá.
         </p>
       ) : (
-        <ul className="mt-4 grid gap-4">
+        /* La cola tiene scroll propio para no estirar la página cuando el
+           agente acumula recomendaciones. */
+        <ul className="mt-4 grid max-h-[30rem] gap-4 overflow-y-auto pr-1">
           {pendientes.map((r) => (
             <TarjetaRecomendacion key={r.id} rec={r} />
           ))}
@@ -434,7 +403,7 @@ async function ColaPendientes() {
           <h3 className="font-display text-detalle font-semibold text-piedra">
             Decididas
           </h3>
-          <ul className="mt-3 grid gap-4">
+          <ul className="mt-3 grid max-h-[18rem] gap-4 overflow-y-auto pr-1">
             {decididas.map((r) => (
               <TarjetaRecomendacion key={r.id} rec={r} />
             ))}

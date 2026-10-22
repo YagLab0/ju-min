@@ -39,9 +39,9 @@ test.describe("flujo completo del demo", () => {
     await expect(tarjetaAlerta).toContainText("En alerta");
     await expect(tarjetaAlerta).toContainText("días de stock");
 
-    // 3. Consultar al agente directamente desde la alerta.
+    // 3. Pedir la recomendación al agente directamente desde la alerta.
     await tarjetaAlerta
-      .getByRole("button", { name: "Consultar al agente" })
+      .getByRole("button", { name: "Pedir recomendación" })
       .click();
 
     // 4. La respuesta del agente trae la recomendación pendiente.
