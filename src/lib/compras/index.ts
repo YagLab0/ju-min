@@ -13,6 +13,7 @@ import type {
   Consulta,
   DecisionRecomendacion,
   Insumo,
+  Minera,
   Oferta,
   ProveedorVerificado,
   ProveedorVerificadoDetalle,
@@ -24,6 +25,7 @@ import type {
   FilaCertificacion,
   FilaConsulta,
   FilaInsumo,
+  FilaMinera,
   FilaOferta,
   FilaProveedor,
   FilaRecomendacion,
@@ -170,8 +172,16 @@ export async function listarOfertasDeInsumo(
 
 const DIAS_POR_MES = 30;
 
+/** La minera suscripta del demo. */
+export async function obtenerMinera(): Promise<Minera> {
+  const t = await tablas();
+  return mapearMinera(t.minera);
+}
+
 /** Stock de la minera con el estado de cada insumo (normal o en alerta por
- * estar por debajo del punto de reorden) y los días de stock restantes. */
+ * estar por debajo del punto de reorden) y los días de stock restantes.
+ * Ordenado para reponer primero: alertas antes y, dentro de cada estado,
+ * el que se agota antes. */
 export async function listarStockMinera(): Promise<StockInsumo[]> {
   const t = await tablas();
   const insumos = new Map(t.insumos.map((i) => [i.id, i]));
@@ -196,6 +206,13 @@ export async function listarStockMinera(): Promise<StockInsumo[]> {
             : null,
         },
       ];
+    })
+    .sort((a, b) => {
+      if (a.estado !== b.estado) return a.estado === "alerta" ? -1 : 1;
+      return (
+        (a.diasRestantes ?? Infinity) - (b.diasRestantes ?? Infinity) ||
+        a.insumo.nombre.localeCompare(b.insumo.nombre, "es")
+      );
     });
 }
 
@@ -299,6 +316,14 @@ function mapearCertificacion(f: FilaCertificacion): Certificacion {
     tipo: f.tipo,
     ambito: f.ambito,
     organismoTipico: f.organismo_tipico,
+  };
+}
+
+function mapearMinera(f: FilaMinera): Minera {
+  return {
+    id: f.id,
+    nombre: f.nombre,
+    ubicacion: f.ubicacion,
   };
 }
 

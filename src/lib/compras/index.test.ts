@@ -12,6 +12,7 @@ import {
   listarOfertasDeInsumo,
   listarProveedoresVerificados,
   listarStockMinera,
+  obtenerMinera,
   obtenerProveedorVerificado,
   registrarConsulta,
 } from "./index";
@@ -172,7 +173,25 @@ describe("listarOfertasDeInsumo", () => {
   });
 });
 
+describe("obtenerMinera", () => {
+  it("devuelve la minera del demo", async () => {
+    const minera = await obtenerMinera();
+    expect(minera.nombre).toBe("Sales de Jujuy S.A.");
+    expect(minera.ubicacion).toBe("Salar de Olaroz, Jujuy");
+  });
+});
+
 describe("listarStockMinera", () => {
+  it("ordena para reponer primero: alertas antes, por días restantes", async () => {
+    const stock = await listarStockMinera();
+    expect(stock[0].estado).toBe("alerta");
+    expect(stock[0].insumo.nombre).toBe("Guante de nitrilo industrial");
+    const dias = stock
+      .filter((s) => s.estado === "normal")
+      .map((s) => s.diasRestantes ?? Infinity);
+    expect(dias).toEqual([...dias].sort((a, b) => a - b));
+  });
+
   it("marca en alerta el insumo por debajo del punto de reorden", async () => {
     const stock = await listarStockMinera();
     const guante = stock.find(
