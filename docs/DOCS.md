@@ -188,6 +188,44 @@ cuyo informe queda en la plataforma.
 - Estadísticas HSE, trust score — se calculan sobre datos simulados con forma
   realista
 
+### Proveedores incluidos en el seed
+
+Listado de los proveedores que pueblan `supabase/seed.sql`. Los de
+`fuente='capmin'` son reales del directorio CAPMIN (nombre, dirección y
+categorías verificados contra el sitio); los `fuente='manual'` son sintéticos
+creados para cubrir categorías sin proveedor real disponible.
+
+| Razón social | Fuente | Provincia | Categorías | Estado seed | Registro Jujuy |
+|---|---|---|---|---|---|
+| ACERIAS 4C SA | capmin | Santa Fe | Bolas de Molino, Molienda | homologado | — |
+| AUSTIN POWDER | capmin | Santa Fe | Fabricante de Explosivos, Explosivos | homologado | aprobado |
+| BAC DALL ARGENTINA SA | capmin | CABA | Elementos Protección Personal | homologado | aprobado |
+| ANDREANI LOGÍSTICA SA | capmin | Buenos Aires | Transporte, Transporte de cargas pesadas | validado | — |
+| 3D ELECTRO SAN JUAN | capmin | San Juan | CCTV, Infraestructura eléctrica, Telecomunicaciones | validado | — |
+| BMI SA | capmin | Salta | Construcciones, Servicios Mineros, Obras y Servicios | validado | pendiente |
+| ANDEMIRA SA | capmin | CABA | Servicios Mineros | auditado | aprobado |
+| AVINCO CONSTRUCCIONES S.A. | capmin | CABA | Construcciones, Ingeniería | registrado | — |
+| BRALBOL SA | capmin | Buenos Aires | big bag | documentado | — |
+| ALPARDATA SAS | capmin | Mendoza | Informática | validado | — |
+| ACONCAGUA SERVICIOS MINEROS SRL | capmin | San Juan | Servicios Mineros, Transporte | registrado | — |
+| 9AMAS | capmin | Salta | Capacitaciones | validado | pendiente |
+| ASG CONSULTORA | capmin | Córdoba | Consultoría, Higiene y seguridad | validado | — |
+| BAYTON SA | capmin | Buenos Aires | Servicios operativos | documentado | — |
+| LUBRIANDES SA | manual | Córdoba | Lubricantes, Combustibles | homologado | — |
+| FILTROPUNA SRL | manual | Jujuy | Filtros, Repuestos, Ferretería Industrial | homologado | aprobado |
+| GEOMEMBRANAS DEL NOA SA | manual | Salta | Geomembranas, Geosintéticos | homologado | aprobado |
+| QUIMIPLANT SRL | manual | Mendoza | Industria química, Laboratorio ambiental | validado | — |
+| SEGURIDAD PUNA SRL | manual | Jujuy | Higiene y seguridad, EPP | homologado | aprobado |
+| TRANSANDINA LOGÍSTICA SA | manual | Salta | Transporte de cargas pesadas, Transporte | homologado | aprobado |
+
+**Otras razones sociales reales** presentes en el directorio CAPMIN (página 1
+del listado) disponibles para ampliar el seed en el futuro: ADECCO ARGENTINA
+SA, ADRIAN MERCADO, AESA, AGUARTEC, AIES SA, ALGIERI SA, ALL SHIP LOGISTICS,
+ALLARIA, AT INVERSIONES, BASANI S.A., BAUZA INGENIERIA SRL, BENMONZ SA, BIG 6
+ADVISORS, BRIGHTSIDE IT CONSULTING SA, ABANS CONSTRUCCIÓN, ADRIAN MERCADO y
+entidades financieras (Balanz, Banco Comafi, Banco Galicia, Banco Macro, Banco
+San Juan, Banco Supervielle).
+
 ---
 
 ## 3. Modelo de clasificación propuesto
