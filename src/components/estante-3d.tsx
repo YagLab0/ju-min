@@ -193,7 +193,7 @@ export function Estante3D() {
   }, []);
 
   return (
-    <figure className="border border-bruma/25 bg-roca">
+    <figure className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm">
       <div className="franja-seguridad h-2" aria-hidden="true" />
       <div
         ref={hostRef}
@@ -206,7 +206,7 @@ export function Estante3D() {
           className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-500 group-data-[rendered=true]:opacity-100"
         />
       </div>
-      <figcaption className="border-t border-bruma/25 px-4 py-3 text-detalle text-bruma">
+      <figcaption className="border-t border-linea px-4 py-3 text-detalle text-piedra">
         El stock del tambor baja y cruza el punto de reorden: se enciende la
         alerta y el agente entra con una recomendación de un proveedor
         verificado.

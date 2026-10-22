@@ -6,19 +6,13 @@ import {
   listarCategorias,
   listarInsumos,
   listarProveedoresVerificados,
+  obtenerProveedorVerificado,
   type OrdenProveedores,
   type ProveedorVerificado,
 } from "@/lib/compras";
 
 export const metadata: Metadata = {
   title: "Proveedores verificados",
-};
-
-const ETIQUETA_FUENTE: Record<ProveedorVerificado["fuente"], string> = {
-  capmin: "CAPMIN",
-  caem: "CAEM",
-  registro_jujuy: "Registro Provincial de Proveedores Mineros de Jujuy",
-  manual: "Carga manual",
 };
 
 const ORDENES: readonly OrdenProveedores[] = [
@@ -29,18 +23,17 @@ const ORDENES: readonly OrdenProveedores[] = [
 
 export default function Proveedores(props: PageProps<"/proveedores">) {
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-14">
-      <h1 className="font-display text-display font-bold text-sal">
+    <div className="mx-auto w-full max-w-7xl px-5 py-10">
+      <h1 className="font-display text-display font-bold tracking-tight text-tinta">
         Proveedores verificados
       </h1>
-      <p className="mt-4 max-w-2xl text-subtitulo text-bruma">
-        La red de proveedores verificados del Registro Provincial de
-        Proveedores Mineros de Jujuy y las cámaras del sector, con su trust
-        score, ubicación y certificaciones.
+      <p className="mt-3 max-w-2xl text-subtitulo text-piedra">
+        Marketplace de la red verificada: cada oferta muestra precio, unidad,
+        plazo de entrega y el trust score del proveedor que la emite.
       </p>
       <Suspense
         fallback={
-          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+          <p className="mt-10 rounded-2xl border border-linea bg-ficha p-5 text-detalle text-piedra">
             Cargando la red verificada…
           </p>
         }
@@ -90,18 +83,38 @@ async function ExplorerProveedores({
   );
   const opcionesCategoria = categorias.filter((c) => categoriasEnRed.has(c.id));
 
+  // Cada tarjeta destaca una oferta del proveedor: se resuelven los detalles
+  // en paralelo (la fuente en memoria lo vuelve barato).
+  const detalles = await Promise.all(
+    proveedores.map((p) => obtenerProveedorVerificado(p.id)),
+  );
+  const ofertaDestacada = new Map(
+    proveedores.map((p, i) => [
+      p.id,
+      detalles[i]?.ofertas
+        .filter((o) => o.disponible)
+        .sort((a, b) => (a.leadTimeDias ?? 999) - (b.leadTimeDias ?? 999))[0] ??
+        detalles[i]?.ofertas[0] ??
+        null,
+    ]),
+  );
+  const totalOfertas = new Map(
+    proveedores.map((p, i) => [p.id, detalles[i]?.ofertas.length ?? 0]),
+  );
+
   return (
-    <>
+    <div className="mt-8 grid items-start gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      {/* Barra lateral de filtros (en mobile queda arriba como barra). */}
       <form
         method="get"
-        className="mt-10 border border-bruma/25 bg-roca p-5"
+        className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm lg:sticky lg:top-20"
         aria-label="Filtrar proveedores"
       >
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="busqueda"
-              className="text-detalle font-semibold text-sal"
+              className="text-detalle font-semibold text-tinta"
             >
               Buscar por nombre
             </label>
@@ -111,13 +124,13 @@ async function ExplorerProveedores({
               type="search"
               defaultValue={busqueda}
               placeholder="Ej.: FiltroPuna"
-              className="border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal placeholder:text-bruma/60"
+              className="rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta placeholder:text-piedra/60"
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="categoria"
-              className="text-detalle font-semibold text-sal"
+              className="text-detalle font-semibold text-tinta"
             >
               Categoría
             </label>
@@ -125,7 +138,7 @@ async function ExplorerProveedores({
               id="categoria"
               name="categoria"
               defaultValue={categoriaId ?? ""}
-              className="border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal"
+              className="rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta"
             >
               <option value="">Todas las categorías</option>
               {opcionesCategoria.map((c) => (
@@ -138,7 +151,7 @@ async function ExplorerProveedores({
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="insumo"
-              className="text-detalle font-semibold text-sal"
+              className="text-detalle font-semibold text-tinta"
             >
               Insumo
             </label>
@@ -146,7 +159,7 @@ async function ExplorerProveedores({
               id="insumo"
               name="insumo"
               defaultValue={insumoId ?? ""}
-              className="border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal"
+              className="rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta"
             >
               <option value="">Todos los insumos</option>
               {insumos.map((i) => (
@@ -159,7 +172,7 @@ async function ExplorerProveedores({
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="orden"
-              className="text-detalle font-semibold text-sal"
+              className="text-detalle font-semibold text-tinta"
             >
               Ordenar por
             </label>
@@ -167,7 +180,7 @@ async function ExplorerProveedores({
               id="orden"
               name="orden"
               defaultValue={orden}
-              className="border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal"
+              className="rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta"
             >
               <option value="trust_score_desc">Mayor trust score</option>
               <option value="trust_score_asc">Menor trust score</option>
@@ -178,14 +191,14 @@ async function ExplorerProveedores({
         <div className="mt-4 flex items-center gap-4">
           <button
             type="submit"
-            className="bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+            className="rounded-lg bg-senal px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
           >
             Aplicar filtros
           </button>
           {(busqueda || categoriaId || insumoId) && (
             <Link
               href="/proveedores"
-              className="text-detalle text-bruma underline-offset-4 hover:text-sal hover:underline"
+              className="text-detalle text-piedra underline-offset-4 hover:text-tinta hover:underline"
             >
               Limpiar filtros
             </Link>
@@ -193,34 +206,43 @@ async function ExplorerProveedores({
         </div>
       </form>
 
-      <Resultados proveedores={proveedores} total={redCompleta.length} />
-    </>
+      <Resultados
+        proveedores={proveedores}
+        total={redCompleta.length}
+        ofertaDestacada={ofertaDestacada}
+        totalOfertas={totalOfertas}
+      />
+    </div>
   );
 }
 
 function Resultados({
   proveedores,
   total,
+  ofertaDestacada,
+  totalOfertas,
 }: {
   proveedores: ProveedorVerificado[];
   total: number;
+  ofertaDestacada: Map<string, OfertaDetalle>;
+  totalOfertas: Map<string, number>;
 }) {
   if (proveedores.length === 0) {
     return (
-      <div className="mt-8 border border-bruma/25 bg-roca">
+      <div className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm">
         <div className="franja-seguridad h-1.5" aria-hidden="true" />
         <div className="p-5">
-          <h2 className="font-display text-titulo font-semibold text-sal">
+          <h2 className="font-display text-titulo font-semibold text-tinta">
             Ningún proveedor verificado coincide con esos filtros
           </h2>
-          <p className="mt-2 max-w-xl text-detalle text-bruma">
+          <p className="mt-2 max-w-xl text-detalle text-piedra">
             Probá ampliar la búsqueda: elegí otra categoría u otro insumo,
             escribí una parte del nombre o mirá la red verificada completa
             ({total} proveedores).
           </p>
           <Link
             href="/proveedores"
-            className="mt-4 inline-block border border-bruma/40 px-5 py-2.5 font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+            className="mt-4 inline-block rounded-lg border border-linea px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
           >
             Ver todos los proveedores
           </Link>
@@ -230,116 +252,155 @@ function Resultados({
   }
 
   return (
-    <>
-      <p className="mt-6 text-detalle text-bruma" role="status">
+    <div>
+      <p className="text-detalle text-piedra" role="status">
         {proveedores.length === total
           ? `${total} proveedores verificados`
           : `${proveedores.length} de ${total} proveedores verificados`}
       </p>
-      <ul className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {proveedores.map((p) => (
-          <TarjetaProveedor key={p.id} proveedor={p} />
+          <TarjetaOferta
+            key={p.id}
+            proveedor={p}
+            oferta={ofertaDestacada.get(p.id) ?? null}
+            cantidadOfertas={totalOfertas.get(p.id) ?? 0}
+          />
         ))}
       </ul>
-    </>
+    </div>
   );
 }
 
-function TarjetaProveedor({ proveedor: p }: { proveedor: ProveedorVerificado }) {
-  const certificaciones = p.certificaciones
-    .filter((c) => c.estado === "verificado")
-    .map((c) => c.certificacion.codigo ?? c.certificacion.nombre);
-  const visibles = certificaciones.slice(0, 3);
-  const restantes = certificaciones.length - visibles.length;
+type OfertaDetalle = NonNullable<
+  Awaited<ReturnType<typeof obtenerProveedorVerificado>>
+>["ofertas"][number] | null;
+
+function formatoPrecio(precio: number, moneda: string): string {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: moneda,
+    maximumFractionDigits: 0,
+  }).format(precio);
+}
+
+/* Placeholder visual por categoría: bloque gráfico CSS-only (sin assets)
+   con patrón determinístico según el slug y la inicial de la categoría. */
+const PATRONES_CATEGORIA = [
+  "bg-[repeating-linear-gradient(-45deg,var(--color-linea)_0_8px,transparent_8px_18px)]",
+  "bg-[radial-gradient(var(--color-linea)_1.5px,transparent_1.5px)] bg-[size:14px_14px]",
+  "bg-[repeating-linear-gradient(90deg,var(--color-linea)_0_2px,transparent_2px_16px)]",
+  "bg-[repeating-linear-gradient(0deg,var(--color-linea)_0_2px,transparent_2px_16px)]",
+];
+
+function PlaceholderCategoria({ nombre, slug }: { nombre: string; slug: string }) {
+  let hash = 0;
+  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
+  const patron = PATRONES_CATEGORIA[Math.abs(hash) % PATRONES_CATEGORIA.length];
+  return (
+    <div
+      aria-hidden="true"
+      className={`relative h-24 overflow-hidden border-b border-linea bg-papel ${patron}`}
+    >
+      <span className="absolute bottom-2 left-3 font-display text-4xl font-bold text-tinta/15">
+        {nombre.slice(0, 1).toUpperCase()}
+      </span>
+      <span className="absolute bottom-2 right-3 rounded-md bg-ficha/90 px-2 py-0.5 text-micro font-semibold text-piedra ring-1 ring-linea">
+        {nombre}
+      </span>
+    </div>
+  );
+}
+
+function TarjetaOferta({
+  proveedor: p,
+  oferta,
+  cantidadOfertas,
+}: {
+  proveedor: ProveedorVerificado;
+  oferta: OfertaDetalle;
+  cantidadOfertas: number;
+}) {
+  const categoria = p.categorias[0];
 
   return (
-    <li className="border border-bruma/25 bg-roca">
-      <article className="flex h-full flex-col gap-4 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="truncate font-display font-semibold text-sal">
+    <li className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm transition-shadow hover:shadow-md">
+      <article className="flex h-full flex-col">
+        {categoria && (
+          <PlaceholderCategoria nombre={categoria.nombre} slug={categoria.slug} />
+        )}
+
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          {/* Insumo de la oferta destacada */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-micro font-semibold uppercase tracking-wide text-piedra">
+                {oferta?.insumo.nombre ?? "Insumos de la categoría"}
+              </p>
+              <h2 className="mt-0.5 truncate font-display text-subtitulo font-semibold text-tinta">
                 <Link
                   href={`/proveedores/${p.id}`}
-                  className="transition-colors hover:text-senal"
+                  className="transition-colors hover:text-cobre"
                 >
                   {p.nombreFantasia ?? p.razonSocial}
                 </Link>
               </h2>
+              <p className="text-micro text-piedra">
+                {[p.localidad, p.provincia].filter(Boolean).join(", ")}
+              </p>
+            </div>
+            {/* Badge de trust score */}
+            <div className="shrink-0 rounded-lg border border-linea bg-papel px-2 py-1 text-center">
+              <p className="font-display text-subtitulo font-bold leading-none text-cobre">
+                {Math.round(p.trustScore.valor)}
+              </p>
+              <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-piedra">
+                trust
+              </p>
+            </div>
+          </div>
+
+          {/* Precio, unidad y lead time de la oferta */}
+          {oferta && (
+            <div className="rounded-xl border border-linea bg-papel p-3">
+              <div className="flex items-baseline justify-between gap-2">
+                <p className="font-display text-subtitulo font-bold text-tinta">
+                  {formatoPrecio(oferta.precio, oferta.moneda)}
+                </p>
+                <p className="text-micro text-piedra">
+                  por {oferta.insumo.unidad}
+                </p>
+              </div>
+              <p className="mt-1 text-micro text-piedra">
+                {oferta.leadTimeDias === null
+                  ? "Plazo a convenir"
+                  : `Entrega en ${oferta.leadTimeDias} días`}
+                {" · "}
+                {oferta.disponible ? "Disponible" : "A pedido"}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+            <p className="text-micro text-piedra">
+              {cantidadOfertas}{" "}
+              {cantidadOfertas === 1 ? "oferta publicada" : "ofertas publicadas"}
               {p.estado === "homologado" && (
-                <span className="shrink-0 bg-senal px-1.5 py-0.5 text-micro font-semibold text-grafito">
+                <span className="ml-2 rounded-md bg-senal px-1.5 py-0.5 font-semibold text-tinta">
                   homologado
                 </span>
               )}
-            </div>
-            {p.nombreFantasia && (
-              <p className="truncate text-micro text-bruma">{p.razonSocial}</p>
-            )}
-            <p className="mt-1 text-detalle text-bruma">
-              {[p.localidad, p.provincia].filter(Boolean).join(", ")}
             </p>
-          </div>
-          <div className="shrink-0 text-right">
-            <p className="font-display text-titulo font-bold leading-none text-sal">
-              {Math.round(p.trustScore.valor)}
-            </p>
-            <p className="text-micro text-bruma">trust score</p>
-            <div
-              className="mt-1.5 h-1 w-16 bg-bruma/20"
-              role="img"
-              aria-label={`Trust score ${Math.round(p.trustScore.valor)} de 100`}
+            <Link
+              href={`/proveedores/${p.id}`}
+              className="rounded-lg border border-linea px-3.5 py-1.5 font-display text-detalle font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
             >
-              <div
-                className="h-1 bg-cobre"
-                style={{ width: `${Math.round(p.trustScore.valor)}%` }}
-              />
-            </div>
+              Ver ficha
+            </Link>
           </div>
         </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          {p.categorias.map((c) => (
-            <span
-              key={c.id}
-              className="border border-bruma/30 px-2 py-0.5 text-micro text-bruma"
-            >
-              {c.nombre}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-auto">
-          <p className="text-micro text-bruma">Certificaciones</p>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {visibles.map((codigo) => (
-              <span
-                key={codigo}
-                className="border border-cobre/40 px-2 py-0.5 text-micro text-sal"
-              >
-                {codigo}
-              </span>
-            ))}
-            {restantes > 0 && (
-              <span className="px-1 py-0.5 text-micro text-bruma">
-                +{restantes}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <p className="text-micro text-bruma">
-          Fuente: {ETIQUETA_FUENTE[p.fuente]}
-          {p.registroJujuyEstado === "aprobado" &&
-            " · Registro de Jujuy aprobado"}
-        </p>
-
-        <Link
-          href={`/proveedores/${p.id}`}
-          className="mt-1 inline-block w-fit border border-bruma/40 px-4 py-2 font-display text-detalle font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
-        >
-          Ver ficha
-        </Link>
       </article>
     </li>
   );
 }
+

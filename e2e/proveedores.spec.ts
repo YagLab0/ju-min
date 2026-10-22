@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+import { ingresarAlDemo } from "./auth";
+
 test.describe("explorer de proveedores verificados", () => {
+  test.beforeEach(async ({ page }) => {
+    // La red verificada es una ruta protegida: se ingresa por el login.
+    await ingresarAlDemo(page);
+  });
+
   test("muestra la red verificada completa", async ({ page }) => {
     await page.goto("/proveedores");
 

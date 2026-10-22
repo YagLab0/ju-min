@@ -8,19 +8,19 @@ export const metadata: Metadata = {
 export default function ProveedorNoEncontrado() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-14">
-      <div className="border border-bruma/25 bg-roca">
+      <div className="rounded-2xl border border-linea bg-ficha shadow-sm">
         <div className="franja-seguridad h-1.5" aria-hidden="true" />
         <div className="p-5">
-          <h1 className="font-display text-titulo font-semibold text-sal">
+          <h1 className="font-display text-titulo font-semibold text-tinta">
             Proveedor no encontrado
           </h1>
-          <p className="mt-2 max-w-xl text-detalle text-bruma">
+          <p className="mt-2 max-w-xl text-detalle text-piedra">
             El proveedor no existe o ya no integra la red verificada. Volvé al
             listado para explorar los proveedores verificados disponibles.
           </p>
           <Link
             href="/proveedores"
-            className="mt-4 inline-block border border-bruma/40 px-5 py-2.5 font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+            className="mt-4 inline-block rounded-lg border border-linea px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
           >
             Volver al listado de proveedores
           </Link>

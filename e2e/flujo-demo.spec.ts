@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { CLAVE_DEMO, EMAIL_DEMO } from "./auth";
+
 // El estado del demo vive en memoria del servidor y se acumula entre
 // requests: las aserciones apuntan siempre a la consulta que este test crea
 // (la última respuesta del agente), nunca a conteos globales.
@@ -8,7 +10,7 @@ test.describe("flujo completo del demo", () => {
   test("alerta de stock → agente → ficha → contacto simulado → aprobación", async ({
     page,
   }) => {
-    // 1. Entrar a la landing y de ahí al panel de la minera.
+    // 1. Entrar a la landing y de ahí al panel de la minera (pide login).
     await page.goto("/");
     await expect(
       page.getByRole("heading", { level: 1, name: /punto de reorden/ }),
@@ -16,6 +18,11 @@ test.describe("flujo completo del demo", () => {
     await page
       .getByRole("link", { name: "Abrir el panel de la minera" })
       .click();
+    // El panel es privado: el proxy manda a /login con la ruta original
+    // en `desde` y el login la retoma.
+    await page.getByLabel("Email").fill(EMAIL_DEMO);
+    await page.getByLabel("Contraseña").fill(CLAVE_DEMO);
+    await page.getByRole("button", { name: "Ingresar" }).click();
     await expect(page).toHaveURL("/panel");
 
     // 2. El panel arranca con la alerta de stock del demo.
