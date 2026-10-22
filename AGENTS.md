@@ -8,17 +8,19 @@
 ## Comandos
 
 - `pnpm dev`: levanta Next.js **y** el runtime de eve (vía `withEve`). El agente queda en `http://localhost:3000/eve/v1/*`. La primera request a `/eve` tarda unos segundos mientras eve arranca.
-- `pnpm exec eve dev`: terminal UI de eve para chatear con el agente sin frontend (`--no-ui` para headless).
+- `pnpm eve:dev`: terminal UI de eve para chatear con el agente sin frontend (`--no-ui` para headless).
 - `pnpm lint` / `pnpm exec tsc --noEmit` / `pnpm build`: verificación.
-- Producción local: `next build` no compila el agente. Correr `pnpm exec eve build` (genera `.output/`) antes de `next start`.
+- Producción local: `next build` no compila el agente. Correr `pnpm eve:build` (genera `.output/`) antes de `next start`.
 - Smoke test: `curl localhost:3000/eve/v1/health` y `curl localhost:3000/eve/v1/info`.
+- **`NODE_OPTIONS="--conditions=react-server"` es obligatorio** en cualquier proceso que compile o corra módulos authored de eve (`pnpm dev`, `eve:dev`, `eve:build`): las tools importan `src/lib/compras`, que arranca con `import "server-only"`; la condición lo resuelve al export vacío. Los scripts de package.json ya lo llevan.
 
 ## Agente (eve)
 
-- `agent/agent.ts`: modelo. Usa Gemini Flash directo vía Google AI Studio (`@ai-sdk/google`), no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway.
+- `agent/agent.ts`: modelo. Usa Claude Haiku directo vía `anthropic()` de `eve/models/anthropic`, no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway.
 - `agent/instructions.md`: system prompt (en español).
 - `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `localDev()` abre localhost en dev; `placeholderAuth()` rechaza requests de browser en producción hasta reemplazarlo por auth real (o `none()` para demo pública).
-- Credenciales: `GOOGLE_GENERATIVE_AI_API_KEY` en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarla como env var del servidor.
+- `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio `src/lib/compras`; nunca crean clientes de Supabase ni leen tablas.
+- Credenciales: `ANTHROPIC_API_KEY` en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarla como env var del servidor.
 
 ## pnpm 12
 

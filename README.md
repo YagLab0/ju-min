@@ -20,7 +20,7 @@ justificación → aprobación humana*.
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS 4
 - Agente: [eve](https://eve.dev) (Vercel, beta) en `agent/`, montado en Next.js con `withEve` (`/eve/v1/*`)
-- Modelo: Gemini Flash vía Google AI Studio (`@ai-sdk/google`)
+- Modelo: Claude Haiku directo vía `eve/models/anthropic`
 - Package manager: **pnpm**
 - Datos: seed en memoria (`src/lib/compras/semilla.ts`) o Supabase local
   (`supabase/`) detrás del mismo adaptador — ver [Fuente de datos](#fuente-de-datos)
@@ -69,7 +69,7 @@ Requiere Node 24 (el agente eve lo exige). Con nvm: `nvm install && nvm use` lee
 
 ```bash
 pnpm install
-echo "GOOGLE_GENERATIVE_AI_API_KEY=<tu-key>" > .env.local  # https://aistudio.google.com/apikey
+echo "ANTHROPIC_API_KEY=<tu-key>" > .env.local  # https://console.anthropic.com/
 pnpm dev
 ```
 

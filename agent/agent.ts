@@ -1,7 +1,7 @@
-import { google } from "@ai-sdk/google";
+import { anthropic } from "eve/models/anthropic";
 import { defineAgent } from "eve";
 
 export default defineAgent({
-  model: google("gemini-3.5-flash"),
-  modelContextWindowTokens: 1_048_576,
+  model: anthropic("claude-haiku-5-5"),
+  modelContextWindowTokens: 200_000,
 });

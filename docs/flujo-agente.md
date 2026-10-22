@@ -9,8 +9,8 @@ como respaldo.
 - **eve** (Vercel, beta): framework del agente. Vive en `agent/` dentro del mismo
   repo Next.js. `withEve` en `next.config.ts` monta su API same-origin en
   `/eve/v1/*`: un solo `pnpm dev` levanta app y agente.
-- **Google AI Studio**: el modelo es un `LanguageModel` directo de
-  `@ai-sdk/google` (`gemini-3.8-flash`) con `GOOGLE_GENERATIVE_AI_API_KEY` en
+- **Anthropic**: el modelo es un `LanguageModel` directo de
+  `eve/models/anthropic` (`claude-haiku-5-5`) con `ANTHROPIC_API_KEY` en
   `.env.local`. No pasa por AI Gateway.
 - **Assistant UI**: frontend del chat. `@assistant-ui/eve` expone
   `useEveAgentRuntime()`, que adapta el hook `useEveAgent` de eve al
@@ -21,21 +21,27 @@ como respaldo.
 
 ```
 agent/
-├── agent.ts              # defineAgent({ model: google("gemini-3.8-flash") })
+├── agent.ts              # defineAgent({ model: anthropic("claude-haiku-5-5") })
 ├── instructions.md       # system prompt del consultor de compras (español)
 ├── channels/eve.ts       # auth de /eve/v1: localDev() en dev, placeholder en prod
-├── tools/                # (pendiente) acciones tipadas con zod
-└── skills/               # (opcional) procedimientos que el modelo carga on demand
+└── tools/                # acciones tipadas con zod, de solo lectura
 ```
 
-Tools previstos, sobre el módulo de dominio de compras:
+Tools, sobre el módulo de dominio de compras (el nombre sale del archivo):
 
-- `get_stock` — stock de la minera con estado de cada insumo (normal / en alerta).
-- `list_providers`, `get_provider` — red de proveedores verificados y trust score.
-- `list_ofertas` — ofertas de un insumo (precio, unidad, lead time, disponibilidad).
-- `propose_recommendation` — emite una recomendación; **gated por aprobación
-  humana**, la recomendación queda pendiente hasta que la minera decide.
-- `contact_provider` — contacto simulado (mock).
+- `consultar_stock` — stock de la minera con estado de cada insumo (normal /
+  en alerta) y días restantes.
+- `listar_proveedores_verificados` — red verificada con trust score,
+  ubicación, provincias de operación, categorías y certificaciones.
+- `listar_ofertas_de_insumo` — ofertas de un insumo por nombre común o id
+  (precio, moneda, lead time, disponibilidad, proveedor verificado).
+- `web_search` — archivo `disableTool()`: la key de modelo no tiene cuota de
+  búsqueda y una búsqueda web contradice el dominio acotado.
+
+El agente es de solo lectura: recomienda en el texto de la consulta con
+precio, lead time y trust score reales; no registra recomendaciones en la
+cola de pendientes del panel (esa sigue siendo exclusiva del agente
+guionado).
 
 ## Flujo de datos
 
@@ -45,9 +51,9 @@ Tools previstos, sobre el módulo de dominio de compras:
    el insumo ya cargado): `POST /eve/v1/session {message}` → sesión durable con
    `sessionId`.
 3. eve corre el loop: `instructions.md` → tool calls contra el módulo de dominio
-   → Gemini razona → stream NDJSON → assistant-ui renderiza en vivo.
-4. El agente invoca `propose_recommendation` → se pausa esperando aprobación →
-   assistant-ui muestra el approval card.
+   → el modelo razona → stream NDJSON → assistant-ui renderiza en vivo.
+4. El agente recomienda en el texto de la consulta, justificando con precio,
+   lead time y trust score de las ofertas leídas por las tools.
 5. La minera aprueba o rechaza → la recomendación queda registrada con su
    decisión. La sesión es durable: `useEveAgentRuntime({ resume: true })`
    re-adjunta tras reload; cada `sessionId` equivale a una Consulta en el
@@ -64,13 +70,15 @@ Tools previstos, sobre el módulo de dominio de compras:
 
 ## Configuración y auth
 
-- `GOOGLE_GENERATIVE_AI_API_KEY` en `.env.local` (gitignored; en deploy, env var
+- `ANTHROPIC_API_KEY` en `.env.local` (gitignored; en deploy, env var
   del servidor).
 - `agent/channels/eve.ts`: `localDev()` abre localhost en dev;
   `placeholderAuth()` rechaza requests de browser en producción hasta
   reemplazarlo por auth real (o `none()` para una demo pública).
-- Producción local: `pnpm exec eve build` antes de `next start` (`next build`
-  no compila el agente).
+- Producción local: `pnpm eve:build` antes de `next start` (`next build`
+  no compila el agente). Los procesos de eve corren con
+  `NODE_OPTIONS="--conditions=react-server"` para resolver el guard
+  `server-only` del módulo de dominio (ver AGENTS.md).
 
 ## Caveats
 

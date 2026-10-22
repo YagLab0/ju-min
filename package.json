@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=\"--conditions=react-server\" next dev",
     "build": "next build",
+    "eve:dev": "NODE_OPTIONS=\"--conditions=react-server\" eve dev",
+    "eve:build": "NODE_OPTIONS=\"--conditions=react-server\" eve build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
