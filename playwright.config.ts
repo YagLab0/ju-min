@@ -58,5 +58,8 @@ export default defineConfig({
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
+        // El E2E por defecto es determinista y sin red: fuerza el seed en
+        // memoria para no pagar el sondeo de Supabase ni depender de la LAN.
+        env: { JUMIN_FUENTE_DATOS: "memoria" },
       },
 });

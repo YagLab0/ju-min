@@ -13,6 +13,14 @@ interface PerfilSupabase {
   mineras: { nombre: string } | null;
 }
 
+/** Tope de espera al sondear Supabase Auth: un host apagado tarda ~1 minuto
+ * en rechazar la conexión TCP y el login no puede esperar eso. Una vez que
+ * el servicio no responde se marca caído por proceso, igual que el sondeo
+ * de la fuente de datos en src/lib/compras. */
+const ESPERA_SONDA_MS = 3000;
+
+const globalAuth = globalThis as unknown as { __juMinAuthCaido?: boolean };
+
 /** Verifica contra Supabase Auth. Devuelve:
  *  - UsuarioDemo si las credenciales son válidas,
  *  - null si GoTrue rechazó las credenciales (respuesta definitiva),
@@ -25,8 +33,37 @@ async function verificarConSupabase(
   const apikey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !apikey) return undefined;
+  if (
+    !url ||
+    !apikey ||
+    globalAuth.__juMinAuthCaido ||
+    process.env.JUMIN_FUENTE_DATOS === "memoria"
+  ) {
+    return undefined;
+  }
 
+  let timer: ReturnType<typeof setTimeout>;
+  const expira = new Promise<undefined>((resolve) => {
+    timer = setTimeout(() => resolve(undefined), ESPERA_SONDA_MS);
+  });
+  try {
+    const resultado = await Promise.race([intentar(url, apikey, email, clave), expira]);
+    if (resultado === undefined) globalAuth.__juMinAuthCaido = true;
+    return resultado;
+  } catch {
+    globalAuth.__juMinAuthCaido = true;
+    return undefined;
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
+async function intentar(
+  url: string,
+  apikey: string,
+  email: string,
+  clave: string,
+): Promise<UsuarioDemo | null | undefined> {
   try {
     const { createClient } = await import("@supabase/supabase-js");
     const supabase = createClient(url, apikey, {
