@@ -11,6 +11,8 @@ import {
   listarInsumos,
   listarOfertasDeInsumo,
   listarProveedoresVerificados,
+  listarRecomendacionesDecididas,
+  listarRecomendacionesPendientes,
   listarStockMinera,
   obtenerMinera,
   obtenerProveedorVerificado,
@@ -317,6 +319,59 @@ describe("consultas y recomendaciones", () => {
     ).rejects.toThrow();
   });
 
+  it("ciclo de una recomendación: pendiente → rechazada", async () => {
+    const consulta = await registrarConsulta({
+      mensaje: "Reponer guantes de nitrilo",
+      recomendaciones: [
+        {
+          ofertaId: ID_OFERTA_GUANTE_ANDINA,
+          justificacion: "Menor lead time: 7 días.",
+          puntaje: 91,
+        },
+      ],
+    });
+    const rec = consulta.recomendaciones[0];
+
+    const decidida = await decidirRecomendacion(rec.id, "rechazada");
+    expect(decidida.estado).toBe("rechazada");
+
+    await expect(decidirRecomendacion(rec.id, "aprobada")).rejects.toThrow();
+  });
+
+  it("una recomendación decidida sale de la cola de pendientes y aparece entre las decididas", async () => {
+    const consulta = await registrarConsulta({
+      mensaje: "Reponer guantes de nitrilo",
+      recomendaciones: [
+        {
+          ofertaId: ID_OFERTA_GUANTE_ANDINA,
+          justificacion: "Menor lead time: 7 días.",
+          puntaje: 91,
+        },
+      ],
+    });
+    const rec = consulta.recomendaciones[0];
+
+    expect(
+      (await listarRecomendacionesPendientes()).map((r) => r.id),
+    ).toContain(rec.id);
+
+    await decidirRecomendacion(rec.id, "aprobada");
+
+    expect(
+      (await listarRecomendacionesPendientes()).map((r) => r.id),
+    ).not.toContain(rec.id);
+    const decididas = await listarRecomendacionesDecididas();
+    const vista = decididas.find((r) => r.id === rec.id);
+    expect(vista).toBeDefined();
+    expect(vista!.estado).toBe("aprobada");
+    // la decidida viene con insumo, oferta y proveedor resueltos para el panel
+    expect(vista!.insumo?.id).toBe(ID_GUANTE);
+    expect(vista!.oferta?.id).toBe(ID_OFERTA_GUANTE_ANDINA);
+    expect(vista!.proveedor?.id).toBe(ID_ANDINA);
+    // la cola de decididas no muestra pendientes
+    expect(decididas.every((r) => r.estado !== "pendiente")).toBe(true);
+  });
+
   it("lee el historial de consultas con sus recomendaciones", async () => {
     const historial = await listarHistorialConsultas();
     const semilla = historial.find(
@@ -328,6 +383,12 @@ describe("consultas y recomendaciones", () => {
     expect(
       semilla!.recomendaciones.map((r) => r.estado).sort(),
     ).toEqual(["aprobada", "rechazada"]);
+    // cada recomendación del historial viene detallada para enlazar la ficha
+    expect(
+      semilla!.recomendaciones.every(
+        (r) => Boolean(r.proveedor?.id) && Boolean(r.insumo?.id),
+      ),
+    ).toBe(true);
     // orden descendente por fecha
     expect(historial[0].creadaEn >= historial.at(-1)!.creadaEn).toBe(true);
   });

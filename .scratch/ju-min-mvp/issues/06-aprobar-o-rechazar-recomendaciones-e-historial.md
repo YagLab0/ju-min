@@ -6,13 +6,13 @@ Spec: `docs/orden-desarrollo.md`. Vocabulario: `GLOSSARY.md`. Leer la guía de N
 
 **Blocked by:** 03 (Ficha del proveedor verificado), 05 (Agente guionado: consultas y recomendaciones)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Cada recomendación pendiente tiene acciones de aprobar y rechazar
-- [ ] Una recomendación decidida no se puede volver a decidir
-- [ ] La cola de pendientes y las recomendaciones decididas se ven separadas
-- [ ] El historial lista las consultas con sus recomendaciones y el estado de cada una
-- [ ] Cada recomendación enlaza a la ficha de su proveedor verificado
-- [ ] Las acciones usan nombres consistentes en botón y confirmación (ej. "Aprobar" → "Aprobada")
-- [ ] Tests de Vitest del módulo de dominio: pendiente → aprobada, pendiente → rechazada, rechazo de una segunda decisión
-- [ ] `pnpm build`, `pnpm lint` y los tests pasan
+- [x] Cada recomendación pendiente tiene acciones de aprobar y rechazar
+- [x] Una recomendación decidida no se puede volver a decidir
+- [x] La cola de pendientes y las recomendaciones decididas se ven separadas
+- [x] El historial lista las consultas con sus recomendaciones y el estado de cada una
+- [x] Cada recomendación enlaza a la ficha de su proveedor verificado
+- [x] Las acciones usan nombres consistentes en botón y confirmación (ej. "Aprobar" → "Aprobada")
+- [x] Tests de Vitest del módulo de dominio: pendiente → aprobada, pendiente → rechazada, rechazo de una segunda decisión
+- [x] `pnpm build`, `pnpm lint` y los tests pasan

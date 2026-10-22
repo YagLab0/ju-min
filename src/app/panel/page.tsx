@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
 import {
+  listarHistorialConsultas,
+  listarRecomendacionesDecididas,
   listarRecomendacionesPendientes,
   listarStockMinera,
   obtenerMinera,
@@ -13,7 +16,10 @@ import {
   type StockInsumo,
 } from "@/lib/compras";
 
-import { consultarAlAgenteDesdePanel } from "./acciones";
+import {
+  consultarAlAgenteDesdePanel,
+  decidirRecomendacionDesdePanel,
+} from "./acciones";
 
 export const metadata: Metadata = {
   title: "Panel de la minera",
@@ -55,6 +61,16 @@ export default function Panel() {
           <ColaPendientes />
         </Suspense>
       </div>
+
+      <Suspense
+        fallback={
+          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+            Cargando el historial de consultas…
+          </p>
+        }
+      >
+        <HistorialConsultas />
+      </Suspense>
 
       <Suspense
         fallback={
@@ -343,11 +359,14 @@ function UltimaRespuesta({ consulta }: { consulta: ConsultaDetallada }) {
   );
 }
 
-// ---------- Cola de pendientes ----------
+// ---------- Cola de pendientes y decididas ----------
 
 async function ColaPendientes() {
   await connection();
-  const pendientes = await listarRecomendacionesPendientes();
+  const [pendientes, decididas] = await Promise.all([
+    listarRecomendacionesPendientes(),
+    listarRecomendacionesDecididas(),
+  ]);
 
   return (
     <section
@@ -369,7 +388,7 @@ async function ColaPendientes() {
       </div>
       <p className="mt-2 text-detalle text-bruma">
         Las recomendaciones nuevas del agente entran a esta cola para que la
-        minera las revise.
+        minera las revise. Al aprobarlas o rechazarlas pasan a «Decididas».
       </p>
 
       {pendientes.length === 0 ? (
@@ -384,6 +403,19 @@ async function ColaPendientes() {
           ))}
         </ul>
       )}
+
+      {decididas.length > 0 && (
+        <div className="mt-6 border-t border-bruma/25 pt-4">
+          <h3 className="font-display text-detalle font-semibold text-bruma">
+            Decididas
+          </h3>
+          <ul className="mt-3 grid gap-4">
+            {decididas.map((r) => (
+              <TarjetaRecomendacion key={r.id} rec={r} />
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
@@ -394,6 +426,12 @@ const ETIQUETA_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
   pendiente: "Pendiente",
   aprobada: "Aprobada",
   rechazada: "Rechazada",
+};
+
+const ESTILO_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
+  pendiente: "bg-senal text-grafito",
+  aprobada: "border border-sal/50 text-sal",
+  rechazada: "border border-bruma/40 text-bruma",
 };
 
 function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
@@ -407,11 +445,7 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
           {rec.insumo?.nombre ?? "Insumo"}
         </h3>
         <span
-          className={`shrink-0 px-1.5 py-0.5 text-micro font-semibold ${
-            rec.estado === "pendiente"
-              ? "bg-senal text-grafito"
-              : "border border-bruma/40 text-bruma"
-          }`}
+          className={`shrink-0 px-1.5 py-0.5 text-micro font-semibold ${ESTILO_ESTADO[rec.estado]}`}
         >
           {ETIQUETA_ESTADO[rec.estado]}
         </span>
@@ -419,7 +453,14 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
 
       {proveedor && (
         <p className="mt-1 text-detalle text-bruma">
-          {proveedor.nombreFantasia ?? proveedor.razonSocial}
+          {/* Cada recomendación enlaza a la ficha del proveedor verificado
+              para revisarlo antes de decidir. */}
+          <Link
+            href={`/proveedores/${proveedor.id}`}
+            className="font-semibold text-sal underline decoration-bruma/50 underline-offset-2 transition-colors hover:text-senal hover:decoration-senal"
+          >
+            {proveedor.nombreFantasia ?? proveedor.razonSocial}
+          </Link>
           {proveedor.nombreFantasia && ` · ${proveedor.razonSocial}`}
           {proveedor.estado === "homologado" && (
             <span className="ml-2 border border-cobre/50 px-1.5 py-0.5 text-micro text-sal">
@@ -460,6 +501,98 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
       <p className="mt-2 text-micro text-bruma">
         {formatoFecha(rec.creadaEn)}
       </p>
+
+      {/* Solo las pendientes se pueden decidir: una vez aprobada o
+          rechazada la tarjeta muestra el estado y no vuelve a ofrecer
+          acciones. */}
+      {rec.estado === "pendiente" && (
+        <form
+          action={decidirRecomendacionDesdePanel}
+          className="mt-4 flex flex-wrap gap-3"
+        >
+          <input type="hidden" name="recomendacion_id" value={rec.id} />
+          <button
+            type="submit"
+            name="decision"
+            value="aprobada"
+            className="bg-senal px-4 py-2 font-display text-detalle font-semibold text-grafito transition-colors hover:bg-sal"
+          >
+            Aprobar
+          </button>
+          <button
+            type="submit"
+            name="decision"
+            value="rechazada"
+            className="border border-bruma/40 px-4 py-2 font-display text-detalle font-semibold text-bruma transition-colors hover:border-sal hover:text-sal"
+          >
+            Rechazar
+          </button>
+        </form>
+      )}
+    </li>
+  );
+}
+
+// ---------- Historial de consultas ----------
+
+async function HistorialConsultas() {
+  await connection();
+  const historial = await listarHistorialConsultas();
+
+  return (
+    <section aria-labelledby="historial-consultas" className="mt-10">
+      <h2
+        id="historial-consultas"
+        className="font-display text-titulo font-semibold text-sal"
+      >
+        Historial de consultas
+      </h2>
+      <p className="mt-2 text-detalle text-bruma">
+        Cada consulta con las recomendaciones que emitió el agente y el
+        estado de cada una.
+      </p>
+
+      {historial.length === 0 ? (
+        <p className="mt-4 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+          Todavía no hay consultas: las que le hagas al agente quedan
+          registradas acá.
+        </p>
+      ) : (
+        <ol className="mt-4 grid gap-4">
+          {historial.map((c) => (
+            <ConsultaDelHistorial key={c.id} consulta={c} />
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function ConsultaDelHistorial({ consulta }: { consulta: ConsultaDetallada }) {
+  return (
+    <li className="border border-bruma/25 bg-roca p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="font-display font-semibold text-sal">
+          «{consulta.mensaje}»
+        </h3>
+        <p className="text-micro text-bruma">
+          {formatoFecha(consulta.creadaEn)}
+        </p>
+      </div>
+      <p className="mt-2 text-detalle text-bruma">
+        {consulta.respuesta ?? "Sin respuesta."}
+      </p>
+      {consulta.recomendaciones.length === 0 ? (
+        <p className="mt-3 text-detalle text-bruma">
+          La consulta no produjo recomendaciones.
+        </p>
+      ) : (
+        <ul className="mt-4 grid gap-4 lg:grid-cols-2">
+          {consulta.recomendaciones.map((r) => (
+            <TarjetaRecomendacion key={r.id} rec={r} />
+          ))}
+        </ul>
+      )}
     </li>
   );
 }

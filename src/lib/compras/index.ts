@@ -320,6 +320,19 @@ export async function listarRecomendacionesPendientes(): Promise<
     .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
 }
 
+/** Las recomendaciones ya decididas por la minera (aprobadas o rechazadas),
+ * detalladas para mostrarlas separadas de la cola de pendientes. Más nueva
+ * primero. */
+export async function listarRecomendacionesDecididas(): Promise<
+  RecomendacionDetallada[]
+> {
+  const t = await tablas();
+  return t.recomendaciones
+    .filter((r) => r.estado !== "pendiente")
+    .map((r) => detallarRecomendacion(r, t))
+    .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
+}
+
 /** La consulta más reciente con sus recomendaciones detalladas; null si la
  * minera todavía no consultó. */
 export async function obtenerUltimaConsulta(): Promise<ConsultaDetallada | null> {
@@ -337,8 +350,12 @@ export async function obtenerUltimaConsulta(): Promise<ConsultaDetallada | null>
   };
 }
 
-/** Historial de consultas con sus recomendaciones, más reciente primero. */
-export async function listarHistorialConsultas(): Promise<Consulta[]> {
+/** Historial de consultas con sus recomendaciones detalladas (insumo,
+ * oferta y proveedor resueltos, para enlazar la ficha), más reciente
+ * primero. */
+export async function listarHistorialConsultas(): Promise<
+  ConsultaDetallada[]
+> {
   const t = await tablas();
   const porConsulta = new Map<string, FilaRecomendacion[]>();
   for (const r of t.recomendaciones) {
@@ -347,7 +364,12 @@ export async function listarHistorialConsultas(): Promise<Consulta[]> {
     porConsulta.set(r.consulta_id, lista);
   }
   return t.consultas
-    .map((c) => mapearConsulta(c, porConsulta.get(c.id) ?? [], t))
+    .map((c) => ({
+      ...mapearConsulta(c, [], t),
+      recomendaciones: (porConsulta.get(c.id) ?? []).map((r) =>
+        detallarRecomendacion(r, t),
+      ),
+    }))
     .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
 }
 
