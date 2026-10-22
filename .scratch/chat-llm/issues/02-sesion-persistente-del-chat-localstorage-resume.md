@@ -8,9 +8,9 @@ Spec: `.scratch/chat-llm/spec.md`. Vocabulario: `GLOSSARY.md`. Leer la guía de 
 
 **Status:** ready-for-agent
 
-- [ ] Después de la primera consulta aceptada, el `sessionId` de eve queda guardado en `localStorage`
-- [ ] Al recargar `/panel`, el chat retoma la sesión guardada y reproduce la conversación anterior
-- [ ] Si un turno quedó en vuelo, el resume lo sigue mostrando
-- [ ] Sin selector ni lista de sesiones: una conversación por navegador
-- [ ] Test E2E con Playwright extendido: enviar consulta → respuesta → recargar `/panel` → la conversación restaurada es visible
-- [ ] `pnpm build`, `pnpm lint` y el test E2E pasan
+- [x] Después de la primera consulta aceptada, el `sessionId` de eve queda guardado en `localStorage`
+- [x] Al recargar `/panel`, el chat retoma la sesión guardada y reproduce la conversación anterior
+- [ ] Si un turno quedó en vuelo, el resume lo sigue mostrando (implementado vía `resume: true`, sin verificación E2E)
+- [x] Sin selector ni lista de sesiones: una conversación por navegador
+- [x] Test E2E con Playwright extendido: enviar consulta → respuesta → recargar `/panel` → la conversación restaurada es visible
+- [x] `pnpm build`, `pnpm lint` y el test E2E pasan
