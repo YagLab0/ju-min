@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ju-min — Consultor inteligente de compras para minería
 
-## Getting Started
+Proyecto de hackathon: un agente inteligente que gestiona las compras de insumos
+de una empresa minera a partir de una red de proveedores verificados.
 
-First, run the development server:
+## Concepto
+
+Las mineras usan el agente como consultor de procurement: monitorea el stock de
+insumos, detecta faltantes, recomienda proveedores de la red verificada y genera
+propuestas de compra que un humano aprueba. El modelo de negocio es por
+suscripción y escala a pagos automáticos al detectar falta de stock.
+
+**Scope de la demo:** los proveedores, insumos y cotizaciones están mockeados.
+No hay transacciones reales — el contacto con proveedores es un botón simulado.
+El foco es el loop del agente: *alerta de stock → consulta → recomendación con
+justificación → aprobación humana*.
+
+## Stack
+
+- Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
+- Tailwind CSS 4
+- Package manager: **pnpm**
+- Datos: mocks en archivos TypeScript (no hay base de datos)
+
+> **Nota:** esta versión de Next.js tiene cambios que rompen convenciones
+> conocidas. Antes de escribir código, leer la guía relevante en
+> `node_modules/next/dist/docs/`. Ver `AGENTS.md`.
+
+## Estructura de la app
+
+| Ruta | Descripción |
+| --- | --- |
+| `/` | Dashboard de la minera: panel de stock con alertas de punto de reorden, chat con el agente, historial de consultas recientes y cola de recomendaciones pendientes. |
+| `/proveedores` | Explorer: catálogo de proveedores verificados filtrable por insumo/categoría, con trust score, ubicación y certificaciones. |
+| `/proveedores/[id]` | Ficha del proveedor: insumos ofrecidos con precio y lead time, historial de entregas, desglose del trust score y botón "Contactar" (mock). |
+| `/consultas` | *(opcional)* Feed completo de consultas al agente con recomendaciones y decisiones tomadas. Si el dashboard queda cargado, se extrae aquí. |
+
+## Modelo de datos (mock)
+
+- **`Proveedor`**: nombre, CUIT, ubicación, certificaciones, trust score, contacto.
+- **`OfertaInsumo`**: insumo ofrecido por un proveedor — precio, unidad, lead time, disponibilidad.
+- **`StockMinera`**: insumo que la minera trackea — cantidad actual, punto de reorden, consumo mensual.
+- **`Consulta`**: mensaje del usuario, respuesta del agente, recomendaciones asociadas, estado (pendiente/aprobada/rechazada), timestamp.
+
+El trust score es una señal calculada sobre datos simulados (historial de
+entregas, certificaciones, CUIT validado, tiempo de respuesta). En la demo se
+presenta como "red verificada".
+
+## Flujo del demo
+
+1. El dashboard muestra una alerta: un insumo está bajo el punto de reorden.
+2. El usuario le pregunta al agente qué hacer (o el agente sugiere proactivamente).
+3. El agente recomienda un proveedor con justificación (precio, lead time, trust score).
+4. El usuario revisa la ficha del proveedor en el explorer y lo contacta.
+5. La recomendación queda registrada como aprobada en el historial.
+
+## Roadmap (pitch)
+
+- Verificación real de proveedores contra registros públicos.
+- Pagos automáticos al detectar falta de stock.
+- Integración con ERPs y facturación electrónica.
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Abrir [http://localhost:3000](http://localhost:3000).
