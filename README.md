@@ -33,10 +33,26 @@ justificación → aprobación humana*.
 
 | Ruta | Descripción |
 | --- | --- |
-| `/` | Landing: presenta el producto con el estante 3D protagonista (stock bajando → alerta → recomendación) y entradas al panel y al explorer. |
+| `/` | Landing: hero con maqueta industrial 3D, widgets en loop de stock, proveedores y recomendación; control humano, preguntas frecuentes y accesos al panel y al explorer. |
 | `/panel` | Panel de la minera: stock con alertas de punto de reorden, consultas al agente, cola de recomendaciones pendientes e historial con las decisiones tomadas. |
 | `/proveedores` | Explorer: catálogo de proveedores verificados filtrable por insumo/categoría, con trust score, ubicación y certificaciones. |
 | `/proveedores/[id]` | Ficha del proveedor: insumos ofrecidos con precio y lead time, historial de entregas, desglose del trust score y botón "Contactar" (mock). |
+
+La landing conserva la paleta mineral (papel, tinta, amarillo señal y cobre).
+Su contenido sigue el pitch del proyecto: proveedores certificados, trust score
+en cinco dimensiones, alertas de stock y recomendaciones con aprobación humana.
+El bloque de alcance recoge las cifras del pitch (277 proveedores, 188 categorías
+y 58 reglas); las integraciones y pagos futuros se presentan aparte como roadmap.
+Las cifras de los widgets son ejemplos ilustrativos, no consultas al stock real.
+Los widgets y la escena tienen controles de pausa y respetan
+`prefers-reduced-motion`; la escena usa un render WebP propio de alta resolución
+si WebGL no está disponible. El modelo tiene geometría biselada, reflejos de
+estudio precalculados y sombras de contacto. El canvas renderiza a 2×, limitado
+a 1,6 megapíxeles, y se pausa fuera de pantalla.
+Si cambia el modelo, actualizar `public/almacen-minero.webp` capturando el canvas
+en la pose de alerta para mantener el respaldo visual sincronizado.
+Los estilos están aislados en CSS Modules, excluidos del loader de Tailwind en
+`next.config.ts` para conservar los exports de clases de Turbopack.
 
 ## Modelo de datos (mock)
 

@@ -1,25 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   INSTANTE_ALERTA,
   createEstanteScene,
   type EstanteScene,
 } from "./estante-escena";
 import { EstanteFallback } from "./estante-fallback";
+import { Button } from "./ui/button";
+import styles from "./estante-3d.module.css";
 
-/**
- * Estante de almacén 3D procedural (three.js, sin GLB): el stock de tambores
- * baja, cruza el punto de reorden, se enciende la alerta y entra la
- * recomendación del agente. three.js se importa dinámicamente cuando la pieza
- * se acerca a la pantalla; con `prefers-reduced-motion` o navegación por
- * teclado queda en una pose fija que igual muestra la alerta; ante pérdida del
- * contexto WebGL queda el SVG de respaldo, que también se muestra hasta que el
- * canvas renderiza.
- */
+/** Maqueta procedural: consumo → alerta → propuesta → aprobación humana → reposición. */
 export function Estante3D() {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [userPaused, setUserPaused] = useState(false);
+  const pausedRef = useRef(false);
+  const updatePlaybackRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -48,6 +45,8 @@ export function Estante3D() {
       failed = true;
       cancelFrame();
       delete host!.dataset.rendered;
+      host!.dataset.phase = "propuesta";
+      host!.style.setProperty("--stock-level", "25%");
       canvas!.removeEventListener("webglcontextlost", contextLost);
       escena?.dispose();
       escena = null;
@@ -67,7 +66,7 @@ export function Estante3D() {
     function tick(time: number) {
       frame = 0;
       if (disposed || failed || !escena) return;
-      if (!visible() || reducedMotion.matches || keyboard) {
+      if (!visible() || reducedMotion.matches || keyboard || pausedRef.current) {
         updateVisibility();
         return;
       }
@@ -81,6 +80,10 @@ export function Estante3D() {
     }
     function updateVisibility() {
       if (!escena || disposed || failed) return;
+      if (pausedRef.current) {
+        cancelFrame();
+        return;
+      }
       if (reducedMotion.matches || keyboard) {
         cancelFrame();
         // Pose fija con la alerta encendida y la recomendación visible.
@@ -135,6 +138,10 @@ export function Estante3D() {
         if (!disposed) fail();
       }
     }
+    updatePlaybackRef.current = () => {
+      keyboard = false;
+      updateVisibility();
+    };
 
     canvas.addEventListener("webglcontextlost", contextLost);
     reducedMotion.addEventListener("change", updateVisibility);
@@ -177,6 +184,7 @@ export function Estante3D() {
 
     return () => {
       disposed = true;
+      updatePlaybackRef.current = null;
       cancelFrame();
       loadObserver?.disconnect();
       viewportObserver?.disconnect();
@@ -193,23 +201,68 @@ export function Estante3D() {
   }, []);
 
   return (
-    <figure className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm">
-      <div className="franja-seguridad h-2" aria-hidden="true" />
-      <div
-        ref={hostRef}
-        className="group relative aspect-[4/3] w-full overflow-hidden"
-        aria-hidden="true"
-      >
-        <EstanteFallback className="absolute inset-0 h-full w-full p-6 group-data-[rendered=true]:invisible" />
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 h-full w-full opacity-0 transition-opacity duration-500 group-data-[rendered=true]:opacity-100"
-        />
+    <figure className={styles.figure}>
+      <div className={styles.topline}>
+        <span className={styles.title}><span aria-hidden="true" /> Operación en movimiento</span>
+        <Button
+          type="button"
+          size="xs"
+          variant="ghost"
+          className={styles.playback}
+          aria-label={userPaused ? "Reanudar escena 3D" : "Pausar escena 3D"}
+          aria-pressed={userPaused}
+          onClick={() => {
+            const paused = !pausedRef.current;
+            pausedRef.current = paused;
+            setUserPaused(paused);
+            updatePlaybackRef.current?.();
+          }}
+        >
+          <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor" aria-hidden="true">
+            {userPaused ? <path d="M3 1.5 10 6l-7 4.5z" /> : <path d="M2 2h3v8H2zm5 0h3v8H7z" />}
+          </svg>
+          {userPaused ? "Reanudar" : "Pausar"}
+        </Button>
       </div>
-      <figcaption className="border-t border-linea px-4 py-3 text-detalle text-piedra">
-        El stock del tambor baja y cruza el punto de reorden: se enciende la
-        alerta y el agente entra con una recomendación de un proveedor
-        verificado.
+      <div ref={hostRef} className={styles.stage} data-phase="propuesta" aria-hidden="true">
+        <div className={styles.coordinate}>ALM–01 <span>/</span> VISTA DEMO</div>
+        <div className={styles.visual}>
+          <EstanteFallback className={styles.fallback} />
+          <canvas ref={canvasRef} className={styles.canvas} />
+        </div>
+        <div className={styles.instrument}>
+          <div className={styles.status}>
+            <span className={styles.statusIcon}>
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="none">
+                <path d="m5 10 3.2 3.2L15 6.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <div>
+              <span className={styles.eyebrow}>SEÑAL → DECISIÓN</span>
+              <strong className={styles.stock}>Stock bajo control</strong>
+              <strong className={styles.alerta}>Punto de reorden detectado</strong>
+              <strong className={styles.propuesta}>Proveedor elegible encontrado</strong>
+              <strong className={styles.aprobado}>Compra aprobada por vos</strong>
+              <strong className={styles.repuesto}>Reposición de insumos</strong>
+              <span className={styles.detailStock}>Monitoreo de insumos críticos</span>
+              <span className={styles.detailAlert}>El agente prepara una recomendación</span>
+              <span className={styles.detailProposal}>Certificaciones al día · Trust score 92</span>
+              <span className={styles.detailApproved}>Decisión humana, siempre</span>
+              <span className={styles.detailRestocked}>El almacén vuelve a estar listo</span>
+            </div>
+          </div>
+          <div className={styles.level}>
+            <span>STOCK</span>
+            <div><i /></div>
+            <small>Lubricante · 200 L</small>
+          </div>
+        </div>
+      </div>
+      <figcaption className="sr-only">
+        Demostración de un almacén minero en miniatura, con estanterías, tambores,
+        casco y mineral en un pallet. El stock baja, activa una alerta de reorden
+        y genera una recomendación de proveedor certificado. Una persona aprueba
+        la compra antes de la reposición. La secuencia se repite.
       </figcaption>
     </figure>
   );
