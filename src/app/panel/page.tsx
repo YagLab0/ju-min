@@ -28,59 +28,50 @@ export const metadata: Metadata = {
 
 export default function Panel() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-14">
-      <h1 className="font-display text-display font-bold text-sal">
+    <div className="mx-auto w-full max-w-7xl px-5 py-10">
+      <h1 className="font-display text-display font-bold tracking-tight text-tinta">
         Panel de la minera
       </h1>
-      <p className="mt-4 max-w-2xl text-subtitulo text-bruma">
+      <p className="mt-3 max-w-2xl text-subtitulo text-piedra">
         La vista de trabajo de la minera: qué insumos hay que reponer, qué
         recomienda el agente y qué decisiones quedan pendientes.
       </p>
       <Suspense
-        fallback={
-          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
-            Cargando el stock de la minera…
-          </p>
-        }
+        fallback={<PanelCargando texto="Cargando el stock de la minera…" />}
       >
         <PanelAlertas />
       </Suspense>
 
-      <div className="mt-10 grid items-start gap-6 lg:grid-cols-2">
-        <Suspense
-          fallback={
-            <PanelCargando texto="Cargando el espacio de consultas…" />
-          }
-        >
-          <SeccionAgente />
-        </Suspense>
-        <Suspense
-          fallback={
-            <PanelCargando texto="Cargando la cola de pendientes…" />
-          }
-        >
-          <ColaPendientes />
-        </Suspense>
+      {/* El chat con el agente es el centro de la pantalla: todo lo demás
+          (alertas, consulta guionada, cola de decisiones, historial) orbita
+          alrededor en columnas laterales y secciones compactas. */}
+      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,23rem)]">
+        <div className="min-w-0 space-y-6">
+          <ChatAgente />
+          <Suspense
+            fallback={
+              <PanelCargando texto="Cargando el historial de consultas…" />
+            }
+          >
+            <HistorialConsultas />
+          </Suspense>
+        </div>
+        <aside className="min-w-0 space-y-6">
+          <Suspense
+            fallback={<PanelCargando texto="Cargando el espacio de consultas…" />}
+          >
+            <SeccionAgente />
+          </Suspense>
+          <Suspense
+            fallback={<PanelCargando texto="Cargando la cola de pendientes…" />}
+          >
+            <ColaPendientes />
+          </Suspense>
+        </aside>
       </div>
 
-      <ChatAgente />
-
       <Suspense
-        fallback={
-          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
-            Cargando el historial de consultas…
-          </p>
-        }
-      >
-        <HistorialConsultas />
-      </Suspense>
-
-      <Suspense
-        fallback={
-          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
-            Cargando el detalle del stock…
-          </p>
-        }
+        fallback={<PanelCargando texto="Cargando el detalle del stock…" />}
       >
         <TablaStock />
       </Suspense>
@@ -92,16 +83,17 @@ function ChatAgente() {
   return (
     <section
       aria-labelledby="chat-agente"
-      className="mt-10 border border-bruma/25 bg-roca"
+      className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm"
     >
-      <div className="border-b border-bruma/25 p-5">
+      <div className="franja-seguridad h-1.5" aria-hidden="true" />
+      <div className="border-b border-linea px-5 py-4">
         <h2
           id="chat-agente"
-          className="font-display text-titulo font-semibold text-sal"
+          className="font-display text-subtitulo font-semibold text-tinta"
         >
           Conversar con el agente
         </h2>
-        <p className="mt-2 text-detalle text-bruma">
+        <p className="mt-1 text-detalle text-piedra">
           Chat con el agente eve para preguntas abiertas sobre compras. La
           conversación se retoma al recargar la página.
         </p>
@@ -115,8 +107,8 @@ function ChatAgente() {
 
 function PanelCargando({ texto }: { texto: string }) {
   return (
-    <section className="border border-bruma/25 bg-roca p-5">
-      <p className="text-detalle text-bruma">{texto}</p>
+    <section className="rounded-2xl border border-linea bg-ficha p-5">
+      <p className="text-detalle text-piedra">{texto}</p>
     </section>
   );
 }
@@ -181,7 +173,7 @@ async function PanelAlertas() {
 
   return (
     <>
-      <p className="mt-6 text-detalle text-bruma">
+      <p className="mt-5 text-detalle text-piedra">
         {minera.nombre}
         {minera.ubicacion && ` · ${minera.ubicacion}`}
       </p>
@@ -193,20 +185,22 @@ async function PanelAlertas() {
 
 function SeccionAlertas({ alertas }: { alertas: StockInsumo[] }) {
   return (
-    <section aria-labelledby="alertas-reorden" className="mt-8">
-      <div className="border border-senal/60 bg-roca">
+    <section aria-labelledby="alertas-reorden" className="mt-6">
+      <div className="overflow-hidden rounded-2xl border border-senal/70 bg-ficha shadow-sm">
         <div className="franja-seguridad h-1.5" aria-hidden="true" />
         <div className="p-5">
           <h2
             id="alertas-reorden"
-            className="font-display text-titulo font-semibold text-sal"
+            className="font-display text-subtitulo font-semibold text-tinta"
           >
             {alertas.length === 1
               ? "1 insumo por debajo del punto de reorden"
               : `${alertas.length} insumos por debajo del punto de reorden`}
           </h2>
           <ul
-            className={`mt-4 grid gap-4 ${alertas.length > 1 ? "sm:grid-cols-2" : ""}`}
+            className={`mt-4 grid gap-4 ${
+              alertas.length > 1 ? "sm:grid-cols-2" : ""
+            }`}
           >
             {alertas.map((s) => (
               <TarjetaAlerta key={s.insumo.id} item={s} />
@@ -240,40 +234,43 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
   );
 
   return (
-    <li className="border border-bruma/25 bg-grafito p-4">
+    <li className="rounded-xl border border-linea bg-papel p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <IconoAlerta className="h-4 w-4 shrink-0 text-senal" />
-            <h3 className="font-display font-semibold text-sal">
+            <IconoAlerta className="h-4 w-4 shrink-0 text-cobre" />
+            <h3 className="font-display font-semibold text-tinta">
               {s.insumo.nombre}
             </h3>
           </div>
           {s.insumo.especificacion && (
-            <p className="mt-0.5 text-micro text-bruma">
+            <p className="mt-0.5 text-micro text-piedra">
               {s.insumo.especificacion}
             </p>
           )}
         </div>
-        <span className="shrink-0 bg-senal px-1.5 py-0.5 text-micro font-semibold text-grafito">
+        <span className="shrink-0 rounded-md bg-senal px-1.5 py-0.5 text-micro font-semibold text-tinta">
           En alerta
         </span>
       </div>
 
       <div
-        className="mt-3 h-1.5 bg-bruma/20"
+        className="mt-3 h-1.5 rounded-full bg-linea"
         role="img"
         aria-label={`Stock al ${porcentaje}% del punto de reorden`}
       >
-        <div className="h-1.5 bg-senal" style={{ width: `${porcentaje}%` }} />
+        <div
+          className="h-1.5 rounded-full bg-senal"
+          style={{ width: `${porcentaje}%` }}
+        />
       </div>
 
-      <p className="mt-3 text-detalle text-sal">
+      <p className="mt-3 text-detalle text-tinta">
         {formatoCantidad(s.cantidadActual, s.insumo.unidad)} en stock · faltan{" "}
         {formatoCantidad(faltante, s.insumo.unidad)} para el punto de reorden (
         {formatoNumero(s.puntoReorden)})
       </p>
-      <p className="mt-1 text-detalle text-bruma">
+      <p className="mt-1 text-detalle text-piedra">
         {s.diasRestantes === null
           ? "Sin consumo registrado para estimar días restantes"
           : `≈ ${s.diasRestantes} días de stock al consumo actual`}
@@ -290,7 +287,7 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
         />
         <button
           type="submit"
-          className="bg-senal px-4 py-2 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+          className="rounded-lg bg-senal px-4 py-2 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
         >
           Consultar al agente
         </button>
@@ -308,15 +305,15 @@ async function SeccionAgente() {
   return (
     <section
       aria-labelledby="consultas-agente"
-      className="border border-bruma/25 bg-roca p-5"
+      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
     >
       <h2
         id="consultas-agente"
-        className="font-display text-titulo font-semibold text-sal"
+        className="font-display text-subtitulo font-semibold text-tinta"
       >
         Consultas al agente
       </h2>
-      <p className="mt-2 text-detalle text-bruma">
+      <p className="mt-1.5 text-detalle text-piedra">
         Preguntale al agente en texto libre, o usá «Consultar al agente» en
         una alerta para salir con el insumo ya cargado.
       </p>
@@ -324,11 +321,11 @@ async function SeccionAgente() {
       <form action={consultarAlAgenteDesdePanel} className="mt-4">
         <label
           htmlFor="mensaje"
-          className="text-detalle font-semibold text-sal"
+          className="text-detalle font-semibold text-tinta"
         >
           Consulta libre
         </label>
-        <div className="mt-1.5 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-1.5 flex flex-col gap-2">
           <input
             id="mensaje"
             name="mensaje"
@@ -336,11 +333,11 @@ async function SeccionAgente() {
             required
             autoComplete="off"
             placeholder="Ej.: ¿quién me entrega guantes más rápido?"
-            className="w-full border border-bruma/40 bg-grafito px-3 py-2 text-cuerpo text-sal placeholder:text-bruma/60"
+            className="w-full rounded-lg border border-linea bg-papel px-3 py-2 text-cuerpo text-tinta placeholder:text-piedra/60"
           />
           <button
             type="submit"
-            className="shrink-0 bg-senal px-5 py-2 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+            className="self-start rounded-lg bg-senal px-5 py-2 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
           >
             Consultar
           </button>
@@ -356,24 +353,24 @@ function UltimaRespuesta({ consulta }: { consulta: ConsultaDetallada }) {
   return (
     <article
       aria-label="Última respuesta del agente"
-      className="mt-6 border border-bruma/25 bg-grafito p-4"
+      className="mt-5 rounded-xl border border-linea bg-papel p-4"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-display font-semibold text-sal">
+        <h3 className="font-display font-semibold text-tinta">
           Última respuesta del agente
         </h3>
-        <p className="text-micro text-bruma">
+        <p className="text-micro text-piedra">
           {formatoFecha(consulta.creadaEn)}
         </p>
       </div>
-      <p className="mt-2 text-detalle text-bruma">
+      <p className="mt-2 text-detalle text-piedra">
         Consulta: «{consulta.mensaje}»
       </p>
-      <p className="mt-2 text-cuerpo text-sal">
+      <p className="mt-2 text-cuerpo text-tinta">
         {consulta.respuesta ?? "Sin respuesta."}
       </p>
       {consulta.recomendaciones.length === 0 ? (
-        <p className="mt-3 text-detalle text-bruma">
+        <p className="mt-3 text-detalle text-piedra">
           La consulta no produjo recomendaciones.
         </p>
       ) : (
@@ -399,28 +396,28 @@ async function ColaPendientes() {
   return (
     <section
       aria-labelledby="cola-pendientes"
-      className="border border-bruma/25 bg-roca p-5"
+      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2
           id="cola-pendientes"
-          className="font-display text-titulo font-semibold text-sal"
+          className="font-display text-subtitulo font-semibold text-tinta"
         >
           Recomendaciones pendientes
         </h2>
-        <p className="text-detalle text-bruma" role="status">
+        <p className="text-detalle text-piedra" role="status">
           {pendientes.length === 1
             ? "1 pendiente"
             : `${pendientes.length} pendientes`}
         </p>
       </div>
-      <p className="mt-2 text-detalle text-bruma">
+      <p className="mt-1.5 text-detalle text-piedra">
         Las recomendaciones nuevas del agente entran a esta cola para que la
         minera las revise. Al aprobarlas o rechazarlas pasan a «Decididas».
       </p>
 
       {pendientes.length === 0 ? (
-        <p className="mt-4 border border-bruma/25 bg-grafito p-4 text-detalle text-bruma">
+        <p className="mt-4 rounded-xl border border-linea bg-papel p-4 text-detalle text-piedra">
           No hay recomendaciones pendientes: las que emita el agente
           aparecen acá.
         </p>
@@ -433,8 +430,8 @@ async function ColaPendientes() {
       )}
 
       {decididas.length > 0 && (
-        <div className="mt-6 border-t border-bruma/25 pt-4">
-          <h3 className="font-display text-detalle font-semibold text-bruma">
+        <div className="mt-6 border-t border-linea pt-4">
+          <h3 className="font-display text-detalle font-semibold text-piedra">
             Decididas
           </h3>
           <ul className="mt-3 grid gap-4">
@@ -457,9 +454,9 @@ const ETIQUETA_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
 };
 
 const ESTILO_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
-  pendiente: "bg-senal text-grafito",
-  aprobada: "border border-sal/50 text-sal",
-  rechazada: "border border-bruma/40 text-bruma",
+  pendiente: "bg-senal text-tinta",
+  aprobada: "border border-tinta/40 text-tinta",
+  rechazada: "border border-linea text-piedra",
 };
 
 function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
@@ -467,31 +464,31 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
   const oferta = rec.oferta;
 
   return (
-    <li className="border border-bruma/25 bg-grafito p-4">
+    <li className="rounded-xl border border-linea bg-papel p-4">
       <div className="flex items-start justify-between gap-4">
-        <h3 className="font-display font-semibold text-sal">
+        <h3 className="font-display font-semibold text-tinta">
           {rec.insumo?.nombre ?? "Insumo"}
         </h3>
         <span
-          className={`shrink-0 px-1.5 py-0.5 text-micro font-semibold ${ESTILO_ESTADO[rec.estado]}`}
+          className={`shrink-0 rounded-md px-1.5 py-0.5 text-micro font-semibold ${ESTILO_ESTADO[rec.estado]}`}
         >
           {ETIQUETA_ESTADO[rec.estado]}
         </span>
       </div>
 
       {proveedor && (
-        <p className="mt-1 text-detalle text-bruma">
+        <p className="mt-1 text-detalle text-piedra">
           {/* Cada recomendación enlaza a la ficha del proveedor verificado
               para revisarlo antes de decidir. */}
           <Link
             href={`/proveedores/${proveedor.id}`}
-            className="font-semibold text-sal underline decoration-bruma/50 underline-offset-2 transition-colors hover:text-senal hover:decoration-senal"
+            className="font-semibold text-cobre underline decoration-cobre/40 underline-offset-2 transition-colors hover:text-tinta hover:decoration-tinta"
           >
             {proveedor.nombreFantasia ?? proveedor.razonSocial}
           </Link>
           {proveedor.nombreFantasia && ` · ${proveedor.razonSocial}`}
           {proveedor.estado === "homologado" && (
-            <span className="ml-2 border border-cobre/50 px-1.5 py-0.5 text-micro text-sal">
+            <span className="ml-2 rounded-md border border-cobre/50 px-1.5 py-0.5 text-micro text-cobre">
               homologado
             </span>
           )}
@@ -501,32 +498,32 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
       {oferta && proveedor && (
         <dl className="mt-3 grid grid-cols-3 gap-3 text-detalle">
           <div>
-            <dt className="text-micro text-bruma">Precio</dt>
-            <dd className="font-display font-semibold text-sal">
+            <dt className="text-micro text-piedra">Precio</dt>
+            <dd className="font-display font-semibold text-tinta">
               {formatoPrecio(oferta)}
-              <span className="block text-micro font-normal text-bruma">
+              <span className="block text-micro font-normal text-piedra">
                 por {rec.insumo?.unidad}
               </span>
             </dd>
           </div>
           <div>
-            <dt className="text-micro text-bruma">Lead time</dt>
-            <dd className="font-display font-semibold text-sal">
+            <dt className="text-micro text-piedra">Lead time</dt>
+            <dd className="font-display font-semibold text-tinta">
               {formatoLead(oferta)}
             </dd>
           </div>
           <div>
-            <dt className="text-micro text-bruma">Trust score</dt>
-            <dd className="font-display font-semibold text-sal">
+            <dt className="text-micro text-piedra">Trust score</dt>
+            <dd className="font-display font-semibold text-tinta">
               {Math.round(proveedor.trustScore.valor)}
-              <span className="text-micro font-normal text-bruma">/100</span>
+              <span className="text-micro font-normal text-piedra">/100</span>
             </dd>
           </div>
         </dl>
       )}
 
-      <p className="mt-3 text-detalle text-sal">{rec.justificacion}</p>
-      <p className="mt-2 text-micro text-bruma">
+      <p className="mt-3 text-detalle text-tinta">{rec.justificacion}</p>
+      <p className="mt-2 text-micro text-piedra">
         {formatoFecha(rec.creadaEn)}
       </p>
 
@@ -543,7 +540,7 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
             type="submit"
             name="decision"
             value="aprobada"
-            className="bg-senal px-4 py-2 font-display text-detalle font-semibold text-grafito transition-colors hover:bg-sal"
+            className="rounded-lg bg-senal px-4 py-2 font-display text-detalle font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
           >
             Aprobar
           </button>
@@ -551,7 +548,7 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
             type="submit"
             name="decision"
             value="rechazada"
-            className="border border-bruma/40 px-4 py-2 font-display text-detalle font-semibold text-bruma transition-colors hover:border-sal hover:text-sal"
+            className="rounded-lg border border-linea px-4 py-2 font-display text-detalle font-semibold text-piedra transition-colors hover:border-tinta hover:text-tinta"
           >
             Rechazar
           </button>
@@ -568,25 +565,33 @@ async function HistorialConsultas() {
   const historial = await listarHistorialConsultas();
 
   return (
-    <section aria-labelledby="historial-consultas" className="mt-10">
-      <h2
-        id="historial-consultas"
-        className="font-display text-titulo font-semibold text-sal"
-      >
-        Historial de consultas
-      </h2>
-      <p className="mt-2 text-detalle text-bruma">
-        Cada consulta con las recomendaciones que emitió el agente y el
-        estado de cada una.
-      </p>
+    <section
+      aria-labelledby="historial-consultas"
+      className="rounded-2xl border border-linea bg-ficha shadow-sm"
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-linea px-5 py-4">
+        <h2
+          id="historial-consultas"
+          className="font-display text-subtitulo font-semibold text-tinta"
+        >
+          Historial de consultas
+        </h2>
+        <p className="text-detalle text-piedra" role="status">
+          {historial.length === 1
+            ? "1 consulta registrada"
+            : `${historial.length} consultas registradas`}
+        </p>
+      </div>
 
       {historial.length === 0 ? (
-        <p className="mt-4 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+        <p className="p-5 text-detalle text-piedra">
           Todavía no hay consultas: las que le hagas al agente quedan
           registradas acá.
         </p>
       ) : (
-        <ol className="mt-4 grid gap-4">
+        /* Timeline compacto con scroll propio: cada consulta es una línea
+           con sus recomendaciones resumidas, no una tarjeta gigante. */
+        <ol className="max-h-[26rem] overflow-y-auto px-5 py-2">
           {historial.map((c) => (
             <ConsultaDelHistorial key={c.id} consulta={c} />
           ))}
@@ -598,29 +603,58 @@ async function HistorialConsultas() {
 
 function ConsultaDelHistorial({ consulta }: { consulta: ConsultaDetallada }) {
   return (
-    <li className="border border-bruma/25 bg-roca p-5">
+    <li className="relative border-b border-linea py-4 pl-6 last:border-b-0">
+      {/* Punto de la línea de tiempo */}
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-[1.35rem] h-2.5 w-2.5 rounded-full border-2 border-senal bg-ficha"
+      />
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-display font-semibold text-sal">
+        <h3 className="font-display text-detalle font-semibold text-tinta">
           «{consulta.mensaje}»
         </h3>
-        <p className="text-micro text-bruma">
+        <p className="text-micro text-piedra">
           {formatoFecha(consulta.creadaEn)}
         </p>
       </div>
-      <p className="mt-2 text-detalle text-bruma">
+      <p className="mt-1 line-clamp-2 text-detalle text-piedra">
         {consulta.respuesta ?? "Sin respuesta."}
       </p>
       {consulta.recomendaciones.length === 0 ? (
-        <p className="mt-3 text-detalle text-bruma">
+        <p className="mt-1.5 text-micro text-piedra">
           La consulta no produjo recomendaciones.
         </p>
       ) : (
-        <ul className="mt-4 grid gap-4 lg:grid-cols-2">
+        <ul className="mt-2 flex flex-wrap gap-2">
           {consulta.recomendaciones.map((r) => (
-            <TarjetaRecomendacion key={r.id} rec={r} />
+            <RecomendacionCompacta key={r.id} rec={r} />
           ))}
         </ul>
       )}
+    </li>
+  );
+}
+
+function RecomendacionCompacta({ rec }: { rec: RecomendacionDetallada }) {
+  const proveedor = rec.proveedor;
+  return (
+    <li className="flex items-center gap-2 rounded-lg border border-linea bg-papel px-2.5 py-1.5 text-micro">
+      <span className="font-semibold text-tinta">
+        {rec.insumo?.nombre ?? "Insumo"}
+      </span>
+      {proveedor && (
+        <Link
+          href={`/proveedores/${proveedor.id}`}
+          className="text-cobre underline decoration-cobre/40 underline-offset-2 transition-colors hover:text-tinta"
+        >
+          {proveedor.nombreFantasia ?? proveedor.razonSocial}
+        </Link>
+      )}
+      <span
+        className={`rounded px-1.5 py-0.5 font-semibold ${ESTILO_ESTADO[rec.estado]}`}
+      >
+        {ETIQUETA_ESTADO[rec.estado]}
+      </span>
     </li>
   );
 }
@@ -633,23 +667,23 @@ async function TablaStock() {
   const alertas = stock.filter((s) => s.estado === "alerta");
 
   return (
-    <section aria-labelledby="stock-insumos" className="mt-10">
+    <section aria-labelledby="stock-insumos" className="mt-8">
       <div className="flex items-baseline justify-between gap-4">
         <h2
           id="stock-insumos"
-          className="font-display text-titulo font-semibold text-sal"
+          className="font-display text-subtitulo font-semibold text-tinta"
         >
           Stock de insumos
         </h2>
-        <p className="text-detalle text-bruma" role="status">
+        <p className="text-detalle text-piedra" role="status">
           {stock.length} {stock.length === 1 ? "insumo" : "insumos"} ·{" "}
           {alertas.length} en alerta
         </p>
       </div>
-      <div className="mt-4 overflow-x-auto border border-bruma/25 bg-roca">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-linea bg-ficha shadow-sm">
         <table className="w-full min-w-[40rem] text-left text-detalle">
           <thead>
-            <tr className="border-b border-bruma/25 text-micro text-bruma">
+            <tr className="border-b border-linea text-micro text-piedra">
               <th scope="col" className="px-5 py-3 font-semibold">
                 Insumo
               </th>
@@ -684,41 +718,41 @@ async function TablaStock() {
 function FilaStock({ item: s }: { item: StockInsumo }) {
   const enAlerta = s.estado === "alerta";
   return (
-    <tr className="border-b border-bruma/15 last:border-0">
+    <tr className="border-b border-linea last:border-0">
       <th scope="row" className="px-5 py-3 font-normal">
-        <span className="font-semibold text-sal">{s.insumo.nombre}</span>
+        <span className="font-semibold text-tinta">{s.insumo.nombre}</span>
         {s.insumo.especificacion && (
-          <span className="block text-micro text-bruma">
+          <span className="block text-micro text-piedra">
             {s.insumo.especificacion}
           </span>
         )}
       </th>
-      <td className="px-5 py-3 text-sal">
+      <td className="px-5 py-3 text-tinta">
         {formatoCantidad(s.cantidadActual, s.insumo.unidad)}
       </td>
-      <td className="px-5 py-3 text-bruma">
+      <td className="px-5 py-3 text-piedra">
         {formatoCantidad(s.puntoReorden, s.insumo.unidad)}
       </td>
-      <td className="px-5 py-3 text-bruma">
+      <td className="px-5 py-3 text-piedra">
         {s.consumoMensual === null
           ? "—"
           : formatoCantidad(s.consumoMensual, s.insumo.unidad)}
       </td>
       <td className="px-5 py-3">
         <span
-          className={`font-display font-semibold ${enAlerta ? "text-senal" : "text-sal"}`}
+          className={`font-display font-semibold ${enAlerta ? "text-cobre" : "text-tinta"}`}
         >
           {formatoDias(s.diasRestantes)}
         </span>
       </td>
       <td className="px-5 py-3">
         {enAlerta ? (
-          <span className="inline-flex items-center gap-1.5 bg-senal px-1.5 py-0.5 text-micro font-semibold text-grafito">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-senal px-1.5 py-0.5 text-micro font-semibold text-tinta">
             <IconoAlerta className="h-3 w-3" />
             En alerta
           </span>
         ) : (
-          <span className="text-bruma">Normal</span>
+          <span className="text-piedra">Normal</span>
         )}
       </td>
     </tr>

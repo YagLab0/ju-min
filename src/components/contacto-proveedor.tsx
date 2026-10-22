@@ -83,7 +83,7 @@ export function BotonContactoProveedor({
         type="button"
         onClick={() => setAbierto(true)}
         aria-haspopup="dialog"
-        className="bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+        className="rounded-lg bg-senal px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
       >
         Contactar al proveedor
       </button>
@@ -91,7 +91,7 @@ export function BotonContactoProveedor({
         createPortal(
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="absolute inset-0 bg-grafito/80"
+              className="absolute inset-0 bg-tinta/50"
               aria-hidden="true"
               onClick={cerrar}
             />
@@ -100,7 +100,7 @@ export function BotonContactoProveedor({
               role="dialog"
               aria-modal="true"
               aria-labelledby="contacto-titulo"
-              className="relative w-full max-w-md border border-bruma/25 bg-roca"
+              className="relative w-full max-w-md rounded-2xl border border-linea bg-ficha shadow-xl"
             >
               <div className="franja-seguridad h-1.5" aria-hidden="true" />
               <div className="p-5">
@@ -108,11 +108,11 @@ export function BotonContactoProveedor({
                   <div role="status">
                     <h2
                       id="contacto-titulo"
-                      className="font-display text-subtitulo font-semibold text-sal"
+                      className="font-display text-subtitulo font-semibold text-tinta"
                     >
                       Contacto registrado
                     </h2>
-                    <p className="mt-2 text-detalle text-bruma">
+                    <p className="mt-2 text-detalle text-piedra">
                       Tu pedido de contacto con {nombreProveedor} quedó
                       registrado. Esto es una simulación del demo: no se envió
                       ningún mensaje.
@@ -120,7 +120,7 @@ export function BotonContactoProveedor({
                     <button
                       type="button"
                       onClick={cerrar}
-                      className="mt-5 bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+                      className="mt-5 rounded-lg bg-senal px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
                     >
                       Cerrar
                     </button>
@@ -129,11 +129,11 @@ export function BotonContactoProveedor({
                   <>
                     <h2
                       id="contacto-titulo"
-                      className="font-display text-subtitulo font-semibold text-sal"
+                      className="font-display text-subtitulo font-semibold text-tinta"
                     >
                       Contactar a {nombreProveedor}
                     </h2>
-                    <p className="mt-2 text-detalle text-bruma">
+                    <p className="mt-2 text-detalle text-piedra">
                       En el demo el contacto es simulado: al confirmar no se
                       envía ningún mensaje al proveedor.
                     </p>
@@ -141,14 +141,14 @@ export function BotonContactoProveedor({
                       <dl className="mt-4 space-y-1 text-detalle">
                         {email && (
                           <div className="flex gap-2">
-                            <dt className="text-bruma">Email</dt>
-                            <dd className="text-sal">{email}</dd>
+                            <dt className="text-piedra">Email</dt>
+                            <dd className="text-tinta">{email}</dd>
                           </div>
                         )}
                         {telefono && (
                           <div className="flex gap-2">
-                            <dt className="text-bruma">Teléfono</dt>
-                            <dd className="text-sal">{telefono}</dd>
+                            <dt className="text-piedra">Teléfono</dt>
+                            <dd className="text-tinta">{telefono}</dd>
                           </div>
                         )}
                       </dl>
@@ -157,14 +157,14 @@ export function BotonContactoProveedor({
                       <button
                         type="button"
                         onClick={() => setConfirmado(true)}
-                        className="bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+                        className="rounded-lg bg-senal px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
                       >
                         Confirmar contacto
                       </button>
                       <button
                         type="button"
                         onClick={cerrar}
-                        className="border border-bruma/40 px-5 py-2.5 font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+                        className="rounded-lg border border-linea px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
                       >
                         Cancelar
                       </button>

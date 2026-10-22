@@ -7,11 +7,11 @@ export default function Landing() {
       {/* Hero: qué hace ju-min en una frase + la zona del estante 3D */}
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-2 lg:items-center">
         <div className="max-w-xl">
-          <h1 className="font-display text-display font-bold text-sal">
+          <h1 className="font-display text-display font-bold tracking-tight text-tinta">
             Cuando un insumo cruza el punto de reorden, ju-min ya sabe a quién
             comprarle.
           </h1>
-          <p className="mt-5 text-subtitulo text-bruma">
+          <p className="mt-5 text-subtitulo text-piedra">
             Un agente que monitorea el stock de la minera, avisa cuando un
             insumo entra en alerta y recomienda ofertas de proveedores
             verificados, con justificación.
@@ -19,13 +19,13 @@ export default function Landing() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/panel"
-              className="bg-senal px-6 py-3 text-center font-display font-semibold text-grafito transition-colors hover:bg-sal"
+              className="rounded-lg bg-senal px-6 py-3 text-center font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
             >
               Abrir el panel de la minera
             </Link>
             <Link
               href="/proveedores"
-              className="border border-bruma/40 px-6 py-3 text-center font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+              className="rounded-lg border border-linea bg-ficha px-6 py-3 text-center font-display font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
             >
               Ver proveedores verificados
             </Link>
@@ -38,9 +38,9 @@ export default function Landing() {
       </section>
 
       {/* El flujo de ju-min, en la secuencia real del demo */}
-      <section className="border-t border-bruma/25">
+      <section className="border-t border-linea bg-ficha">
         <div className="mx-auto w-full max-w-6xl px-5 py-14">
-          <h2 className="font-display text-titulo font-bold text-sal">
+          <h2 className="font-display text-titulo font-bold text-tinta">
             Cómo trabaja
           </h2>
           <ol className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -70,17 +70,20 @@ export default function Landing() {
                   "La minera aprueba o rechaza; todo queda en el historial.",
               },
             ].map(({ paso, titulo, texto }) => (
-              <li key={paso} className="border border-bruma/25 bg-roca p-5">
+              <li
+                key={paso}
+                className="rounded-xl border border-linea bg-papel p-5"
+              >
                 <span
                   aria-hidden="true"
                   className="font-display text-titulo font-bold text-cobre"
                 >
                   {paso}
                 </span>
-                <h3 className="mt-2 font-display font-semibold text-sal">
+                <h3 className="mt-2 font-display font-semibold text-tinta">
                   {titulo}
                 </h3>
-                <p className="mt-1 text-detalle text-bruma">{texto}</p>
+                <p className="mt-1 text-detalle text-piedra">{texto}</p>
               </li>
             ))}
           </ol>
@@ -88,13 +91,13 @@ export default function Landing() {
       </section>
 
       {/* De dónde salen los proveedores y cómo es el negocio */}
-      <section className="border-t border-bruma/25">
+      <section className="border-t border-linea">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2">
           <div>
-            <h2 className="font-display text-titulo font-bold text-sal">
+            <h2 className="font-display text-titulo font-bold text-tinta">
               Proveedores verificados
             </h2>
-            <p className="mt-4 text-cuerpo text-bruma">
+            <p className="mt-4 text-cuerpo text-piedra">
               La red se arma desde el Registro Provincial de Proveedores
               Mineros de Jujuy y las cámaras del sector (CAPMIN, CAEM). Cada
               proveedor verificado tiene un trust score calculado sobre su
@@ -102,23 +105,23 @@ export default function Landing() {
             </p>
             <Link
               href="/proveedores"
-              className="mt-5 inline-block border border-bruma/40 px-5 py-2.5 font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+              className="mt-5 inline-block rounded-lg border border-linea bg-ficha px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
             >
               Explorar la red de proveedores
             </Link>
           </div>
           <div>
-            <h2 className="font-display text-titulo font-bold text-sal">
+            <h2 className="font-display text-titulo font-bold text-tinta">
               Suscripción y roadmap
             </h2>
-            <p className="mt-4 text-cuerpo text-bruma">
+            <p className="mt-4 text-cuerpo text-piedra">
               ju-min funciona por suscripción para la minera. El siguiente
               paso del roadmap son los pagos automáticos al detectar falta de
               stock, siempre con aprobación humana previa.
             </p>
             <Link
               href="/panel"
-              className="mt-5 inline-block bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+              className="mt-5 inline-block rounded-lg bg-senal px-5 py-2.5 font-display font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
             >
               Probar el panel de la minera
             </Link>

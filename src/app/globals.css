@@ -1,42 +1,41 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@heroui/styles/base" layer(base);
+@import "@heroui/styles/components/index.css" layer(components);
+@import "@heroui/styles/themes/default" layer(theme);
+@import "@heroui/styles/utilities";
+@import "@heroui/styles/variants";
 @import "shadcn/tailwind.css";
 @import "tw-shimmer";
 
 /*
  * Plan de tokens — ju-min · identidad de seguridad industrial minera
  * ------------------------------------------------------------------
- * Dirección: grafito oscuro de casco, amarillo de señalización como
- * único acento de acción/alerta y tonos minerales de la Puna
- * (cobre, sal). El amarillo se reserva para affordances y estados
- * de alerta (punto de reorden): como la señalización real, lleva
- * texto grafito encima, no texto amarillo sobre fondo oscuro.
+ * Rediseño a tema light inspirado en la landing de julit (superficies
+ * blancas, bordes hairline, texto tinta, esquinas suaves) sin copiar su
+ * marca: la identidad de ju-min sigue siendo la señalización minera —
+ * amarillo de señal como acento de acción/alerta y cobre de la Puna
+ * como acento secundario, sobre neutros minerales cálidos.
  *
  * Revisión contra los defaults genéricos de frontend-design:
- * - NO es crema + terracota: la base es grafito oscuro; el cobre es
- *   acento secundario dictado por "minerales de la Puna" del brief.
- * - NO es negro puro + verde ácido: el grafito tiene temperatura
- *   mineral y el amarillo es el amarillo de señalización del brief.
- * - NO es el kit SaaS: esquinas rectas, bordes hairline, cero sombras
- *   suaves, cero gradientes decorativos, cero eyebrows en versalitas.
- * - NO hay etiquetas en monospace ni flechas "→" en botones.
- * - La franja diagonal de seguridad (hazard stripe) es el único gesto
- *   memorable: se usa con moderación, donde hay alerta o zona 3D.
+ * - NO es el gris azulado SaaS: los neutros son cálidos (papel, piedra).
+ * - NO es crema + terracota: el fondo es papel mineral; el cobre y el
+ *   amarillo de señalización vienen del brief de minería.
+ * - La franja diagonal de seguridad (hazard stripe) sigue siendo el único
+ *   gesto memorable: alerta de reorden, zonas 3D, casco del login.
  *
- * Paleta (6 colores con nombre; :root emite --color-* para que la
- * pieza 3D lea los colores desde CSS con getComputedStyle):
+ * Paleta (7 colores con nombre; :root emite --color-* para Tailwind):
  *
- *   grafito #1F1C18  fondo base — carbón cálido, no negro puro
- *   roca    #2C2822  superficie elevada (paneles, header, chips)
- *   sal     #ECE6D8  texto principal — blanco de salar (~13:1)
- *   bruma   #A79D8B  texto secundario, iconos, bordes (~6.5:1)
- *   senal   #F5B301  amarillo de señalización: CTA, alerta, foco
- *   cobre   #C07A4E  acento mineral — bordes, datos, detalles grandes
- *                    (~4.1:1: no usar en texto pequeño crítico)
+ *   papel  #F8F6F1  fondo base — papel mineral cálido
+ *   ficha  #FFFFFF  superficie elevada (tarjetas, paneles, overlays)
+ *   tinta  #29241C  texto principal — negro cálido (~13:1 sobre papel)
+ *   piedra #6F675B  texto secundario, iconos (~4.7:1)
+ *   linea  #E7E2D6  bordes hairline y separadores
+ *   senal  #F5B301  amarillo de señalización: CTA, alerta, foco
+ *   cobre  #A8662F  acento mineral — enlaces, datos, trust score (~4.5:1)
  *
- * Tipografía — Saira (Omnibus-Type, fundición argentina: guiño
- * regional para una herramienta de la minería jujeña), de herencia
- * DIN/industrial:
+ * Tipografía — Saira (Omnibus-Type, fundición argentina: guiño regional
+ * para una herramienta de la minería jujeña), de herencia DIN/industrial:
  *   --font-display  Saira Semi Condensed 600/700 — títulos, marca, cifras
  *   --font-sans     Saira 400/500/600 — cuerpo e interfaz
  *
@@ -45,19 +44,20 @@
  *   · titulo 1.75 · display 2.75
  *
  * Los componentes shadcn / Assistant UI usan variables semánticas
- * (--background, --primary…): en :root se mapean a esta paleta para
- * que el chat herede la identidad en vez del gris neutro por defecto.
+ * (--background, --primary…) y HeroUI su propio set (--surface, --accent…):
+ * en :root se mapean a esta paleta para que todo herede la identidad.
  */
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-grafito: #1f1c18;
-  --color-roca: #2c2822;
-  --color-sal: #ece6d8;
-  --color-bruma: #a79d8b;
+  --color-papel: #f8f6f1;
+  --color-ficha: #ffffff;
+  --color-tinta: #29241c;
+  --color-piedra: #6f675b;
+  --color-linea: #e7e2d6;
   --color-senal: #f5b301;
-  --color-cobre: #c07a4e;
+  --color-cobre: #a8662f;
 
   --font-display: var(--font-saira-semi-condensed), "Arial Narrow", sans-serif;
 
@@ -97,6 +97,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -135,38 +136,108 @@
 }
 
 :root {
-  --background: var(--color-grafito);
-  --foreground: var(--color-sal);
-  --card: var(--color-roca);
-  --card-foreground: var(--color-sal);
-  --popover: var(--color-roca);
-  --popover-foreground: var(--color-sal);
+  /* Semánticas shadcn / Assistant UI */
+  --background: var(--color-papel);
+  --foreground: var(--color-tinta);
+  --card: var(--color-ficha);
+  --card-foreground: var(--color-tinta);
+  --popover: var(--color-ficha);
+  --popover-foreground: var(--color-tinta);
   --primary: var(--color-senal);
-  --primary-foreground: var(--color-grafito);
-  --secondary: var(--color-roca);
-  --secondary-foreground: var(--color-sal);
-  --muted: var(--color-roca);
-  --muted-foreground: var(--color-bruma);
-  --accent: var(--color-roca);
-  --accent-foreground: var(--color-sal);
-  --destructive: #e5533d;
-  --border: color-mix(in srgb, var(--color-bruma) 25%, transparent);
-  --input: color-mix(in srgb, var(--color-bruma) 40%, transparent);
+  --primary-foreground: var(--color-tinta);
+  --secondary: #f0ede3;
+  --secondary-foreground: var(--color-tinta);
+  --muted: #f0ede3;
+  --muted-foreground: var(--color-piedra);
+  --accent: #ede9dc;
+  --accent-foreground: var(--color-tinta);
+  --destructive: #b3392e;
+  --destructive-foreground: #f8f6f1;
+  --border: var(--color-linea);
+  --input: #d6d0c0;
   --ring: var(--color-senal);
   --chart-1: var(--color-senal);
   --chart-2: var(--color-cobre);
-  --chart-3: var(--color-bruma);
-  --chart-4: var(--color-sal);
-  --chart-5: var(--color-roca);
-  --radius: 0.125rem;
-  --sidebar: var(--color-roca);
-  --sidebar-foreground: var(--color-sal);
+  --chart-3: var(--color-piedra);
+  --chart-4: var(--color-tinta);
+  --chart-5: var(--color-linea);
+  --radius: 0.625rem;
+  --sidebar: var(--color-ficha);
+  --sidebar-foreground: var(--color-tinta);
   --sidebar-primary: var(--color-senal);
-  --sidebar-primary-foreground: var(--color-grafito);
-  --sidebar-accent: var(--color-grafito);
-  --sidebar-accent-foreground: var(--color-sal);
-  --sidebar-border: color-mix(in srgb, var(--color-bruma) 25%, transparent);
+  --sidebar-primary-foreground: var(--color-tinta);
+  --sidebar-accent: #ede9dc;
+  --sidebar-accent-foreground: var(--color-tinta);
+  --sidebar-border: var(--color-linea);
   --sidebar-ring: var(--color-senal);
+
+  /* Semánticas HeroUI (el theme por defecto define estas mismas vars en
+     layer(theme); el bloque sin capa gana la cascada). */
+  --accent: #ede9dc;
+  --accent-foreground: var(--color-tinta);
+  --accent-hover: #e4dfd0;
+  --accent-soft: #f6f3ea;
+  --accent-soft-foreground: var(--color-tinta);
+  --accent-soft-hover: #efece1;
+  --surface: var(--color-ficha);
+  --surface-foreground: var(--color-tinta);
+  --surface-hover: #f5f2ea;
+  --surface-secondary: #faf8f3;
+  --surface-secondary-foreground: var(--color-tinta);
+  --surface-tertiary: #f0ede3;
+  --surface-tertiary-foreground: var(--color-tinta);
+  --background-secondary: #f1eee5;
+  --background-tertiary: #eae6d8;
+  --background-inverse: var(--color-tinta);
+  --border: var(--color-linea);
+  --border-secondary: #ded8c8;
+  --border-tertiary: #d3ccba;
+  --default: #efebdf;
+  --default-foreground: var(--color-tinta);
+  --default-hover: #e7e2d1;
+  --default-soft: #f6f3ea;
+  --default-soft-foreground: var(--color-piedra);
+  --default-soft-hover: #f0ede3;
+  --primary-foreground: var(--color-tinta);
+  --focus: var(--color-senal);
+  --link: var(--color-cobre);
+  --segment: var(--color-ficha);
+  --segment-foreground: var(--color-tinta);
+  --separator: var(--color-linea);
+  --separator-secondary: #efece2;
+  --separator-tertiary: #f6f3ec;
+  --field-background: var(--color-ficha);
+  --field-foreground: var(--color-tinta);
+  --field-placeholder: color-mix(in oklab, var(--color-piedra) 65%, transparent);
+  --field-border: #d6d0c0;
+  --field-border-hover: #bfb7a4;
+  --field-border-focus: var(--color-cobre);
+  --overlay: var(--color-ficha);
+  --overlay-foreground: var(--color-tinta);
+  --success: #3e7c57;
+  --success-foreground: #ffffff;
+  --warning: var(--color-senal);
+  --warning-foreground: var(--color-tinta);
+  --warning-soft: color-mix(in oklab, var(--color-senal) 16%, var(--color-ficha));
+  --warning-soft-foreground: #6e5200;
+  --danger: var(--destructive);
+  --danger-foreground: #ffffff;
+  --danger-soft: #f7e6e3;
+  --danger-soft-foreground: #8a2c22;
+  --eclipse: rgba(41, 36, 28, 0.4);
+
+  /* Colores de la escena 3D del estante (estante-escena.ts los lee con
+     getComputedStyle; el fallback SVG usa los mismos). Versión light: el
+     estante pasa a estructura gris cálida sobre la superficie clara. */
+  --escena-tinta: #2b251c;
+  --escena-estante: #5b5245;
+  --escena-piso: #e3ddcb;
+  --escena-claro: #d9d1c0;
+  --escena-tenue: #b4ab98;
+  --escena-senal: var(--color-senal);
+  --escena-cobre: #c07a4e;
+  --escena-panel: #ffffff;
+  --escena-texto-suave: var(--color-piedra);
 }
 
 /* Franja diagonal de señalización: la firma visual, de uso medido. */
@@ -174,7 +245,7 @@
   background-image: repeating-linear-gradient(
     -45deg,
     var(--color-senal) 0 0.625rem,
-    var(--color-grafito) 0.625rem 1.25rem
+    var(--color-tinta) 0.625rem 1.25rem
   );
 }
 
@@ -190,15 +261,16 @@
   }
 }
 
-/* Foco visible en toda la interfaz: anillo de señalización. */
+/* Foco visible en toda la interfaz: banda tinta + anillo de señalización. */
 :focus-visible {
   outline: 2px solid var(--color-senal);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-tinta);
 }
 
 ::selection {
   background-color: var(--color-senal);
-  color: var(--color-grafito);
+  color: var(--color-tinta);
 }
 
 /* Reduced motion: sin transiciones decorativas ni animaciones. */
