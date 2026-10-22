@@ -80,19 +80,6 @@
     background: var(--ficha); border: 1px solid var(--linea);
     border-radius: 999px; padding: .4em 1em;
   }
-  .flujo { display: grid; gap: .6em; }
-  .paso {
-    display: flex; align-items: center; gap: .8em;
-    background: var(--ficha); border: 1px solid var(--linea);
-    border-radius: 12px; padding: .6em .9em;
-    font-size: clamp(13px, 1.3vw, 19px); font-weight: 500;
-  }
-  .paso b {
-    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
-    min-width: 1.7em; height: 1.7em; border-radius: 8px;
-    background: var(--tinta); color: var(--senal);
-    display: grid; place-items: center; font-size: .95em; flex-shrink: 0;
-  }
   .cifras { display: flex; gap: 2.2em; }
   .cifra { display: flex; flex-direction: column; }
   .cifra b {
@@ -121,21 +108,167 @@
     margin-bottom: .5em;
   }
   .card p { font-size: clamp(12px, 1.15vw, 17px); color: var(--piedra); line-height: 1.4; }
-  .card .num {
-    font-family: "Saira Semi Condensed", "Arial Narrow", sans-serif;
-    font-size: clamp(30px, 3vw, 46px); font-weight: 800; color: var(--senal);
-    line-height: 1; margin-bottom: .15em;
-  }
   .peso-barra { display: grid; gap: .55em; }
   .peso { display: grid; grid-template-columns: 7.5em 1fr 3em; align-items: center; gap: .8em; font-size: clamp(12px, 1.15vw, 17px); }
   .peso .barra { height: .7em; background: var(--linea); border-radius: 99px; overflow: hidden; }
-  .peso .barra i { display: block; height: 100%; background: linear-gradient(90deg, var(--senal), var(--cobre)); border-radius: 99px; }
+  .peso .barra i {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--senal), var(--cobre));
+    border-radius: 99px;
+    animation: crece 1s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  .peso:nth-child(2) .barra i { animation-delay: .15s }
+  .peso:nth-child(3) .barra i { animation-delay: .3s }
+  .peso:nth-child(4) .barra i { animation-delay: .45s }
+  .peso:nth-child(5) .barra i { animation-delay: .6s }
+  @keyframes crece { to { width: var(--w); } }
   .peso b { text-align: right; font-family: "Saira Semi Condensed", sans-serif; }
   footer {
     display: flex; align-items: center; justify-content: space-between;
     border-top: 1px solid var(--linea); padding-top: 1.4%;
     font-size: clamp(11px, 1vw, 15px); color: var(--piedra);
   }
+
+  /* ---------- Entrada escalonada de cada lámina ---------- */
+  .anim > * {
+    opacity: 0; transform: translateY(14px);
+    animation: entra .6s cubic-bezier(.2,.7,.3,1) forwards;
+    animation-delay: calc(var(--k, 0) * .12s);
+  }
+  @keyframes entra { to { opacity: 1; transform: none; } }
+  /* Los nodos del loop entran escalonados aunque no sean hijos directos */
+  .anim .nodo {
+    opacity: 0; transform: translateY(10px);
+    animation: entra .5s cubic-bezier(.2,.7,.3,1) forwards;
+    animation-delay: calc(.3s + var(--k, 0) * .15s);
+  }
+
+  /* ---------- Monitor de stock animado (portada) ---------- */
+  .monitor {
+    align-self: center;
+    background: var(--ficha); border: 1px solid var(--linea);
+    border-radius: 18px; padding: 1.4em 1.6em 1.8em;
+    box-shadow: 0 18px 50px rgba(41,36,28,.12);
+    position: relative;
+  }
+  .monitor h3 {
+    font-family: "Saira Semi Condensed", sans-serif; font-size: clamp(12px, 1.1vw, 16px);
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--piedra);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .monitor h3 .chip-alerta {
+    color: var(--tinta); background: var(--senal); border-radius: 99px;
+    padding: .25em .9em; font-size: .85em; letter-spacing: 0; text-transform: none;
+    animation: pulso-chip 1.6s ease-in-out infinite;
+  }
+  @keyframes pulso-chip { 50% { box-shadow: 0 0 0 .55em rgba(245,179,1,.25); } }
+  .estante {
+    margin-top: 1.2em; height: clamp(140px, 16vw, 220px);
+    display: flex; align-items: flex-end; gap: 6%;
+    border-bottom: 2px solid var(--tinta); position: relative;
+  }
+  .barras { position: absolute; inset: 0 0 32% 0; border-bottom: 2px dashed var(--cobre); }
+  .barras::after {
+    content: "punto de reorden"; position: absolute; right: 0; top: -1.5em;
+    font-size: clamp(9px, .85vw, 13px); color: var(--cobre); white-space: nowrap;
+  }
+  .barra-stock {
+    flex: 1; background: linear-gradient(180deg, var(--senal), var(--cobre));
+    border-radius: 6px 6px 0 0; height: var(--h);
+    transform-origin: bottom;
+    animation: baja 5s ease-in-out infinite alternate;
+  }
+  .barra-stock:nth-child(2) { animation-delay: -1.4s }
+  .barra-stock:nth-child(3) { animation-delay: -2.6s }
+  .barra-stock:nth-child(4) { animation-delay: -3.4s }
+  .barra-stock:nth-child(5) { animation-delay: -4.2s }
+  .barra-stock.roja { background: var(--tinta); }
+  @keyframes baja { from { transform: scaleY(1); } to { transform: scaleY(.68); } }
+  .estante-labels {
+    display: flex; gap: 6%; margin-top: .6em;
+    font-size: clamp(9px, .85vw, 13px); color: var(--piedra); text-align: center;
+  }
+  .estante-labels span { flex: 1; }
+  .punto-alerta {
+    position: absolute; left: 72%; top: 52%; width: .9em; height: .9em;
+    background: var(--senal); border: 2px solid var(--ficha); border-radius: 50%;
+  }
+  .punto-alerta::after {
+    content: ""; position: absolute; inset: -.55em; border-radius: 50%;
+    border: 2px solid var(--senal); animation: onda 1.6s ease-out infinite;
+  }
+  @keyframes onda { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
+
+  /* ---------- Tarjetas con ícono flotante (problema) ---------- */
+  .icono {
+    width: 3em; height: 3em; border-radius: 14px; margin-bottom: .8em;
+    background: var(--papel); border: 1px solid var(--linea);
+    display: grid; place-items: center; color: var(--cobre);
+    animation: flota 3.4s ease-in-out infinite;
+  }
+  .icono svg { width: 55%; height: 55%; }
+  .card:nth-child(2) .icono { animation-delay: -1.1s }
+  .card:nth-child(3) .icono { animation-delay: -2.2s }
+  @keyframes flota { 50% { transform: translateY(-8px); } }
+
+  /* ---------- Flujo del loop con guía animada (demo) ---------- */
+  .loop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; align-items: stretch; }
+  .nodo {
+    background: var(--ficha); border: 1px solid var(--linea); border-radius: 14px;
+    padding: 1em 1.1em; position: relative;
+  }
+  .nodo b {
+    font-family: "Saira Semi Condensed", sans-serif; display: block;
+    font-size: clamp(13px, 1.25vw, 19px); margin-bottom: .35em;
+  }
+  .nodo span { font-size: clamp(11px, 1.05vw, 15px); color: var(--piedra); line-height: 1.4; display: block; }
+  .nodo .num {
+    font-family: "Saira Semi Condensed", sans-serif;
+    width: 1.7em; height: 1.7em; border-radius: 8px; margin-bottom: .7em;
+    background: var(--tinta); color: var(--senal);
+    display: grid; place-items: center; font-size: 1em;
+  }
+  .nodo:not(:last-child)::after {
+    content: ""; position: absolute; top: 50%; right: -1em; width: 1em; height: 3px;
+    background: repeating-linear-gradient(90deg, var(--cobre) 0 5px, transparent 5px 10px);
+    animation: marcha .7s linear infinite;
+  }
+  @keyframes marcha { to { background-position: 10px 0; } }
+  .chips { display: flex; gap: .6em; flex-wrap: wrap; margin-top: 1.1em; }
+  .chips span {
+    font-size: clamp(11px, 1vw, 15px); color: var(--tinta);
+    background: var(--ficha); border: 1px solid var(--linea);
+    border-radius: 999px; padding: .4em 1em;
+  }
+
+  /* ---------- Números gigantes (datos reales) ---------- */
+  .numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4%; align-content: center; text-align: center; }
+  .num-grande {
+    font-family: "Saira Semi Condensed", sans-serif;
+    font-size: clamp(64px, 9vw, 140px); font-weight: 800; line-height: 1;
+    color: var(--tinta); letter-spacing: -3px;
+  }
+  .num-grande em { font-style: normal; color: var(--senal); }
+  .numeros p { margin-top: .4em; font-size: clamp(12px, 1.2vw, 18px); color: var(--piedra); }
+
+  /* ---------- Pipeline (bajo el capó) ---------- */
+  .pipe { display: grid; gap: .7em; }
+  .etapa {
+    display: flex; align-items: center; gap: .8em;
+    background: var(--ficha); border: 1px solid var(--linea);
+    border-radius: 12px; padding: .65em 1em;
+    font-size: clamp(12px, 1.15vw, 17px); font-weight: 500;
+  }
+  .etapa small { color: var(--piedra); font-weight: 400; }
+  .etapa .punto {
+    width: .75em; height: .75em; border-radius: 50%; background: var(--senal); flex-shrink: 0;
+    animation: pulso-punto 2.2s ease-in-out infinite;
+  }
+  .etapa:nth-child(2) .punto { animation-delay: .5s }
+  .etapa:nth-child(3) .punto { animation-delay: 1s }
+  .etapa:nth-child(4) .punto { animation-delay: 1.5s }
+  @keyframes pulso-punto { 50% { box-shadow: 0 0 0 .5em rgba(245,179,1,.2); } }
+
   .nav {
     position: fixed; bottom: 18px; right: 24px;
     display: flex; gap: .5em; align-items: center;
@@ -166,6 +299,12 @@
   /* Oculto en los extremos: sigue capturando el clic para que no llegue
      al avance global (ir() clampea el índice y es no-op). */
   .borde.oculto { opacity: 0; cursor: default; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; }
+    .anim > * { opacity: 1; transform: none; }
+    .peso .barra i { width: var(--w); }
+  }
 </style>
 </head>
 <body>
@@ -176,16 +315,33 @@
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">Hackathon INNOA — Jujuy</div>
   </header>
-  <div class="hero">
-    <h1>Comprar insumos<br>en minería,<br><em>con datos.</em></h1>
-    <p>Un consultor inteligente que detecta qué falta, recomienda a qué proveedor verificado comprar y deja la decisión final en manos humanas.</p>
-    <div class="mini">
-      <span>Red verificada</span><span>Trust score</span><span>Alertas de stock</span><span>Aprobación humana</span>
+  <div class="grid anim">
+    <div class="hero" style="--k:0">
+      <h1>Comprar insumos<br>en minería,<br><em>con datos.</em></h1>
+      <p>Detecta qué falta, recomienda a quién comprarle — y la decisión queda en manos humanas.</p>
+      <div class="mini">
+        <span>Red verificada</span><span>Trust score</span><span>Alertas de stock</span><span>Aprobación humana</span>
+      </div>
+    </div>
+    <div class="monitor" style="--k:1" aria-hidden="true">
+      <h3>Stock de la minera <span class="chip-alerta">alerta</span></h3>
+      <div class="estante">
+        <div class="barras"></div>
+        <div class="barra-stock" style="--h:78%"></div>
+        <div class="barra-stock" style="--h:92%"></div>
+        <div class="barra-stock" style="--h:60%"></div>
+        <div class="barra-stock roja" style="--h:38%"></div>
+        <div class="barra-stock" style="--h:85%"></div>
+        <div class="punto-alerta"></div>
+      </div>
+      <div class="estante-labels">
+        <span>EPP</span><span>Reactivos</span><span>Explosivos</span><span>Medios<br>molienda</span><span>Repuestos</span>
+      </div>
     </div>
   </div>
   <footer>
     <div></div>
-    <div>Next.js 16 · eve + Gemini · Assistant UI · Supabase</div>
+    <div>Next.js 16 · eve + Claude Haiku · Assistant UI · Supabase</div>
   </footer>
 </div>
 
@@ -195,209 +351,180 @@
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">El problema</div>
   </header>
-  <div class="grid">
-    <div class="col">
-      <h2>Elegir proveedor no es solo precio</h2>
-      <p>Hay que verificar certificaciones ISO, estándares ESG, habilitaciones regulatorias y aptitud para alta montaña. Hoy ese trabajo es manual:</p>
-      <ul style="margin-top:1em">
-        <li>Listas estáticas y desactualizadas de proveedores</li>
-        <li>Certificaciones que viven en PDFs y correos</li>
-        <li>Nadie sabe si un certificado sigue <b>vigente</b></li>
-        <li>La recompra de insumos depende de memoria y teléfono</li>
-      </ul>
-    </div>
-    <div class="col">
-      <h2>Comprar mal cuesta caro</h2>
-      <p>Un proveedor sin habilitación para alta montaña en la Puna no es un problema de precio: es un <b>riesgo de seguridad</b>. Y una molienda detenida por falta de insumo cuesta más que cualquier sobreprecio.</p>
-      <h2 style="margin-top:1.2em">Lo que falta</h2>
-      <ul>
-        <li>Una vista única del stock vs. punto de reorden</li>
-        <li>Saber quién está <b>realmente habilitado</b> para cada insumo</li>
-        <li>Comparar ofertas con criterios defendibles</li>
-      </ul>
-    </div>
+  <div class="frase anim">
+    <p style="--k:0">«El certificado estaba<br>en un PDF. <em>¿Sigue vigente?»</em></p>
   </div>
   <footer>
-    <div class="cifras"><div class="cifra"><b>PDFs</b><span>donde vive hoy la evidencia de compliance</span></div></div>
+    <div class="cifras"><div class="cifra"><b>+4.000 msnm</b><span>la Puna no perdona un proveedor inhabilitado</span></div></div>
     <div>2 / 8</div>
   </footer>
 </div>
 
-<!-- ============ 3 · SOLUCIÓN ============ -->
+<!-- ============ 3 · PROBLEMA (detalle) ============ -->
+<div class="slide">
+  <header>
+    <div class="marca">ju<em>-</em>min</div>
+    <div class="tag">El problema</div>
+  </header>
+  <div class="fila anim" style="align-content:center">
+    <div class="card" style="--k:0">
+      <div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 12h7M9 16h5"/></svg></div>
+      <h3>Evidencia en PDFs</h3>
+      <p>Certificaciones ISO, ESG y habilitaciones viven en correos y carpetas, sin vigencia verificable.</p>
+    </div>
+    <div class="card" style="--k:1">
+      <div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
+      <h3>Memoria y teléfono</h3>
+      <p>La recompra de insumos depende de quién recuerda pedir — nadie ve el stock contra su punto de reorden.</p>
+    </div>
+    <div class="card" style="--k:2">
+      <div class="icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17.5v.5"/></svg></div>
+      <h3>Riesgo real</h3>
+      <p>Un proveedor sin aptitud de altura no es un problema de precio: es un problema de seguridad.</p>
+    </div>
+  </div>
+  <footer>
+    <div class="cifras"><div class="cifra"><b>PDFs</b><span>donde vive hoy la evidencia de compliance</span></div></div>
+    <div>3 / 8</div>
+  </footer>
+</div>
+
+<!-- ============ 4 · SOLUCIÓN ============ -->
 <div class="slide">
   <header>
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">La solución</div>
   </header>
-  <div class="grid">
-    <div class="col">
-      <h2>Tres piezas que hoy están separadas</h2>
+  <div class="grid anim">
+    <div class="col" style="--k:0">
+      <h2>Tres piezas, un consultor</h2>
       <ul>
-        <li><b>Red de proveedores verificados</b> — cada uno con trust score 0–100 con desglose por señales: identidad, compliance, desempeño, ESG y capacidad</li>
-        <li><b>Alertas de stock</b> — la minera carga su stock con punto de reorden por insumo; el sistema detecta qué está por faltar y cuántos días quedan</li>
-        <li><b>El agente</b> — consultor en lenguaje natural, acotado a abastecimiento, que recomienda con justificación de precio, lead time y trust score</li>
+        <li><b>Red de proveedores verificados</b>, cada uno con trust score 0–100 auditable</li>
+        <li><b>Alertas de stock</b> contra el punto de reorden de cada insumo</li>
+        <li><b>El agente</b> recomienda con justificación — y nunca inventa datos</li>
       </ul>
     </div>
-    <div class="col">
+    <div class="col" style="--k:1">
       <h2>El trust score, transparente</h2>
       <div class="peso-barra">
-        <div class="peso"><span>Identidad</span><div class="barra"><i style="width:20%"></i></div><b>20%</b></div>
-        <div class="peso"><span>Compliance</span><div class="barra"><i style="width:30%"></i></div><b>30%</b></div>
-        <div class="peso"><span>Desempeño</span><div class="barra"><i style="width:30%"></i></div><b>30%</b></div>
-        <div class="peso"><span>ESG</span><div class="barra"><i style="width:10%"></i></div><b>10%</b></div>
-        <div class="peso"><span>Capacidad</span><div class="barra"><i style="width:10%"></i></div><b>10%</b></div>
+        <div class="peso"><span>Identidad</span><div class="barra"><i style="--w:20%"></i></div><b>20%</b></div>
+        <div class="peso"><span>Compliance</span><div class="barra"><i style="--w:30%"></i></div><b>30%</b></div>
+        <div class="peso"><span>Desempeño</span><div class="barra"><i style="--w:30%"></i></div><b>30%</b></div>
+        <div class="peso"><span>ESG</span><div class="barra"><i style="--w:10%"></i></div><b>10%</b></div>
+        <div class="peso"><span>Capacidad</span><div class="barra"><i style="--w:10%"></i></div><b>10%</b></div>
       </div>
-      <h2 style="margin-top:1.2em">Regla dura de homologación</h2>
-      <p>Un proveedor solo puede ser recomendado para un insumo si <b>cumple todos los requisitos obligatorios</b> de su categoría, con certificaciones verificadas y vigentes.</p>
     </div>
   </div>
   <footer>
-    <div class="cifras"><div class="cifra"><b>0–100</b><span>trust score auditable</span></div></div>
-    <div>3 / 8</div>
+    <div class="cifras"><div class="cifra"><b>Regla dura</b><span>solo se recomienda quien cumple todos los requisitos obligatorios de la categoría</span></div></div>
+    <div>4 / 8</div>
   </footer>
 </div>
 
-<!-- ============ 4 · DEMO ============ -->
+<!-- ============ 5 · DEMO ============ -->
 <div class="slide">
   <header>
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">El demo</div>
   </header>
-  <div class="grid">
-    <div class="col">
-      <h2>El loop del agente</h2>
-      <div class="flujo">
-        <div class="paso"><b>1</b> Alerta: insumo bajo el punto de reorden</div>
-        <div class="paso"><b>2</b> Consulta: "¿quién me entrega más rápido?"</div>
-        <div class="paso"><b>3</b> Recomendación justificada: precio · lead time · trust score</div>
-        <div class="paso"><b>4</b> La minera aprueba o rechaza — el agente propone, la persona decide</div>
-      </div>
+  <div class="anim" style="display:grid; gap:1.4em; align-content:center">
+    <div class="loop">
+      <div class="nodo" style="--k:0"><div class="num">1</div><b>Alerta</b><span>El insumo cruza el punto de reorden</span></div>
+      <div class="nodo" style="--k:1"><div class="num">2</div><b>Consulta</b><span>«¿Quién me entrega más rápido?»</span></div>
+      <div class="nodo" style="--k:2"><div class="num">3</div><b>Recomendación</b><span>Precio · lead time · trust score</span></div>
+      <div class="nodo" style="--k:3"><div class="num">4</div><b>Decisión</b><span>La minera aprueba o rechaza</span></div>
     </div>
-    <div class="col">
-      <h2>En pantalla</h2>
-      <ul>
-        <li><b>Panel de la minera</b>: stock con alertas, chat con el agente, cola de recomendaciones pendientes</li>
-        <li><b>Explorer de proveedores</b>: catálogo filtrable por categoría, con trust score y certificaciones</li>
-        <li><b>Ficha de proveedor</b>: ofertas, historial de entregas y desglose del puntaje</li>
-      </ul>
-      <h2 style="margin-top:1.2em">Acotado por diseño</h2>
-      <p>Preguntenle "¿cómo está el clima?" — responde con un rechazo fijo. El agente solo responde consultas de abastecimiento y nunca inventa datos.</p>
+    <div class="chips" style="--k:4">
+      <span>Panel de la minera</span><span>Explorer de proveedores</span><span>Ficha con historial y score</span>
     </div>
+    <p style="--k:5; font-size:clamp(12px,1.15vw,17px); color:var(--piedra); max-width:46em">
+      El agente está acotado a abastecimiento: pregúntenle por el clima y responde
+      con un rechazo fijo.
+    </p>
   </div>
   <footer>
     <div class="cifras"><div class="cifra"><b>3</b><span>insumos en alerta en el seed del demo</span></div></div>
-    <div>4 / 8</div>
+    <div>5 / 8</div>
   </footer>
 </div>
 
-<!-- ============ 5 · DATOS REALES ============ -->
+<!-- ============ 6 · DATOS REALES ============ -->
 <div class="slide">
   <header>
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">Datos reales, reglas claras</div>
   </header>
-  <div class="grid">
-    <div class="col">
-      <h2>De dónde salen los proveedores</h2>
-      <ul>
-        <li><b>CAPMIN</b> — directorio de la Cámara Argentina de Proveedores Mineros, relevado con scraper propio</li>
-        <li><b>Registro Provincial de Proveedores Mineros de Jujuy</b> — verificación estatal (Decreto 290-DEyP-24)</li>
-        <li><b>CAEM</b> — cámara de empresas mineras: mineras clientes y cobertura provincial</li>
-      </ul>
+  <div class="anim" style="display:grid; gap:1.6em; align-content:center">
+    <div class="numeros">
+      <div style="--k:0"><div class="num-grande" data-cuenta="277">0</div><p>proveedores relevados de CAPMIN, con scraper propio</p></div>
+      <div style="--k:1"><div class="num-grande" data-cuenta="188">0</div><p>categorías de insumos y servicios</p></div>
+      <div style="--k:2"><div class="num-grande"><em data-cuenta="58">0</em></div><p>reglas de requisitos obligatorios por categoría</p></div>
     </div>
-    <div class="col">
-      <h2>Qué se verifica de cada uno</h2>
-      <ul>
-        <li>ISO 9001 / 14001 / 45001 y normas de producto (IRAM, GRI-GM13, EN 10204)</li>
-        <li>Habilitaciones regulatorias (explosivos, transporte de peligrosas)</li>
-        <li>Aptitud de personal para altura geográfica — la Puna opera a +4.000 msnm</li>
-      </ul>
-      <h2 style="margin-top:1.2em">Si le falta información, lo dice</h2>
-      <p>El agente nunca inventa: lee solo a través del módulo de dominio y reporta lo que no puede verificar.</p>
+    <div class="chips" style="--k:3; justify-content:center">
+      <span>CAPMIN</span><span>Registro Provincial de Jujuy</span><span>CAEM</span><span>Decreto 290-DEyP-24</span>
     </div>
   </div>
   <footer>
-    <div class="cifras">
-      <div class="cifra"><b>277</b><span>proveedores en la red</span></div>
-      <div class="cifra"><b>188</b><span>categorías relevadas</span></div>
-      <div class="cifra"><b>58</b><span>reglas de requisitos por categoría</span></div>
-    </div>
-    <div>5 / 8</div>
+    <div class="cifras"><div class="cifra"><b>0</b><span>datos inventados — el agente solo lee por el módulo de dominio</span></div></div>
+    <div>6 / 8</div>
   </footer>
 </div>
 
-<!-- ============ 6 · BAJO EL CAPÓ ============ -->
+<!-- ============ 7 · BAJO EL CAPÓ ============ -->
 <div class="slide">
   <header>
     <div class="marca">ju<em>-</em>min</div>
     <div class="tag">Bajo el capó</div>
   </header>
-  <div class="grid">
-    <div class="col">
+  <div class="grid anim">
+    <div class="col" style="--k:0">
+      <h2>El dato entra por una sola puerta</h2>
+      <div class="pipe">
+        <div class="etapa"><span class="punto"></span>Páginas y agente <small>solo ven el módulo</small></div>
+        <div class="etapa"><span class="punto"></span><code>src/lib/compras</code> <small>dominio + regla de homologación</small></div>
+        <div class="etapa"><span class="punto"></span>Adaptador <small>memoria o Supabase, intercambiable</small></div>
+        <div class="etapa"><span class="punto"></span>Postgres + RLS <small>cada minera ve solo lo suyo</small></div>
+      </div>
+    </div>
+    <div class="col" style="--k:1">
       <h2>Stack</h2>
       <ul>
-        <li>Next.js 16 + React 19 + TypeScript, Tailwind 4</li>
-        <li><b>eve</b> (agente durable) con Gemini — la versión guionada es el respaldo offline</li>
-        <li>Assistant UI para el chat</li>
-        <li>Supabase local: Postgres + Auth + RLS + Storage</li>
-      </ul>
-    </div>
-    <div class="col">
-      <h2>Decisiones que lo hacen defendible</h2>
-      <ul>
-        <li>La regla de homologación vive en la BD: <code>cumple_requisitos()</code></li>
-        <li>RLS: el público solo ve la "red verificada"; cada minera ve solo sus datos</li>
-        <li>Usuarios por minera con roles: comprador, aprobador, admin</li>
-        <li>Documentos de evidencia en Storage (certificados, auditorías)</li>
+        <li>Next.js 16 + React 19 + Tailwind 4</li>
+        <li><b>eve</b> — agente durable con Claude Haiku</li>
+        <li>Supabase local: Postgres, Auth, RLS, Storage</li>
       </ul>
     </div>
   </div>
   <footer>
     <div class="cifras"><div class="cifra"><b>12</b><span>migraciones versionadas en el repo</span></div></div>
-    <div>6 / 8</div>
-  </footer>
-</div>
-
-<!-- ============ 7 · MODELO Y ROADMAP ============ -->
-<div class="slide">
-  <header>
-    <div class="marca">ju<em>-</em>min</div>
-    <div class="tag">Modelo y roadmap</div>
-  </header>
-  <div class="grid">
-    <div class="col">
-      <h2>Modelo de negocio</h2>
-      <ul>
-        <li><b>Suscripción</b> por minera — consultor de procurement como servicio</li>
-        <li>Escala a <b>pagos automáticos</b> al detectar falta de stock, con la misma aprobación humana configurable</li>
-        <li>Premium: verificación documental asistida para proveedores</li>
-      </ul>
-    </div>
-    <div class="col">
-      <h2>Roadmap</h2>
-      <ul>
-        <li>Verificación real contra registros públicos (Jujuy, AFIP)</li>
-        <li>APIs de compras públicas (ChileCompra y equivalentes)</li>
-        <li>Integración con ERPs y facturación electrónica</li>
-        <li>Scoring en vivo con historial de entregas real</li>
-      </ul>
-    </div>
-  </div>
-  <footer>
-    <div class="cifras"><div class="cifra"><b>SaaS</b><span>suscripción → pagos automáticos</span></div></div>
     <div>7 / 8</div>
   </footer>
 </div>
 
-<!-- ============ 8 · CIERRE ============ -->
+<!-- ============ 8 · MODELO Y CIERRE ============ -->
 <div class="slide">
   <header>
     <div class="marca">ju<em>-</em>min</div>
-    <div class="tag">Cierre</div>
+    <div class="tag">Modelo, roadmap y cierre</div>
   </header>
-  <div class="frase">
-    <p>El agente propone.<br><em>La minera decide.</em></p>
-    <small>Cada recomendación se defiende con tres números: precio, lead time, trust score.<br>Jumin — Consultor inteligente de compras para minería.</small>
+  <div class="grid anim">
+    <div class="col" style="--k:0">
+      <h2>Modelo</h2>
+      <ul>
+        <li><b>Suscripción</b> por minera — procurement como servicio</li>
+        <li>Escala a <b>pagos automáticos</b> con aprobación humana</li>
+      </ul>
+      <h2 style="margin-top:1.2em">Roadmap</h2>
+      <ul>
+        <li>Registros públicos reales (Jujuy, AFIP)</li>
+        <li>Compras públicas y ERPs</li>
+        <li>Scoring en vivo</li>
+      </ul>
+    </div>
+    <div class="frase" style="--k:1">
+      <p>El agente propone.<br><em>La minera decide.</em></p>
+      <small>Cada recomendación se defiende con tres números:<br>precio, lead time, trust score.</small>
+    </div>
   </div>
   <footer>
     <div class="cifras"><div class="cifra"><b>Jumin</b><span>Hackathon INNOA — Jujuy</span></div></div>
@@ -421,6 +548,21 @@
     d.onclick = () => ir(n);
     nav.appendChild(d);
   });
+  // Los [data-cuenta] cuentan de 0 a su valor cada vez que la lámina entra.
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function animarCuentas(slide) {
+    slide.querySelectorAll('[data-cuenta]').forEach((el) => {
+      const fin = +el.dataset.cuenta;
+      if (reduceMotion) { el.textContent = fin; return; }
+      const t0 = performance.now();
+      const dur = 1100;
+      (function tick(t) {
+        const p = Math.min(1, (t - t0) / dur);
+        el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(tick);
+      })(t0);
+    });
+  }
   function ir(n) {
     i = Math.max(0, Math.min(slides.length - 1, n));
     slides.forEach((s, k) => s.classList.toggle('activa', k === i));
@@ -429,6 +571,7 @@
     sig.classList.toggle('oculto', i === slides.length - 1);
     ant.disabled = i === 0;
     sig.disabled = i === slides.length - 1;
+    animarCuentas(slides[i]);
   }
   ant.onclick = (e) => { e.stopPropagation(); ir(i - 1); };
   sig.onclick = (e) => { e.stopPropagation(); ir(i + 1); };
