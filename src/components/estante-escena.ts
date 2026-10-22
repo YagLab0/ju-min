@@ -73,31 +73,34 @@ export function createEstanteScene(
       // setStyle interpreta hex/rgb() del CSS y convierte al espacio de trabajo.
       return { css: value, color: new three.Color().setStyle(value) };
     }
-    const grafito = cssColor("--color-grafito");
-    const roca = cssColor("--color-roca");
-    const sal = cssColor("--color-sal");
-    const bruma = cssColor("--color-bruma");
-    const senal = cssColor("--color-senal");
-    const cobre = cssColor("--color-cobre");
+    const tinta = cssColor("--escena-tinta");
+    const marco = cssColor("--escena-estante");
+    const piso = cssColor("--escena-piso");
+    const claro = cssColor("--escena-claro");
+    const tenue = cssColor("--escena-tenue");
+    const senal = cssColor("--escena-senal");
+    const cobre = cssColor("--escena-cobre");
+    const panel = cssColor("--escena-panel");
+    const textoSuave = cssColor("--escena-texto-suave");
 
     const scene = new three.Scene();
     const camera = new three.PerspectiveCamera(30, 1, 0.1, 40);
-    renderer.setClearColor(grafito.color, 0);
+    renderer.setClearColor(tinta.color, 0);
     renderer.outputColorSpace = three.SRGBColorSpace;
 
-    scene.add(new three.HemisphereLight(sal.color, grafito.color, 1.1));
-    const keyLight = new three.DirectionalLight(sal.color, 1.9);
+    scene.add(new three.HemisphereLight(claro.color, tinta.color, 1.1));
+    const keyLight = new three.DirectionalLight(claro.color, 1.9);
     keyLight.position.set(-3.5, 6, 4.5);
     scene.add(keyLight);
-    const fillLight = new three.DirectionalLight(bruma.color, 0.5);
+    const fillLight = new three.DirectionalLight(tenue.color, 0.5);
     fillLight.position.set(4, 1.5, -2);
     scene.add(fillLight);
 
     const matRoca = ownMaterial(
-      new three.MeshStandardMaterial({ color: roca.color, roughness: 0.85 })
+      new three.MeshStandardMaterial({ color: marco.color, roughness: 0.85 })
     );
     const matOscuro = ownMaterial(
-      new three.MeshStandardMaterial({ color: grafito.color, roughness: 0.9 })
+      new three.MeshStandardMaterial({ color: tinta.color, roughness: 0.9 })
     );
     const matCobre = ownMaterial(
       new three.MeshStandardMaterial({
@@ -107,10 +110,10 @@ export function createEstanteScene(
       })
     );
     const matSal = ownMaterial(
-      new three.MeshStandardMaterial({ color: sal.color, roughness: 0.7 })
+      new three.MeshStandardMaterial({ color: claro.color, roughness: 0.7 })
     );
     const matBruma = ownMaterial(
-      new three.MeshStandardMaterial({ color: bruma.color, roughness: 0.95 })
+      new three.MeshStandardMaterial({ color: tenue.color, roughness: 0.95 })
     );
     const matSenal = ownMaterial(
       new three.MeshStandardMaterial({
@@ -182,15 +185,15 @@ export function createEstanteScene(
     shadow.position.y = 0.002;
     scene.add(shadow);
     // Base del estante: piso apenas más claro que el fondo.
-    const piso = new three.Mesh(
+    const pisoMesh = new three.Mesh(
       ownGeometry(new three.PlaneGeometry(5.4, 2.2)),
       ownMaterial(
-        new three.MeshStandardMaterial({ color: roca.color, roughness: 1 })
+        new three.MeshStandardMaterial({ color: piso.color, roughness: 1 })
       )
     );
-    piso.rotation.x = -Math.PI / 2;
-    piso.position.y = 0;
-    scene.add(piso);
+    pisoMesh.rotation.x = -Math.PI / 2;
+    pisoMesh.position.y = 0;
+    scene.add(pisoMesh);
     shadow.position.y = 0.004;
 
     // --- Insumos ---
@@ -352,7 +355,7 @@ export function createEstanteScene(
     placa.position.y = NIVEL_H / 2;
     gauge.add(placa);
     const matNivelOk = ownMaterial(
-      new three.MeshStandardMaterial({ color: sal.color, roughness: 0.6 })
+      new three.MeshStandardMaterial({ color: claro.color, roughness: 0.6 })
     );
     const matNivelBajo = ownMaterial(
       new three.MeshStandardMaterial({
@@ -432,25 +435,25 @@ export function createEstanteScene(
       dispose();
       return null;
     }
-    cardCtx.fillStyle = roca.css;
+    cardCtx.fillStyle = panel.css;
     cardCtx.fillRect(0, 0, 512, 336);
     cardCtx.fillStyle = senal.css;
     cardCtx.fillRect(0, 0, 12, 336);
     cardCtx.textBaseline = "middle";
-    cardCtx.fillStyle = bruma.css;
+    cardCtx.fillStyle = textoSuave.css;
     cardCtx.font = "500 25px Arial, sans-serif";
     cardCtx.fillText("Agente ju-min", 40, 46);
-    cardCtx.fillStyle = sal.css;
+    cardCtx.fillStyle = tinta.css;
     cardCtx.font = "700 42px Arial, sans-serif";
     cardCtx.fillText("Recomendación", 40, 100);
     cardCtx.font = "600 30px Arial, sans-serif";
     cardCtx.fillText("Comprar 6 tambores de 200 L", 40, 158);
-    cardCtx.fillStyle = bruma.css;
+    cardCtx.fillStyle = textoSuave.css;
     cardCtx.font = "500 26px Arial, sans-serif";
     cardCtx.fillText("Lubricantes del Norte · Jujuy", 40, 206);
     cardCtx.fillStyle = senal.css;
     cardCtx.fillRect(40, 242, 350, 56);
-    cardCtx.fillStyle = grafito.css;
+    cardCtx.fillStyle = tinta.css;
     cardCtx.font = "700 26px Arial, sans-serif";
     cardCtx.fillText("Trust score 92 · 4 días", 62, 272);
     const cardTexture = new three.CanvasTexture(cardCanvas);
@@ -468,7 +471,7 @@ export function createEstanteScene(
     );
     const matTarjetaFondo = ownMaterial(
       new three.MeshBasicMaterial({
-        color: grafito.color,
+        color: tinta.color,
         transparent: true,
         opacity: 0,
         depthWrite: false,

@@ -1,11 +1,13 @@
 import { expect, test } from "@playwright/test";
 
+import { ingresarAlDemo } from "./auth";
+
 const consulta = "¿Qué es ju-min? Respondé en una sola oración.";
 
 test("enviar una consulta en /panel produce una respuesta del agente", async ({
   page,
 }) => {
-  await page.goto("/panel");
+  await ingresarAlDemo(page);
 
   const composer = page.getByRole("textbox", { name: "Escribí tu consulta" });
   await composer.fill(consulta);

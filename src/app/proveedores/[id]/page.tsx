@@ -132,13 +132,13 @@ export default function FichaProveedorPage(
     <div className="mx-auto w-full max-w-6xl px-5 py-14">
       <Link
         href="/proveedores"
-        className="text-detalle text-bruma underline-offset-4 hover:text-sal hover:underline"
+        className="text-detalle text-piedra underline-offset-4 hover:text-tinta hover:underline"
       >
         Volver al listado de proveedores
       </Link>
       <Suspense
         fallback={
-          <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
+          <p className="mt-10 rounded-2xl border border-linea bg-ficha shadow-sm p-5 text-detalle text-piedra">
             Cargando la ficha del proveedor…
           </p>
         }
@@ -161,33 +161,33 @@ async function FichaProveedor({
 
   return (
     <>
-      <header className="mt-6 flex flex-wrap items-start justify-between gap-6 border border-bruma/25 bg-roca p-5">
+      <header className="mt-6 flex flex-wrap items-start justify-between gap-6 rounded-2xl border border-linea bg-ficha shadow-sm p-5">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-titulo font-bold text-sal">
+            <h1 className="font-display text-titulo font-bold text-tinta">
               {p.nombreFantasia ?? p.razonSocial}
             </h1>
             <span
               className={
                 p.estado === "homologado"
-                  ? "bg-senal px-1.5 py-0.5 text-micro font-semibold text-grafito"
-                  : "border border-bruma/40 px-1.5 py-0.5 text-micro text-bruma"
+                  ? "bg-senal rounded-md px-1.5 py-0.5 text-micro font-semibold text-tinta"
+                  : "border border-linea rounded-md px-1.5 py-0.5 text-micro text-piedra"
               }
             >
               {ETIQUETA_ESTADO[p.estado]}
             </span>
           </div>
           {p.nombreFantasia && (
-            <p className="mt-1 text-detalle text-bruma">{p.razonSocial}</p>
+            <p className="mt-1 text-detalle text-piedra">{p.razonSocial}</p>
           )}
-          <p className="mt-1 text-detalle text-bruma">
+          <p className="mt-1 text-detalle text-piedra">
             {[p.localidad, p.provincia].filter(Boolean).join(", ")}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {p.categorias.map((c) => (
               <span
                 key={c.id}
-                className="border border-bruma/30 px-2 py-0.5 text-micro text-bruma"
+                className="border border-linea rounded-md px-2 py-0.5 text-micro text-piedra"
               >
                 {c.nombre}
               </span>
@@ -202,12 +202,12 @@ async function FichaProveedor({
           </div>
         </div>
         <div className="shrink-0 text-right">
-          <p className="font-display text-display font-bold leading-none text-sal">
+          <p className="font-display text-display font-bold leading-none text-tinta">
             {Math.round(p.trustScore.valor)}
           </p>
-          <p className="text-detalle text-bruma">trust score</p>
+          <p className="text-detalle text-piedra">trust score</p>
           <div
-            className="ml-auto mt-2 h-1.5 w-28 bg-bruma/20"
+            className="ml-auto mt-2 h-1.5 w-28 bg-linea"
             role="img"
             aria-label={`Trust score ${Math.round(p.trustScore.valor)} de 100`}
           >
@@ -236,29 +236,29 @@ async function FichaProveedor({
 
 function OfertasFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle }) {
   return (
-    <section className="border border-bruma/25 bg-roca" aria-labelledby="ofertas">
-      <div className="border-b border-bruma/25 px-5 py-4">
+    <section className="rounded-2xl border border-linea bg-ficha shadow-sm" aria-labelledby="ofertas">
+      <div className="border-b border-linea px-5 py-4">
         <h2
           id="ofertas"
-          className="font-display text-subtitulo font-semibold text-sal"
+          className="font-display text-subtitulo font-semibold text-tinta"
         >
           Ofertas
         </h2>
-        <p className="mt-1 text-micro text-bruma">
+        <p className="mt-1 text-micro text-piedra">
           {p.ofertas.length === 1
             ? "1 insumo publicado por este proveedor"
             : `${p.ofertas.length} insumos publicados por este proveedor`}
         </p>
       </div>
       {p.ofertas.length === 0 ? (
-        <p className="p-5 text-detalle text-bruma">
+        <p className="p-5 text-detalle text-piedra">
           Este proveedor todavía no tiene ofertas publicadas.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[34rem] text-left text-detalle">
             <thead>
-              <tr className="border-b border-bruma/25 text-micro text-bruma">
+              <tr className="border-b border-linea text-micro text-piedra">
                 <th scope="col" className="px-5 py-3 font-medium">
                   Insumo
                 </th>
@@ -280,34 +280,34 @@ function OfertasFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle 
               {p.ofertas.map((o) => (
                 <tr
                   key={o.id}
-                  className="border-b border-bruma/15 last:border-b-0"
+                  className="border-b border-linea last:border-b-0"
                 >
                   <td className="px-5 py-3">
-                    <p className="font-medium text-sal">{o.insumo.nombre}</p>
+                    <p className="font-medium text-tinta">{o.insumo.nombre}</p>
                     {o.insumo.especificacion && (
-                      <p className="text-micro text-bruma">
+                      <p className="text-micro text-piedra">
                         {o.insumo.especificacion}
                       </p>
                     )}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 font-display font-semibold text-sal">
+                  <td className="whitespace-nowrap px-3 py-3 font-display font-semibold text-tinta">
                     {formatoPrecio(o.precio, o.moneda)}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-bruma">
+                  <td className="whitespace-nowrap px-3 py-3 text-piedra">
                     por {o.insumo.unidad}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-bruma">
+                  <td className="whitespace-nowrap px-3 py-3 text-piedra">
                     {o.leadTimeDias !== null
                       ? `${o.leadTimeDias} días`
                       : "A convenir"}
                   </td>
                   <td className="whitespace-nowrap px-5 py-3">
                     {o.disponible ? (
-                      <span className="border border-cobre/40 px-2 py-0.5 text-micro text-sal">
+                      <span className="border border-cobre/40 rounded-md px-2 py-0.5 text-micro text-tinta">
                         Disponible
                       </span>
                     ) : (
-                      <span className="bg-senal px-2 py-0.5 text-micro font-semibold text-grafito">
+                      <span className="bg-senal rounded-md px-2 py-0.5 text-micro font-semibold text-tinta">
                         Sin stock
                       </span>
                     )}
@@ -335,26 +335,26 @@ function CertificacionesFicha({
   );
   return (
     <section
-      className="border border-bruma/25 bg-roca"
+      className="rounded-2xl border border-linea bg-ficha shadow-sm"
       aria-labelledby="certificaciones"
     >
-      <div className="border-b border-bruma/25 px-5 py-4">
+      <div className="border-b border-linea px-5 py-4">
         <h2
           id="certificaciones"
-          className="font-display text-subtitulo font-semibold text-sal"
+          className="font-display text-subtitulo font-semibold text-tinta"
         >
           Certificaciones
         </h2>
-        <p className="mt-1 text-micro text-bruma">
+        <p className="mt-1 text-micro text-piedra">
           Normas y habilitaciones acreditadas, con su estado y vencimiento.
         </p>
       </div>
       {certificaciones.length === 0 ? (
-        <p className="p-5 text-detalle text-bruma">
+        <p className="p-5 text-detalle text-piedra">
           Este proveedor no tiene certificaciones acreditadas.
         </p>
       ) : (
-        <ul className="divide-y divide-bruma/15">
+        <ul className="divide-y divide-linea">
           {certificaciones.map((c) => (
             <FilaCertificacion key={claveCertificacion(c)} cert={c} />
           ))}
@@ -373,8 +373,8 @@ function FilaCertificacion({ cert: c }: { cert: CertificacionAcreditada }) {
   return (
     <li className="flex flex-wrap items-start justify-between gap-3 px-5 py-4">
       <div className="min-w-0">
-        <p className="font-medium text-sal">{c.certificacion.nombre}</p>
-        <p className="mt-0.5 text-micro text-bruma">
+        <p className="font-medium text-tinta">{c.certificacion.nombre}</p>
+        <p className="mt-0.5 text-micro text-piedra">
           {[
             c.certificacion.ambito === "producto" ? "Producto" : "Empresa",
             c.organismo,
@@ -384,7 +384,7 @@ function FilaCertificacion({ cert: c }: { cert: CertificacionAcreditada }) {
             .join(" · ")}
         </p>
         {c.fechaVencimiento && (
-          <p className="mt-0.5 text-micro text-bruma">
+          <p className="mt-0.5 text-micro text-piedra">
             Vence el {formatoFecha(c.fechaVencimiento)}
           </p>
         )}
@@ -392,10 +392,10 @@ function FilaCertificacion({ cert: c }: { cert: CertificacionAcreditada }) {
       <span
         className={
           alerta
-            ? "bg-senal px-2 py-0.5 text-micro font-semibold text-grafito"
+            ? "bg-senal rounded-md px-2 py-0.5 text-micro font-semibold text-tinta"
             : c.estado === "verificado"
-              ? "border border-cobre/40 px-2 py-0.5 text-micro text-sal"
-              : "border border-bruma/40 px-2 py-0.5 text-micro text-bruma"
+              ? "border border-cobre/40 rounded-md px-2 py-0.5 text-micro text-tinta"
+              : "border border-linea rounded-md px-2 py-0.5 text-micro text-piedra"
         }
       >
         {ETIQUETA_ESTADO_CERT[c.estado]}
@@ -411,16 +411,16 @@ function TrustScoreFicha({
 }) {
   return (
     <section
-      className="border border-bruma/25 bg-roca p-5"
+      className="rounded-2xl border border-linea bg-ficha shadow-sm p-5"
       aria-labelledby="trust-score"
     >
       <h2
         id="trust-score"
-        className="font-display text-subtitulo font-semibold text-sal"
+        className="font-display text-subtitulo font-semibold text-tinta"
       >
         Desglose del trust score
       </h2>
-      <p className="mt-1 text-micro text-bruma">
+      <p className="mt-1 text-micro text-piedra">
         Cada grupo de señales aporta hasta su peso en el puntaje total.
       </p>
       <ul className="mt-4 space-y-4">
@@ -429,19 +429,19 @@ function TrustScoreFicha({
           return (
             <li key={g.clave}>
               <div className="flex items-baseline justify-between gap-3">
-                <p className="text-detalle font-semibold text-sal">
+                <p className="text-detalle font-semibold text-tinta">
                   {g.nombre}
-                  <span className="ml-1.5 text-micro font-normal text-bruma">
+                  <span className="ml-1.5 text-micro font-normal text-piedra">
                     peso {g.peso}%
                   </span>
                 </p>
-                <p className="text-detalle text-bruma">
+                <p className="text-detalle text-piedra">
                   {puntos} / {g.peso}
                 </p>
               </div>
-              <p className="mt-0.5 text-micro text-bruma">{g.senales}</p>
+              <p className="mt-0.5 text-micro text-piedra">{g.senales}</p>
               <div
-                className="mt-1.5 h-1 bg-bruma/20"
+                className="mt-1.5 h-1 bg-linea"
                 role="img"
                 aria-label={`${g.nombre}: ${puntos} de ${g.peso} puntos`}
               >
@@ -461,18 +461,18 @@ function TrustScoreFicha({
 function FuenteFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle }) {
   return (
     <section
-      className="border border-bruma/25 bg-roca p-5"
+      className="rounded-2xl border border-linea bg-ficha shadow-sm p-5"
       aria-labelledby="fuente"
     >
       <h2
         id="fuente"
-        className="font-display text-subtitulo font-semibold text-sal"
+        className="font-display text-subtitulo font-semibold text-tinta"
       >
         Fuente de verificación
       </h2>
-      <p className="mt-2 text-detalle text-sal">{ETIQUETA_FUENTE[p.fuente]}</p>
+      <p className="mt-2 text-detalle text-tinta">{ETIQUETA_FUENTE[p.fuente]}</p>
       {p.registroJujuyEstado && (
-        <p className="mt-1 text-detalle text-bruma">
+        <p className="mt-1 text-detalle text-piedra">
           Registro Provincial de Jujuy:{" "}
           {p.registroJujuyEstado === "aprobado" ? "aprobado" : "pendiente"}
         </p>
@@ -482,7 +482,7 @@ function FuenteFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle }
           href={p.fuenteUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-block text-detalle text-bruma underline underline-offset-4 hover:text-sal"
+          className="mt-3 inline-block text-detalle text-piedra underline underline-offset-4 hover:text-tinta"
         >
           Visitar la fuente
         </a>
@@ -515,20 +515,20 @@ function DatosFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle })
 
   return (
     <section
-      className="border border-bruma/25 bg-roca p-5"
+      className="rounded-2xl border border-linea bg-ficha shadow-sm p-5"
       aria-labelledby="datos"
     >
       <h2
         id="datos"
-        className="font-display text-subtitulo font-semibold text-sal"
+        className="font-display text-subtitulo font-semibold text-tinta"
       >
         Datos del proveedor
       </h2>
       <dl className="mt-3 space-y-2 text-detalle">
         {filas.map(([etiqueta, valor]) => (
           <div key={etiqueta} className="flex flex-wrap gap-x-2">
-            <dt className="shrink-0 text-bruma">{etiqueta}</dt>
-            <dd className="min-w-0 break-words text-sal">{valor}</dd>
+            <dt className="shrink-0 text-piedra">{etiqueta}</dt>
+            <dd className="min-w-0 break-words text-tinta">{valor}</dd>
           </div>
         ))}
       </dl>

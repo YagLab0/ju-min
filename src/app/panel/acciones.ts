@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 
 import { consultarAlAgente } from "@/lib/agente";
+import { exigirSesion } from "@/lib/auth";
 import { decidirRecomendacion } from "@/lib/compras";
 
 /** La interfaz de usuario invoca al agente en el servidor y no conoce su
@@ -12,6 +13,7 @@ import { decidirRecomendacion } from "@/lib/compras";
 export async function consultarAlAgenteDesdePanel(
   formData: FormData,
 ): Promise<void> {
+  await exigirSesion();
   const mensaje = String(formData.get("mensaje") ?? "").trim();
   const insumoId = String(formData.get("insumo_id") ?? "").trim();
   if (!mensaje) return;
@@ -30,6 +32,7 @@ export async function consultarAlAgenteDesdePanel(
 export async function decidirRecomendacionDesdePanel(
   formData: FormData,
 ): Promise<void> {
+  await exigirSesion();
   const recomendacionId = String(
     formData.get("recomendacion_id") ?? "",
   ).trim();
