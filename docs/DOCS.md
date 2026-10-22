@@ -21,7 +21,8 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 | Documento | Contenido |
 |---|---|
 | [schema-base-de-datos.md](schema-base-de-datos.md) | Decisiones de modelado, diagrama ER, DDL completo, vista del explorer, función `cumple_requisitos()` y mapeo de los mocks a tablas |
-| [supabase-local.md](supabase-local.md) | Cómo levantar Supabase local con la CLI (Docker) o con un docker-compose mínimo, y conexión desde Next.js |
+| [usuarios-auth.md](usuarios-auth.md) | Modelo de usuarios sobre Supabase Auth: perfiles, roles, trigger de signup, RLS por minera, usuarios de prueba y uso de la API sin página de login |
+| [supabase-local.md](supabase-local.md) | Cómo levantar Supabase local con la CLI (Docker) o con un docker-compose mínimo, compartir la instancia por LAN y conexión desde Next.js |
 
 ## Plan
 

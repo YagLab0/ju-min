@@ -429,6 +429,39 @@ cross join (values
 join insumos i on i.nombre = s.ins
 where m.nombre = 'Sales de Jujuy S.A.';
 
+-- ============================ USUARIOS (auth) ================================
+-- Usuarios de prueba con login email/password. El trigger handle_new_user()
+-- crea su perfil en public.usuarios tomando nombre/rol/minera_id de
+-- raw_user_meta_data. Password de todos: "ju-min-demo"
+
+insert into auth.users (
+  instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+)
+select
+  '00000000-0000-0000-0000-000000000000',
+  gen_random_uuid(),
+  'authenticated', 'authenticated',
+  u.email,
+  extensions.crypt('ju-min-demo', extensions.gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  jsonb_build_object('nombre', u.nombre, 'rol', u.rol, 'minera_id', m.id::text),
+  now(), now(), '', '', '', ''
+from (values
+  ('admin@salesdejujuy.ju-min.local',     'Marina Cabrera',  'admin'),
+  ('comprador@salesdejujuy.ju-min.local', 'Julián Paredes',  'comprador'),
+  ('aprobador@salesdejujuy.ju-min.local', 'Carla Giménez',   'aprobador')
+) as u(email, nombre, rol)
+join mineras m on m.nombre = 'Sales de Jujuy S.A.';
+
+insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+select gen_random_uuid(), u.id, u.id::text,
+       jsonb_build_object('sub', u.id::text, 'email', u.email),
+       'email', now(), now(), now()
+from auth.users u;
+
 -- ============================ ENTREGAS (OTIF) ================================
 
 insert into entregas (proveedor_id, insumo_id, fecha_compromiso, fecha_entrega, conforme)
