@@ -1,4 +1,4 @@
--- Proveedores y su evidencia de compliance (DOCS.md §4.3)
+-- Proveedores y su evidencia de compliance (docs/schema-base-de-datos.md §4.3)
 
 create table proveedores (
   id                   uuid primary key default gen_random_uuid(),

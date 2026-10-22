@@ -1,4 +1,4 @@
--- Vista del explorer, función de homologación y trigger updated_at (DOCS.md §4.4)
+-- Vista del explorer, función de homologación y trigger updated_at (docs/schema-base-de-datos.md §4.4)
 
 -- updated_at automático
 create or replace function set_updated_at()

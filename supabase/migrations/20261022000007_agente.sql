@@ -1,4 +1,4 @@
--- Loop del agente: consultas, recomendaciones e historial operativo (DOCS.md §4.3)
+-- Loop del agente: consultas, recomendaciones e historial operativo (docs/schema-base-de-datos.md §4.3)
 
 create table consultas (
   id         uuid primary key default gen_random_uuid(),

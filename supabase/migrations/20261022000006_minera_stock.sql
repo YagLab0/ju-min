@@ -1,4 +1,4 @@
--- Mineras clientes y su stock de insumos (DOCS.md §4.3)
+-- Mineras clientes y su stock de insumos (docs/schema-base-de-datos.md §4.3)
 
 create table mineras (
   id         uuid primary key default gen_random_uuid(),

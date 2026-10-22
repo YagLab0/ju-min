@@ -1,4 +1,4 @@
--- Insumos y ofertas de proveedores (DOCS.md §4.3)
+-- Insumos y ofertas de proveedores (docs/schema-base-de-datos.md §4.3)
 
 create table insumos (
   id             uuid primary key default gen_random_uuid(),

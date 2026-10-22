@@ -1,4 +1,4 @@
--- Catálogos: categorías de insumos/servicios, certificaciones y requisitos (DOCS.md §4.3)
+-- Catálogos: categorías de insumos/servicios, certificaciones y requisitos (docs/schema-base-de-datos.md §4.3)
 
 create table categorias (
   id               uuid primary key default gen_random_uuid(),
@@ -21,7 +21,7 @@ create table certificaciones (
   unique (codigo, ambito)
 );
 
--- Qué exige cada categoría de insumo (regla de homologación, DOCS.md §3.3)
+-- Qué exige cada categoría de insumo (regla de homologación, docs/modelo-clasificacion.md §3.3)
 create table requisitos_categoria (
   id               uuid primary key default gen_random_uuid(),
   categoria_id     uuid not null references categorias(id) on delete cascade,
