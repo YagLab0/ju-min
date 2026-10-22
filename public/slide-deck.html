@@ -143,6 +143,29 @@
   }
   .nav .dot { width: 9px; height: 9px; border-radius: 99px; background: #4a443b; }
   .nav .dot.on { background: var(--senal); }
+  .borde {
+    position: fixed; top: 0; bottom: 0; z-index: 10;
+    width: clamp(56px, 8vw, 120px);
+    display: grid; place-items: center;
+    border: 0; padding: 0; cursor: pointer;
+    background: transparent; color: #b8b0a2;
+    font-size: clamp(32px, 4vw, 52px); line-height: 1;
+    transition: color .15s, background .15s, opacity .15s;
+  }
+  .borde-izq { left: 0; }
+  .borde-der { right: 0; }
+  .borde span { opacity: .35; transition: opacity .15s; }
+  .borde:hover span, .borde:focus-visible span { opacity: 1; }
+  .borde:hover, .borde:focus-visible { color: var(--senal); outline: none; }
+  .borde-izq:hover, .borde-izq:focus-visible {
+    background: linear-gradient(90deg, rgba(245,179,1,.12), transparent);
+  }
+  .borde-der:hover, .borde-der:focus-visible {
+    background: linear-gradient(-90deg, rgba(245,179,1,.12), transparent);
+  }
+  /* Oculto en los extremos: sigue capturando el clic para que no llegue
+     al avance global (ir() clampea el índice y es no-op). */
+  .borde.oculto { opacity: 0; cursor: default; }
 </style>
 </head>
 <body>
@@ -383,10 +406,14 @@
 </div>
 
 <div class="nav" id="nav"></div>
+<button type="button" class="borde borde-izq" id="ant" aria-label="Lámina anterior"><span aria-hidden="true">‹</span></button>
+<button type="button" class="borde borde-der" id="sig" aria-label="Lámina siguiente"><span aria-hidden="true">›</span></button>
 
 <script>
   const slides = [...document.querySelectorAll('.slide')];
   const nav = document.getElementById('nav');
+  const ant = document.getElementById('ant');
+  const sig = document.getElementById('sig');
   let i = 0;
   slides.forEach((_, n) => {
     const d = document.createElement('div');
@@ -398,12 +425,19 @@
     i = Math.max(0, Math.min(slides.length - 1, n));
     slides.forEach((s, k) => s.classList.toggle('activa', k === i));
     nav.querySelectorAll('.dot').forEach((d, k) => d.classList.toggle('on', k === i));
+    ant.classList.toggle('oculto', i === 0);
+    sig.classList.toggle('oculto', i === slides.length - 1);
+    ant.disabled = i === 0;
+    sig.disabled = i === slides.length - 1;
   }
+  ant.onclick = (e) => { e.stopPropagation(); ir(i - 1); };
+  sig.onclick = (e) => { e.stopPropagation(); ir(i + 1); };
+  ir(0);
   addEventListener('keydown', (e) => {
     if (['ArrowRight', 'PageDown', ' '].includes(e.key)) ir(i + 1);
     if (['ArrowLeft', 'PageUp'].includes(e.key)) ir(i - 1);
   });
-  addEventListener('click', (e) => { if (e.target.closest('.nav')) return; ir(i + 1); });
+  addEventListener('click', (e) => { if (e.target.closest('.nav, .borde')) return; ir(i + 1); });
 </script>
 </body>
 </html>

@@ -60,6 +60,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-5 py-6 text-detalle text-piedra sm:flex-row sm:items-center sm:justify-between">
               <span className="font-display font-semibold text-tinta">Jumin</span>
               <p>Demo sin transacciones reales: el contacto con proveedores es simulado.</p>
+              {/* El deck del pitch vive en public/ y se sirve tal cual. */}
+              <a
+                href="/slide-deck.html"
+                className="font-semibold text-cobre underline decoration-cobre/40 underline-offset-2 transition-colors hover:text-tinta hover:decoration-tinta"
+              >
+                Deck de presentación
+              </a>
             </div>
           </footer>
         </TooltipProvider>

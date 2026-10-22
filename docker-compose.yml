@@ -1,0 +1,40 @@
+# Postgres pelado para la demo (Opción B de docs/supabase-local.md).
+# Alternativa liviana a `pnpm supabase start`: solo la base, sin
+# PostgREST/Auth/Storage/Studio — la app no puede usarla como fuente de
+# datos (AdaptadorSupabase habla con la API de Supabase), sirve para
+# inspeccionar el schema y el seed con psql.
+#
+# Uso:  docker compose up -d        # crea el contenedor, migra y siembra
+#       docker compose down -v      # resetea (borra el volumen y resiembra)
+#
+# DB_PORT permite correrla a la vez que el stack de la CLI de Supabase
+# (que ya ocupa 54322): DB_PORT=54330 docker compose up -d
+
+services:
+  db:
+    # Misma imagen que usa la CLI de Supabase: trae los schemas auth y
+    # storage que las migraciones referencian (auth.users, storage.buckets).
+    image: public.ecr.aws/supabase/postgres:17.11.0.004
+    container_name: ju-min-db
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-54322}:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Las migraciones NO van a /docker-entrypoint-initdb.d/migrations: la
+      # imagen ya trae ahí sus propias migraciones internas y el mount las
+      # ocultaría. Se monta todo supabase/ y un script zz-* que corre después
+      # del migrate.sh interno (orden alfabético en initdb.d).
+      - ./supabase:/ju-min:ro
+      - ./scripts/db-init.sh:/docker-entrypoint-initdb.d/zz-ju-min-init.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
