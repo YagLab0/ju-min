@@ -10,13 +10,13 @@ Spec: `docs/orden-desarrollo.md` (secciones "Módulo de dominio de compras" y "T
 
 **Status:** ready-for-agent
 
-- [ ] Los tipos del dominio siguen el glosario: Minera, Proveedor verificado (con fuente de verificación), Insumo, Oferta, Trust score (valor + desglose), Stock (con punto de reorden y consumo), Consulta, Recomendación (pendiente, aprobada, rechazada)
-- [ ] Las páginas consumen solo el módulo de dominio de compras, nunca el seed directamente
-- [ ] La fuente de datos está detrás de un adaptador; el seed mock es la implementación actual
-- [ ] `/proveedores` lista proveedores verificados con trust score, ubicación y certificaciones
-- [ ] Filtro por insumo o categoría, búsqueda por nombre y orden por trust score funcionan juntos
-- [ ] Estado vacío con indicación de cómo ampliar la búsqueda
-- [ ] Vitest y Playwright instalados como dependencias de desarrollo (versiones publicadas hace al menos 7 días) con scripts en `package.json`
-- [ ] Tests de Vitest del módulo de dominio por su interfaz pública: filtros, búsqueda y orden
-- [ ] Test E2E de Playwright: aplicar un filtro en `/proveedores` reduce el listado al esperado
-- [ ] `pnpm build`, `pnpm lint` y los tests pasan
+- [x] Los tipos del dominio siguen el glosario: Minera, Proveedor verificado (con fuente de verificación), Insumo, Oferta, Trust score (valor + desglose), Stock (con punto de reorden y consumo), Consulta, Recomendación (pendiente, aprobada, rechazada)
+- [x] Las páginas consumen solo el módulo de dominio de compras, nunca el seed directamente
+- [x] La fuente de datos está detrás de un adaptador; el seed mock es la implementación actual
+- [x] `/proveedores` lista proveedores verificados con trust score, ubicación y certificaciones
+- [x] Filtro por insumo o categoría, búsqueda por nombre y orden por trust score funcionan juntos
+- [x] Estado vacío con indicación de cómo ampliar la búsqueda
+- [x] Vitest y Playwright instalados como dependencias de desarrollo (versiones publicadas hace al menos 7 días) con scripts en `package.json`
+- [x] Tests de Vitest del módulo de dominio por su interfaz pública: filtros, búsqueda y orden
+- [x] Test E2E de Playwright: aplicar un filtro en `/proveedores` reduce el listado al esperado
+- [x] `pnpm build`, `pnpm lint` y los tests pasan
