@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { BotonContactoProveedor } from "@/components/contacto-proveedor";
+import { arquetipoParaInsumo } from "@/components/insumo-escena";
+import { PreviewInsumo } from "@/components/preview-insumo";
 import {
   obtenerProveedorVerificado,
   type CertificacionAcreditada,
@@ -283,12 +285,26 @@ function OfertasFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle 
                   className="border-b border-linea last:border-b-0"
                 >
                   <td className="px-5 py-3">
-                    <p className="font-medium text-tinta">{o.insumo.nombre}</p>
-                    {o.insumo.especificacion && (
-                      <p className="text-micro text-piedra">
-                        {o.insumo.especificacion}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {/* Miniatura 3D del insumo (mismo renderer compartido
+                          que las cards del marketplace). */}
+                      <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-linea bg-papel">
+                        <PreviewInsumo
+                          arquetipo={arquetipoParaInsumo(o.insumo.nombre)}
+                          className="absolute inset-0"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-tinta">
+                          {o.insumo.nombre}
+                        </p>
+                        {o.insumo.especificacion && (
+                          <p className="text-micro text-piedra">
+                            {o.insumo.especificacion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3 font-display font-semibold text-tinta">
                     {formatoPrecio(o.precio, o.moneda)}

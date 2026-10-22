@@ -3,6 +3,8 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
+import { arquetipoParaInsumo } from "@/components/insumo-escena";
+import { PreviewInsumo } from "@/components/preview-insumo";
 import {
   listarHistorialConsultas,
   listarRecomendacionesDecididas,
@@ -260,6 +262,15 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
         <span className="shrink-0 rounded-md bg-senal px-1.5 py-0.5 text-micro font-semibold text-tinta">
           En alerta
         </span>
+      </div>
+
+      {/* Preview 3D del insumo en alerta (mismo renderer compartido que las
+          cards de proveedores). */}
+      <div className="relative mt-3 h-16 overflow-hidden rounded-lg border border-linea bg-ficha">
+        <PreviewInsumo
+          arquetipo={arquetipoParaInsumo(s.insumo.nombre)}
+          className="absolute inset-0"
+        />
       </div>
 
       <div

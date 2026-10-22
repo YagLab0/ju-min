@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { arquetipoParaInsumo } from "@/components/insumo-escena";
+import { PreviewInsumo } from "@/components/preview-insumo";
 import {
   listarCategorias,
   listarInsumos,
@@ -284,8 +286,9 @@ function formatoPrecio(precio: number, moneda: string): string {
   }).format(precio);
 }
 
-/* Placeholder visual por categoría: bloque gráfico CSS-only (sin assets)
-   con patrón determinístico según el slug y la inicial de la categoría. */
+/* Fondo del preview: patrón CSS-only determinístico según el slug con la
+   inicial de la categoría. Queda debajo del render 3D y es el respaldo si
+   WebGL no está disponible. */
 const PATRONES_CATEGORIA = [
   "bg-[repeating-linear-gradient(-45deg,var(--color-linea)_0_8px,transparent_8px_18px)]",
   "bg-[radial-gradient(var(--color-linea)_1.5px,transparent_1.5px)] bg-[size:14px_14px]",
@@ -293,20 +296,14 @@ const PATRONES_CATEGORIA = [
   "bg-[repeating-linear-gradient(0deg,var(--color-linea)_0_2px,transparent_2px_16px)]",
 ];
 
-function PlaceholderCategoria({ nombre, slug }: { nombre: string; slug: string }) {
+function FondoCategoria({ nombre, slug }: { nombre: string; slug: string }) {
   let hash = 0;
   for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
   const patron = PATRONES_CATEGORIA[Math.abs(hash) % PATRONES_CATEGORIA.length];
   return (
-    <div
-      aria-hidden="true"
-      className={`relative h-24 overflow-hidden border-b border-linea bg-papel ${patron}`}
-    >
+    <div aria-hidden="true" className={`absolute inset-0 ${patron}`}>
       <span className="absolute bottom-2 left-3 font-display text-4xl font-bold text-tinta/15">
         {nombre.slice(0, 1).toUpperCase()}
-      </span>
-      <span className="absolute bottom-2 right-3 rounded-md bg-ficha/90 px-2 py-0.5 text-micro font-semibold text-piedra ring-1 ring-linea">
-        {nombre}
       </span>
     </div>
   );
@@ -322,22 +319,44 @@ function TarjetaOferta({
   cantidadOfertas: number;
 }) {
   const categoria = p.categorias[0];
+  const conPreview = !!(categoria || oferta);
 
   return (
     <li className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm transition-shadow hover:shadow-md">
       <article className="flex h-full flex-col">
-        {categoria && (
-          <PlaceholderCategoria nombre={categoria.nombre} slug={categoria.slug} />
+        {conPreview && (
+          <div className="relative h-24 overflow-hidden border-b border-linea bg-papel">
+            {categoria && (
+              <FondoCategoria nombre={categoria.nombre} slug={categoria.slug} />
+            )}
+            <PreviewInsumo
+              arquetipo={arquetipoParaInsumo(
+                oferta?.insumo.nombre ?? categoria?.nombre ?? "",
+                categoria?.slug,
+              )}
+              className="absolute inset-0"
+            />
+            {p.estado === "homologado" && (
+              <span className="absolute right-3 top-2.5 rounded-md bg-senal px-1.5 py-0.5 text-micro font-semibold text-tinta shadow-sm">
+                homologado
+              </span>
+            )}
+            {categoria && (
+              <span className="absolute bottom-2 right-3 rounded-md bg-ficha/90 px-2 py-0.5 text-micro font-semibold text-piedra ring-1 ring-linea">
+                {categoria.nombre}
+              </span>
+            )}
+          </div>
         )}
 
-        <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex flex-1 flex-col gap-2.5 p-3.5">
           {/* Insumo de la oferta destacada */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-micro font-semibold uppercase tracking-wide text-piedra">
+              <p className="truncate text-micro font-semibold uppercase tracking-wide text-piedra">
                 {oferta?.insumo.nombre ?? "Insumos de la categoría"}
               </p>
-              <h2 className="mt-0.5 truncate font-display text-subtitulo font-semibold text-tinta">
+              <h2 className="mt-0.5 truncate font-display text-cuerpo font-semibold text-tinta">
                 <Link
                   href={`/proveedores/${p.id}`}
                   className="transition-colors hover:text-cobre"
@@ -345,13 +364,13 @@ function TarjetaOferta({
                   {p.nombreFantasia ?? p.razonSocial}
                 </Link>
               </h2>
-              <p className="text-micro text-piedra">
+              <p className="truncate text-micro text-piedra">
                 {[p.localidad, p.provincia].filter(Boolean).join(", ")}
               </p>
             </div>
             {/* Badge de trust score */}
-            <div className="shrink-0 rounded-lg border border-linea bg-papel px-2 py-1 text-center">
-              <p className="font-display text-subtitulo font-bold leading-none text-cobre">
+            <div className="shrink-0 rounded-lg border border-linea bg-papel px-1.5 py-0.5 text-center">
+              <p className="font-display text-cuerpo font-bold leading-none text-cobre">
                 {Math.round(p.trustScore.valor)}
               </p>
               <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-piedra">
@@ -362,16 +381,16 @@ function TarjetaOferta({
 
           {/* Precio, unidad y lead time de la oferta */}
           {oferta && (
-            <div className="rounded-xl border border-linea bg-papel p-3">
+            <div className="rounded-xl border border-linea bg-papel px-3 py-2">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="font-display text-subtitulo font-bold text-tinta">
+                <p className="font-display text-cuerpo font-bold text-tinta">
                   {formatoPrecio(oferta.precio, oferta.moneda)}
                 </p>
                 <p className="text-micro text-piedra">
                   por {oferta.insumo.unidad}
                 </p>
               </div>
-              <p className="mt-1 text-micro text-piedra">
+              <p className="mt-0.5 text-micro text-piedra">
                 {oferta.leadTimeDias === null
                   ? "Plazo a convenir"
                   : `Entrega en ${oferta.leadTimeDias} días`}
@@ -381,11 +400,12 @@ function TarjetaOferta({
             </div>
           )}
 
-          <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+          <div className="mt-auto flex items-center justify-between gap-3">
             <p className="text-micro text-piedra">
               {cantidadOfertas}{" "}
               {cantidadOfertas === 1 ? "oferta publicada" : "ofertas publicadas"}
-              {p.estado === "homologado" && (
+              {/* Sin bloque de preview el tag vuelve a su lugar en el pie. */}
+              {p.estado === "homologado" && !conPreview && (
                 <span className="ml-2 rounded-md bg-senal px-1.5 py-0.5 font-semibold text-tinta">
                   homologado
                 </span>
