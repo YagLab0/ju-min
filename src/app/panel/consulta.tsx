@@ -2,7 +2,8 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { AssistantRuntimeProvider, useAui } from "@assistant-ui/react";
-import { useEveAgentRuntime } from "@assistant-ui/eve";
+import { useEveAgentRuntime, useEveReset } from "@assistant-ui/eve";
+import { MessageSquarePlusIcon } from "lucide-react";
 import { Thread } from "@/components/assistant-ui/elements/thread.aui";
 import type { ClientSessionState, MessageStreamEvent } from "eve/client";
 
@@ -32,6 +33,14 @@ function actualizarConsultaGuardada(patch: ConsultaGuardada) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(actual));
   } catch {
     // localStorage no disponible o lleno: la sesión sigue viva en el servidor.
+  }
+}
+
+function borrarConsultaGuardada() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage no disponible: la sesión sigue viva en el servidor.
   }
 }
 
@@ -83,6 +92,30 @@ function BienvenidaAgente() {
 }
 
 /**
+ * Cierra la sesión durable actual y arranca una conversación vacía. Hay que
+ * borrar el localStorage además de llamar a `reset()`: la sesión persistida
+ * puede apuntar a un run de dev que ya no existe (el server se reinicia sin
+ * `--resume` y los runs quedan dormant), y si quedara guardada el próximo
+ * reload intentaría resumirla y volvería a fallar.
+ */
+function BotonNuevaConsulta() {
+  const reset = useEveReset();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        borrarConsultaGuardada();
+        reset();
+      }}
+      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-piedra transition-colors hover:bg-foreground/5 hover:text-tinta focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+    >
+      <MessageSquarePlusIcon className="size-3.5" aria-hidden="true" />
+      Nueva conversación
+    </button>
+  );
+}
+
+/**
  * Área de consulta: monta el runtime de eve (`useEveAgentRuntime`) y renderiza
  * el Thread de assistant-ui. La sesión durable de eve se persiste en
  * localStorage para retomarla al recargar.
@@ -95,7 +128,11 @@ function ConsultaRuntime() {
     initialSession: guardada.session,
     resume: guardada.session !== undefined,
     onSessionChange(session) {
-      actualizarConsultaGuardada(session ? { session } : {});
+      if (session) {
+        actualizarConsultaGuardada({ session });
+      } else {
+        borrarConsultaGuardada();
+      }
     },
     onFinish(snapshot) {
       actualizarConsultaGuardada({
@@ -107,7 +144,14 @@ function ConsultaRuntime() {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <Thread components={{ Welcome: BienvenidaAgente }} />
+      <div className="flex h-full flex-col">
+        <div className="flex justify-end px-3 pt-2">
+          <BotonNuevaConsulta />
+        </div>
+        <div className="min-h-0 flex-1">
+          <Thread components={{ Welcome: BienvenidaAgente }} />
+        </div>
+      </div>
     </AssistantRuntimeProvider>
   );
 }
