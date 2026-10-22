@@ -34,6 +34,7 @@ Orden de migraciones, una por archivo en `supabase/migrations/`:
 | 1.8 | `00008_vistas_funciones` | vista `proveedores_explorer`, función `cumple_requisitos()`, trigger `updated_at` | todas |
 | 1.9 | `00009_storage` | bucket `documentos` (privado) + policies | — |
 | 1.10 | `00010_rls` | habilitar RLS: lectura pública (anon) de proveedores `homologado`/`validado`, escritura solo service role | todas |
+| 1.11 | `00011_usuarios` | `usuarios` (perfil sobre `auth.users`), roles, trigger `handle_new_user()`, helpers `auth_minera_id()`/`auth_rol()`, RLS por minera — ver [usuarios-auth.md](usuarios-auth.md) | 1.6, 1.10 |
 
 Verificación: `pnpm supabase db reset` corre todo limpio; chequear en Studio
 (localhost:54323) que las tablas existen.

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 // Chromium de Playwright necesita libs de sistema (nss, nspr, asound) que en
 // este WSL no están instaladas y `playwright install --with-deps` requiere
@@ -14,28 +14,49 @@ if (existsSync(pwLibs)) {
     : pwLibs;
 }
 
-/**
- * Test E2E de desarrollo contra la app real: levanta `pnpm dev` (Next + agente
- * eve) y ejerce /panel en Chromium. Corre contra Gemini con la key de
- * .env.local; no es test de CI.
- */
+// Dos modos:
+// - Por defecto: build de producción en un puerto dedicado, sin red externa.
+//   `next dev` no admite dos instancias por proyecto y un `pnpm dev` abierto a
+//   mano podría quedar escuchando en :3000 con otro estado en memoria. El
+//   puerto se puede sobreescribir con JUMIN_E2E_PORT.
+// - JUMIN_E2E_LLM=1 (`pnpm test:e2e:llm`): levanta `pnpm dev` (Next + agente
+//   eve) y corre solo el chat contra Gemini con la key de .env.local. No es
+//   test de CI: eve solo acepta requests del navegador en desarrollo.
+const conLlm = !!process.env.JUMIN_E2E_LLM;
+const puerto = conLlm ? "3000" : (process.env.JUMIN_E2E_PORT ?? "3200");
+const baseURL = `http://localhost:${puerto}`;
+const testChat = "panel-consulta.spec.ts";
+
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 180_000,
+  ...(conLlm ? { testMatch: testChat } : { testIgnore: testChat }),
+  fullyParallel: !conLlm,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  reporter: "list",
+  timeout: conLlm ? 180_000 : 30_000,
   expect: {
     // La primera respuesta del agente puede tardar: eve arranca la sesión y
     // Gemini resuelve el turno con streaming.
-    timeout: 120_000,
+    timeout: conLlm ? 120_000 : 5_000,
   },
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
+    trace: "on-first-retry",
   },
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3000/eve/v1/health",
-    reuseExistingServer: true,
-    // La primera request a /eve tarda unos segundos mientras eve arranca.
-    timeout: 180_000,
-  },
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  webServer: conLlm
+    ? {
+        command: "pnpm dev",
+        url: `${baseURL}/eve/v1/health`,
+        reuseExistingServer: true,
+        // La primera request a /eve tarda unos segundos mientras eve arranca.
+        timeout: 180_000,
+      }
+    : {
+        command: `pnpm build && pnpm start --port ${puerto}`,
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
+      },
 });

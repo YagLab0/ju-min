@@ -8,11 +8,11 @@ Spec: `docs/orden-desarrollo.md`. Vocabulario: `GLOSSARY.md`. Leer la guía de N
 
 **Status:** ready-for-agent
 
-- [ ] Cada proveedor del listado enlaza a su ficha en `/proveedores/[id]`
-- [ ] La ficha muestra las ofertas con precio, unidad, lead time y disponibilidad
-- [ ] La ficha muestra el desglose del trust score por señal (historial de entregas, certificaciones, antigüedad fiscal, etc.)
-- [ ] La ficha muestra la fuente de verificación del proveedor
-- [ ] El botón de contacto abre un modal simulado, accesible por teclado, que no hace llamadas externas
-- [ ] Un id inexistente muestra un estado de "proveedor no encontrado" con enlace al listado
-- [ ] Test de Vitest del módulo de dominio: obtener proveedor por id (existente e inexistente)
-- [ ] `pnpm build`, `pnpm lint` y los tests pasan
+- [x] Cada proveedor del listado enlaza a su ficha en `/proveedores/[id]`
+- [x] La ficha muestra las ofertas con precio, unidad, lead time y disponibilidad
+- [x] La ficha muestra el desglose del trust score por señal (historial de entregas, certificaciones, antigüedad fiscal, etc.)
+- [x] La ficha muestra la fuente de verificación del proveedor
+- [x] El botón de contacto abre un modal simulado, accesible por teclado, que no hace llamadas externas
+- [x] Un id inexistente muestra un estado de "proveedor no encontrado" con enlace al listado
+- [x] Test de Vitest del módulo de dominio: obtener proveedor por id (existente e inexistente)
+- [x] `pnpm build`, `pnpm lint` y los tests pasan

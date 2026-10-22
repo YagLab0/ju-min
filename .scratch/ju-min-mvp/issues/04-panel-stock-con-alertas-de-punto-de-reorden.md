@@ -8,11 +8,11 @@ Spec: `docs/orden-desarrollo.md`. Vocabulario: `GLOSSARY.md`. Leer la guía de N
 
 **Status:** ready-for-agent
 
-- [ ] El módulo de dominio de compras expone el stock de la minera con el estado de cada insumo (normal o en alerta) y los días de stock restantes
-- [ ] `/panel` lista los insumos con stock, punto de reorden y días restantes
-- [ ] Los insumos en alerta se distinguen visualmente y no solo por color (texto o ícono)
-- [ ] Los insumos en alerta aparecen primero o en una sección propia
-- [ ] El seed garantiza al menos un insumo en alerta al arrancar
-- [ ] El panel no tiene 3D
-- [ ] Tests de Vitest: alerta por debajo del punto de reorden, comportamiento en el borde exacto y cálculo de días de stock
-- [ ] `pnpm build`, `pnpm lint` y los tests pasan
+- [x] El módulo de dominio de compras expone el stock de la minera con el estado de cada insumo (normal o en alerta) y los días de stock restantes
+- [x] `/panel` lista los insumos con stock, punto de reorden y días restantes
+- [x] Los insumos en alerta se distinguen visualmente y no solo por color (texto o ícono)
+- [x] Los insumos en alerta aparecen primero o en una sección propia
+- [x] El seed garantiza al menos un insumo en alerta al arrancar
+- [x] El panel no tiene 3D
+- [x] Tests de Vitest: alerta por debajo del punto de reorden, comportamiento en el borde exacto y cálculo de días de stock
+- [x] `pnpm build`, `pnpm lint` y los tests pasan

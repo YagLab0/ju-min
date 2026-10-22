@@ -8,10 +8,10 @@ Spec: `docs/orden-desarrollo.md`. Vocabulario: `GLOSSARY.md`. Antes de escribir 
 
 **Status:** ready-for-agent
 
-- [ ] Hay un plan de tokens documentado en el código del tema: 4 a 6 colores con nombre, tipografías con su rol y escala tipográfica, revisado contra los defaults genéricos que enumera `frontend-design`
-- [ ] Los tokens están disponibles como variables CSS y utilidades de Tailwind, para que el 3D pueda leer los colores desde CSS
-- [ ] Las rutas raíz, `/panel` y `/proveedores` responden y comparten la navegación
-- [ ] La página y los assets del scaffold de create-next-app fueron eliminados
-- [ ] Toda la interfaz está en español y usa los términos del glosario (minera, proveedor verificado, etc.)
-- [ ] Foco visible en enlaces y botones, contraste accesible, responsive hasta mobile
-- [ ] `pnpm build` y `pnpm lint` pasan
+- [x] Hay un plan de tokens documentado en el código del tema: 4 a 6 colores con nombre, tipografías con su rol y escala tipográfica, revisado contra los defaults genéricos que enumera `frontend-design`
+- [x] Los tokens están disponibles como variables CSS y utilidades de Tailwind, para que el 3D pueda leer los colores desde CSS
+- [x] Las rutas raíz, `/panel` y `/proveedores` responden y comparten la navegación
+- [x] La página y los assets del scaffold de create-next-app fueron eliminados
+- [x] Toda la interfaz está en español y usa los términos del glosario (minera, proveedor verificado, etc.)
+- [x] Foco visible en enlaces y botones, contraste accesible, responsive hasta mobile
+- [x] `pnpm build` y `pnpm lint` pasan
