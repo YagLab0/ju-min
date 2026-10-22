@@ -19,6 +19,8 @@ justificación → aprobación humana*.
 
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS 4
+- Agente: [eve](https://eve.dev) (Vercel, beta) en `agent/`, montado en Next.js con `withEve` (`/eve/v1/*`)
+- Modelo: Gemini Flash vía Google AI Studio (`@ai-sdk/google`)
 - Package manager: **pnpm**
 - Datos: mocks en archivos TypeScript (no hay base de datos)
 
@@ -64,6 +66,7 @@ presenta como "red verificada".
 
 ```bash
 pnpm install
+echo "GOOGLE_GENERATIVE_AI_API_KEY=<tu-key>" > .env.local  # https://aistudio.google.com/apikey
 pnpm dev
 ```
 
