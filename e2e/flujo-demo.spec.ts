@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 import { CLAVE_DEMO, EMAIL_DEMO } from "./auth";
 
 // El estado del demo vive en memoria del servidor y se acumula entre
-// requests: las aserciones apuntan siempre a la consulta que este test crea
-// (la última respuesta del agente), nunca a conteos globales.
+// requests: las aserciones apuntan siempre a la recomendación que este test
+// crea (Andina EPP para el guante de nitrilo), nunca a conteos globales.
 
 test.describe("flujo completo del demo", () => {
   test("alerta de stock → agente → ficha → contacto simulado → aprobación", async ({
@@ -44,16 +44,18 @@ test.describe("flujo completo del demo", () => {
       .getByRole("button", { name: "Pedir recomendación" })
       .click();
 
-    // 4. La respuesta del agente trae la recomendación pendiente.
-    const ultimaRespuesta = page.getByRole("article", {
-      name: "Última respuesta del agente",
+    // 4. La recomendación nueva entra a la cola de pendientes.
+    const cola = page.getByRole("region", {
+      name: "Recomendaciones pendientes",
     });
-    await expect(ultimaRespuesta).toContainText(
-      "Reponer Guante de nitrilo industrial",
-    );
-    const recomendacion = ultimaRespuesta
+    // El seed trae otra pendiente de Andina EPP para el mismo insumo: la
+    // que este test crea se distingue por la justificación generada por el
+    // agente («Puntaje combinado…»).
+    const recomendacion = cola
       .getByRole("listitem")
-      .filter({ hasText: "Andina EPP" });
+      .filter({ hasText: "Andina EPP" })
+      .filter({ hasText: "Puntaje combinado" });
+    await expect(recomendacion).toContainText("Guante de nitrilo industrial");
     await expect(recomendacion).toContainText("Pendiente");
     await expect(recomendacion).toContainText("7 días");
     await expect(recomendacion).toContainText("91/100");
@@ -88,10 +90,10 @@ test.describe("flujo completo del demo", () => {
     await dialogo.getByRole("button", { name: "Cerrar" }).click();
     await expect(dialogo).toBeHidden();
 
-    // 7. Volver al panel y aprobar la recomendación.
+    // 7. Volver al panel y aprobar la recomendación desde la cola.
     await page.goBack();
     await expect(page).toHaveURL("/panel");
-    await ultimaRespuesta
+    await recomendacion
       .getByRole("button", { name: "Aprobar" })
       .click();
     await expect(recomendacion).toContainText("Aprobada");

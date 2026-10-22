@@ -9,7 +9,6 @@ import {
   listarRecomendacionesPendientes,
   listarStockMinera,
   obtenerMinera,
-  obtenerUltimaConsulta,
   type ConsultaDetallada,
   type Oferta,
   type RecomendacionDetallada,
@@ -66,13 +65,6 @@ export default function Panel() {
             fallback={<PanelCargando texto="Cargando las alertas de stock…" />}
           >
             <Alertas />
-          </Suspense>
-          <Suspense
-            fallback={
-              <PanelCargando texto="Cargando la última respuesta del agente…" />
-            }
-          >
-            <RespuestaReciente />
           </Suspense>
           <Suspense
             fallback={<PanelCargando texto="Cargando la cola de pendientes…" />}
@@ -303,51 +295,6 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
         </button>
       </form>
     </li>
-  );
-}
-
-// ---------- Última respuesta del agente ----------
-
-async function RespuestaReciente() {
-  await connection();
-  const ultima = await obtenerUltimaConsulta();
-  if (!ultima) return null;
-
-  return <UltimaRespuesta consulta={ultima} />;
-}
-
-function UltimaRespuesta({ consulta }: { consulta: ConsultaDetallada }) {
-  return (
-    <article
-      aria-label="Última respuesta del agente"
-      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-display font-semibold text-tinta">
-          Última respuesta del agente
-        </h3>
-        <p className="text-micro text-piedra">
-          {formatoFecha(consulta.creadaEn)}
-        </p>
-      </div>
-      <p className="mt-2 text-detalle text-piedra">
-        Consulta: «{consulta.mensaje}»
-      </p>
-      <p className="mt-2 text-cuerpo text-tinta">
-        {consulta.respuesta ?? "Sin respuesta."}
-      </p>
-      {consulta.recomendaciones.length === 0 ? (
-        <p className="mt-3 text-detalle text-piedra">
-          La consulta no produjo recomendaciones.
-        </p>
-      ) : (
-        <ul className="mt-4 grid gap-3">
-          {consulta.recomendaciones.map((r) => (
-            <TarjetaRecomendacion key={r.id} rec={r} />
-          ))}
-        </ul>
-      )}
-    </article>
   );
 }
 
