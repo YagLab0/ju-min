@@ -46,39 +46,59 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres
 
 ### Opción B: docker-compose mínimo (solo Postgres)
 
-Si para la demo alcanza con Postgres pelado (sin Auth/Realtime/Studio), un
-`docker-compose.yml` chico con la imagen oficial de Supabase:
+Si para la demo alcanza con Postgres pelado (sin Auth/Realtime/Studio), el
+`docker-compose.yml` de la raíz levanta **un solo contenedor** (`ju-min-db`)
+con la misma imagen `supabase/postgres` que usa la CLI — necesaria porque el
+schema referencia `auth.users` y `storage.buckets`, que esa imagen ya trae.
 
-```yaml
-# docker-compose.yml — propuesta, no implementado
-services:
-  db:
-    image: supabase/postgres:17.4.1.043
-    container_name: ju-min-db
-    restart: unless-stopped
-    ports:
-      - "54322:5432"
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    volumes:
-      - db-data:/var/lib/postgresql/data
-      - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations:ro
-      - ./supabase/seed.sql:/docker-entrypoint-initdb.d/z-seed.sql:ro
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+#### Crear el contenedor y poblar la base
 
-volumes:
-  db-data:
+```bash
+docker compose up -d
 ```
 
-`docker compose up -d` y `DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres`.
-En este caso el acceso desde Next.js sería vía `postgres.js`/`drizzle`/`prisma`
-en vez del cliente Supabase — **trade-off**: menos servicios, pero se pierde
-Storage para los documentos y Studio para inspección visual.
+El primer arranque hace todo solo — corre `scripts/db-init.sh` desde
+`/docker-entrypoint-initdb.d`, que aplica en orden:
+
+1. `supabase/migrations/*.sql` (el schema versionado, igual que la CLI)
+2. `supabase/seed.sql` + `supabase/seed-data/*.sql` (mismo orden que
+   `[db.seed].sql_paths` en `supabase/config.toml`)
+
+Antes de eso el script crea a mano las piezas que en el stack completo
+levantan los servicios y acá no existen: `storage.buckets`/`storage.objects`
+(Storage-API), `auth.identities` y las columnas nuevas de `auth.users`
+(GoTrue). Todo corre como `supabase_admin`.
+
+> **Puerto ocupado**: el stack de la CLI también usa `54322`. Para correr
+> las dos cosas a la vez: `DB_PORT=54330 docker compose up -d`
+> (y `DATABASE_URL=...localhost:54330/postgres`).
+
+#### Verificar que quedó poblada
+
+```bash
+docker exec ju-min-db psql -U postgres -c '\dt public.*'        # tablas
+docker exec ju-min-db psql -U postgres -c 'select count(*) from proveedores'  # ~277
+docker logs ju-min-db | grep 'ju-min init'                      # qué corrió
+```
+
+#### Resetear y resembrar
+
+El init solo corre en el primer arranque del volumen. Para volver a correr
+migraciones + seed desde cero:
+
+```bash
+docker compose down -v   # borra el volumen db-data
+docker compose up -d     # recrea, migra y siembra
+```
+
+Conexión directa: `DATABASE_URL=postgresql://postgres:postgres@localhost:54322/postgres`,
+o `docker exec -it ju-min-db psql -U postgres`.
+
+**Trade-off**: sin PostgREST/GoTrue/Storage-API/Studio, la app **no** puede
+usar esta base como fuente de datos (`AdaptadorSupabase` habla con la API de
+Supabase, no con Postgres directo). Sirve para inspeccionar el schema y el
+seed con psql, o para conectar un cliente propio vía
+`postgres.js`/`drizzle`/`prisma`. Para la app hay que usar la Opción A.
 
 ### Recomendación
 

@@ -37,4 +37,4 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 | Documento | Contenido |
 |---|---|
 | [pitch.md](pitch.md) | Guion extendido del pitch (5 min): gancho, solución, demo, defensibilidad, modelo/roadmap y respuestas al jurado |
-| [slide-deck.html](slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — abrir en el navegador |
+| [slide-deck.html](../public/slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — se sirve desde la app en `/slide-deck.html` |
