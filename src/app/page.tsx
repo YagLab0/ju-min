@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Estante3D } from "@/components/estante-3d";
 
 export default function Landing() {
   return (
@@ -31,19 +32,9 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Zona reservada para el estante 3D (issue 07) */}
-        <div className="border border-bruma/25 bg-roca">
-          <div className="franja-seguridad h-2" aria-hidden="true" />
-          <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="font-display text-titulo font-semibold text-sal">
-              Estante de insumos
-            </p>
-            <p className="max-w-xs text-detalle text-bruma">
-              Acá va la pieza 3D: el stock baja, cruza el punto de reorden y el
-              agente entra con una recomendación.
-            </p>
-          </div>
-        </div>
+        {/* La pieza protagonista: el estante de insumos con la secuencia
+            stock bajando → punto de reorden → alerta → recomendación */}
+        <Estante3D />
       </section>
 
       {/* El flujo de ju-min, en la secuencia real del demo */}
@@ -109,16 +100,28 @@ export default function Landing() {
               proveedor verificado tiene un trust score calculado sobre su
               historial de entregas, certificaciones y antigüedad fiscal.
             </p>
+            <Link
+              href="/proveedores"
+              className="mt-5 inline-block border border-bruma/40 px-5 py-2.5 font-display font-semibold text-sal transition-colors hover:border-senal hover:text-senal"
+            >
+              Explorar la red de proveedores
+            </Link>
           </div>
           <div>
             <h2 className="font-display text-titulo font-bold text-sal">
-              Suscripción
+              Suscripción y roadmap
             </h2>
             <p className="mt-4 text-cuerpo text-bruma">
               ju-min funciona por suscripción para la minera. El siguiente
-              paso son los pagos automáticos al detectar falta de stock,
-              siempre con aprobación humana previa.
+              paso del roadmap son los pagos automáticos al detectar falta de
+              stock, siempre con aprobación humana previa.
             </p>
+            <Link
+              href="/panel"
+              className="mt-5 inline-block bg-senal px-5 py-2.5 font-display font-semibold text-grafito transition-colors hover:bg-sal"
+            >
+              Probar el panel de la minera
+            </Link>
           </div>
         </div>
       </section>

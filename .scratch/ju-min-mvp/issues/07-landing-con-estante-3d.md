@@ -10,16 +10,16 @@ Spec: `docs/orden-desarrollo.md` (sección "Landing y 3D"). Vocabulario: `GLOSSA
 
 **Status:** ready-for-agent
 
-- [ ] El estante muestra al menos tres insumos distintos y reconocibles, modelados por código
-- [ ] La secuencia stock bajando → cruce del punto de reorden → alerta → recomendación del agente se entiende sin texto adicional
-- [ ] three.js se importa dinámicamente cuando el estante se acerca a la pantalla
-- [ ] Los colores del 3D salen de las variables CSS del tema
-- [ ] Con `prefers-reduced-motion` o navegación por teclado, el estante queda en una pose fija que muestra la alerta
-- [ ] La animación se pausa fuera de pantalla y con la pestaña oculta
-- [ ] Ante pérdida del contexto WebGL o sin WebGL se ve un SVG de respaldo equivalente, que también se muestra hasta que el canvas renderiza
-- [ ] Al desmontar se liberan geometrías, materiales, texturas y el renderer; el pixel ratio está limitado
-- [ ] El estante es decorativo para lectores de pantalla y su mensaje también está en texto
-- [ ] Secciones de fuentes de verificación y de suscripción/roadmap, con accesos a `/panel` y `/proveedores`
-- [ ] Sin animaciones de scroll ni de entrada fuera del estante
-- [ ] Responsive hasta mobile, revisado con capturas
-- [ ] `pnpm build` y `pnpm lint` pasan
+- [x] El estante muestra al menos tres insumos distintos y reconocibles, modelados por código
+- [x] La secuencia stock bajando → cruce del punto de reorden → alerta → recomendación del agente se entiende sin texto adicional
+- [x] three.js se importa dinámicamente cuando el estante se acerca a la pantalla
+- [x] Los colores del 3D salen de las variables CSS del tema
+- [x] Con `prefers-reduced-motion` o navegación por teclado, el estante queda en una pose fija que muestra la alerta
+- [x] La animación se pausa fuera de pantalla y con la pestaña oculta
+- [x] Ante pérdida del contexto WebGL o sin WebGL se ve un SVG de respaldo equivalente, que también se muestra hasta que el canvas renderiza
+- [x] Al desmontar se liberan geometrías, materiales, texturas y el renderer; el pixel ratio está limitado
+- [x] El estante es decorativo para lectores de pantalla y su mensaje también está en texto
+- [x] Secciones de fuentes de verificación y de suscripción/roadmap, con accesos a `/panel` y `/proveedores`
+- [x] Sin animaciones de scroll ni de entrada fuera del estante
+- [x] Responsive hasta mobile, revisado con capturas
+- [x] `pnpm build` y `pnpm lint` pasan
