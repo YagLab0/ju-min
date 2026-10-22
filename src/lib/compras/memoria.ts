@@ -24,7 +24,6 @@ export class FuenteDatosMemoria implements FuenteDatosCompras {
       minera_id: consulta.mineraId,
       mensaje: consulta.mensaje,
       respuesta: consulta.respuesta,
-      estado: "pendiente",
       created_at: new Date().toISOString(),
     };
     this.tablas.consultas.push(fila);

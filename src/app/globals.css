@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "tw-shimmer";
 
 /*
  * Plan de tokens — ju-min · identidad de seguridad industrial minera
@@ -40,7 +43,13 @@
  * Escala tipográfica (base 16px, razón ≈1.25):
  *   micro 0.75 · detalle 0.875 · cuerpo 1 · subtitulo 1.25
  *   · titulo 1.75 · display 2.75
+ *
+ * Los componentes shadcn / Assistant UI usan variables semánticas
+ * (--background, --primary…): en :root se mapean a esta paleta para
+ * que el chat herede la identidad en vez del gris neutro por defecto.
  */
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-grafito: #1f1c18;
@@ -51,7 +60,6 @@
   --color-cobre: #c07a4e;
 
   --font-display: var(--font-saira-semi-condensed), "Arial Narrow", sans-serif;
-  --font-sans: var(--font-saira), "Helvetica Neue", Arial, sans-serif;
 
   --text-micro: 0.75rem;
   --text-micro--line-height: 1.4;
@@ -67,6 +75,100 @@
   --text-display--line-height: 1.05;
 }
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-saira), "Helvetica Neue", Arial, sans-serif;
+  --font-heading: var(--font-display);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  @keyframes collapsible-down {
+  from {
+    height: 0;
+    }
+  to {
+    height: var(--radix-collapsible-content-height, var(--collapsible-panel-height, auto));
+    }
+  }
+  @keyframes collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height, var(--collapsible-panel-height, auto));
+    }
+  to {
+    height: 0;
+    }
+  }
+}
+
+:root {
+  --background: var(--color-grafito);
+  --foreground: var(--color-sal);
+  --card: var(--color-roca);
+  --card-foreground: var(--color-sal);
+  --popover: var(--color-roca);
+  --popover-foreground: var(--color-sal);
+  --primary: var(--color-senal);
+  --primary-foreground: var(--color-grafito);
+  --secondary: var(--color-roca);
+  --secondary-foreground: var(--color-sal);
+  --muted: var(--color-roca);
+  --muted-foreground: var(--color-bruma);
+  --accent: var(--color-roca);
+  --accent-foreground: var(--color-sal);
+  --destructive: #e5533d;
+  --border: color-mix(in srgb, var(--color-bruma) 25%, transparent);
+  --input: color-mix(in srgb, var(--color-bruma) 40%, transparent);
+  --ring: var(--color-senal);
+  --chart-1: var(--color-senal);
+  --chart-2: var(--color-cobre);
+  --chart-3: var(--color-bruma);
+  --chart-4: var(--color-sal);
+  --chart-5: var(--color-roca);
+  --radius: 0.125rem;
+  --sidebar: var(--color-roca);
+  --sidebar-foreground: var(--color-sal);
+  --sidebar-primary: var(--color-senal);
+  --sidebar-primary-foreground: var(--color-grafito);
+  --sidebar-accent: var(--color-grafito);
+  --sidebar-accent-foreground: var(--color-sal);
+  --sidebar-border: color-mix(in srgb, var(--color-bruma) 25%, transparent);
+  --sidebar-ring: var(--color-senal);
+}
+
 /* Franja diagonal de señalización: la firma visual, de uso medido. */
 @utility franja-seguridad {
   background-image: repeating-linear-gradient(
@@ -76,10 +178,16 @@
   );
 }
 
-body {
-  background-color: var(--color-grafito);
-  color: var(--color-sal);
-  font-family: var(--font-sans);
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }
 
 /* Foco visible en toda la interfaz: anillo de señalización. */
@@ -103,3 +211,7 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+@custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));
+
+@custom-variant data-closed (&:where([data-state="closed"], [data-closed]:not([data-closed="false"])));

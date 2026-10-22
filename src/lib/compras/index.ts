@@ -542,7 +542,6 @@ function mapearConsulta(
     id: f.id,
     mensaje: f.mensaje,
     respuesta: f.respuesta,
-    estado: f.estado,
     recomendaciones: recomendaciones.map((r) => mapearRecomendacion(r, t)),
     creadaEn: f.created_at,
   };

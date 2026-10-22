@@ -1,406 +1,517 @@
--- Seed de la demo (DOCS.md §7 Fase 2): catálogos curados a mano +
--- datos de dominio verosímiles tipo CAPMIN/CAEM/Registro Jujuy.
--- Mismos datos que el seed en memoria de src/lib/compras/semilla.ts.
---
--- Prefijos de id por tabla (hex válido para uuid): categorias ca, certificaciones
--- ce, proveedores f0, insumos 10, ofertas 0f, minera b0, requisitos b1,
--- consultas c0, documentos d0, recomendaciones d1, entregas e0,
--- proveedor_certificaciones e1, contactos e2, auditorias a0, ts_historial a1,
--- stock_minera 50.
+-- ============================================================================
+-- seed.sql — pobla la BD local con datos de demo (docs/plan-implementacion.md — Fase 2)
+-- Corre automáticamente con `pnpm supabase db reset` o `pnpm supabase start`.
+-- Proveedores marcados fuente='capmin' son reales del directorio CAPMIN;
+-- los 'manual' son sintéticos para cubrir categorías sin datos públicos.
+-- ============================================================================
 
-begin;
+-- ============================ CERTIFICACIONES ================================
+-- Catálogo de normas (docs/investigacion-proveedores.md §1.3 y §1.4)
 
--- ============================ CATÁLOGOS ============================
+insert into certificaciones (nombre, codigo, tipo, ambito, organismo_tipico, descripcion) values
+  -- Sistema de gestión (empresa)
+  ('Sistema de Gestión de Calidad ISO 9001:2015', 'ISO 9001', 'sistema_gestion', 'empresa', 'IRAM / DNV / Bureau Veritas', 'Trío base de homologación — casi siempre obligatorio'),
+  ('Sistema de Gestión Ambiental ISO 14001:2015', 'ISO 14001', 'sistema_gestion', 'empresa', 'IRAM / DNV / SGS', 'Gestión ambiental, manejo de residuos'),
+  ('Seguridad y Salud Ocupacional ISO 45001:2018', 'ISO 45001', 'sistema_gestion', 'empresa', 'IRAM / Bureau Veritas', 'Ex OHSAS 18001 — seguridad del personal'),
+  ('Gestión de la Energía ISO 50001', 'ISO 50001', 'sistema_gestion', 'empresa', 'DNV', 'Cada vez más exigida por criterio ESG'),
+  ('Sistemas Antisoborno ISO 37001', 'ISO 37001', 'sistema_gestion', 'empresa', 'DNV / SGS', 'Compliance — mineras grandes'),
+  ('Seguridad de la Información ISO 27001', 'ISO 27001', 'sistema_gestion', 'empresa', 'Bureau Veritas', 'Proveedores de software/IT'),
+  ('Seguridad Vial ISO 39001', 'ISO 39001', 'sistema_gestion', 'empresa', 'IRAM', 'Transporte y logística'),
+  ('Laboratorios de ensayo ISO/IEC 17025', 'ISO 17025', 'sistema_gestion', 'proceso', 'OAA / ANAB', 'Acreditación de laboratorios de ensayo y calibración'),
 
-insert into categorias (id, nombre, slug, origen) values
-  ('ca000000-0000-4000-8000-000000000001', 'Venta de EPP', 'epp', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000002', 'Vestimenta ignífuga', 'vestimenta', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000003', 'Lubricantes', 'lubricantes', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000004', 'Combustibles', 'combustibles', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000005', 'Reactivos químicos', 'reactivos', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000006', 'Explosivos', 'explosivos', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000007', 'Medios de molienda', 'medios-molienda', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000008', 'Filtros industriales', 'filtros', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000009', 'Bombas y repuestos', 'bombas', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000010', 'Geomembranas', 'geomembranas', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000011', 'Estructuras metálicas', 'estructuras', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000012', 'Soldadura y metalmecánica', 'soldadura', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000013', 'Transporte y logística', 'transporte', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000014', 'Higiene y seguridad', 'higiene-seguridad', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000015', 'Energía', 'energia', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000016', 'Monitoreo ambiental', 'monitoreo-ambiental', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000017', 'Caños y válvulas', 'canos-valvulas', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000018', 'Repuestos de maquinaria pesada', 'repuestos-pesados', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000019', 'Servicios eléctricos', 'electricidad', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000020', 'Instrumentación y control', 'instrumentacion', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000021', 'Perforación', 'perforacion', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000022', 'Mantenimiento industrial', 'mantenimiento', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000023', 'Ingeniería y consultoría', 'ingenieria', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000024', 'Laboratorio químico', 'laboratorio', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000025', 'Neumáticos', 'neumaticos', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000026', 'Comunicaciones', 'comunicaciones', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000027', 'Capacitación y entrenamiento', 'capacitacion', 'capmin'),
-  ('ca000000-0000-4000-8000-000000000028', 'Herramientas industriales', 'herramientas', 'capmin');
+  -- Producto
+  ('Certificación de producto EPP IRAM/EN', 'IRAM-EPP', 'producto', 'producto', 'IRAM', 'EPP certificado según normas IRAM o EN (marcado CE)'),
+  ('Respiradores NIOSH', 'NIOSH-42CFR84', 'producto', 'producto', 'NIOSH', 'Aprobación de respiradores/purificadores de aire'),
+  ('Ropa ignífuga NFPA 2112', 'NFPA 2112', 'producto', 'producto', 'UL / laboratorio acreditado', 'Prendas resistentes a fuego repentino'),
+  ('Certificado de material EN 10204 3.1', 'EN 10204-3.1', 'producto', 'producto', 'Laboratorio metalúrgico', 'Trazabilidad del acero — medios de molienda, estructuras'),
+  ('Atmósferas explosivas IECEx', 'IECEx', 'producto', 'producto', 'IECEx / UL', 'Equipos eléctricos para zonas con atmósfera explosiva'),
+  ('Geomembranas HDPE GRI-GM13', 'GRI-GM13', 'producto', 'producto', 'GSI / laboratorio geosintéticos', 'Spec estándar para pilas de lixiviación y relaves'),
+  ('Fichas de seguridad GHS/CLP + SDS', 'GHS-SDS', 'producto', 'producto', 'Fabricante', 'Hoja de datos de seguridad normalizada para químicos'),
+  ('International Cyanide Management Code', 'ICMC', 'producto', 'proceso', 'ICMI', 'Obligatorio para producción/transporte de cianuro'),
+  ('Recipientes a presión ASME VIII', 'ASME VIII', 'producto', 'producto', 'Inspector autorizado ASME', 'Calderas, estanques, piping B31'),
 
-insert into certificaciones (id, nombre, codigo, tipo, ambito, organismo_tipico) values
-  ('ce000000-0000-4000-8000-000000000001', 'ISO 9001:2015 — gestión de calidad', 'ISO 9001', 'sistema_gestion', 'empresa', 'IRAM'),
-  ('ce000000-0000-4000-8000-000000000002', 'ISO 14001:2015 — gestión ambiental', 'ISO 14001', 'sistema_gestion', 'empresa', 'IRAM'),
-  ('ce000000-0000-4000-8000-000000000003', 'ISO 45001:2018 — seguridad y salud ocupacional', 'ISO 45001', 'sistema_gestion', 'empresa', 'DNV'),
-  ('ce000000-0000-4000-8000-000000000004', 'ISO 50001 — gestión energética', 'ISO 50001', 'sistema_gestion', 'empresa', 'Bureau Veritas'),
-  ('ce000000-0000-4000-8000-000000000005', 'ISO 37001 — antisoborno y compliance', 'ISO 37001', 'sistema_gestion', 'empresa', 'SGS'),
-  ('ce000000-0000-4000-8000-000000000006', 'ISO/IEC 27001 — seguridad de la información', 'ISO/IEC 27001', 'sistema_gestion', 'empresa', 'TÜV'),
-  ('ce000000-0000-4000-8000-000000000007', 'ISO 39001 — seguridad vial', 'ISO 39001', 'sistema_gestion', 'proceso', 'Bureau Veritas'),
-  ('ce000000-0000-4000-8000-000000000008', 'ISO 22301 — continuidad de negocio', 'ISO 22301', 'sistema_gestion', 'empresa', 'DNV'),
-  ('ce000000-0000-4000-8000-000000000009', 'IRAM — elementos de protección personal', 'IRAM-EPP', 'producto', 'producto', 'IRAM'),
-  ('ce000000-0000-4000-8000-000000000010', 'EN 388 — guantes de protección mecánica', 'EN-388', 'producto', 'producto', 'Entidad europea notificada'),
-  ('ce000000-0000-4000-8000-000000000011', 'ANSI/ISEA 105 — resistencia al corte', 'ANSI-ISEA-105', 'producto', 'producto', 'ANSI'),
-  ('ce000000-0000-4000-8000-000000000012', 'NIOSH 42 CFR 84 — respiradores', 'NIOSH-42CFR84', 'producto', 'producto', 'NIOSH'),
-  ('ce000000-0000-4000-8000-000000000013', 'NFPA 2112 — vestimenta ignífuga', 'NFPA-2112', 'producto', 'producto', 'NFPA'),
-  ('ce000000-0000-4000-8000-000000000014', 'EN 397 — cascos de protección industrial', 'EN-397', 'producto', 'producto', 'Entidad europea notificada'),
-  ('ce000000-0000-4000-8000-000000000015', 'GHS/CLP — hoja de seguridad (SDS)', 'GHS-SDS', 'producto', 'producto', 'Fabricante'),
-  ('ce000000-0000-4000-8000-000000000016', 'International Cyanide Management Code', 'ICMC', 'producto', 'producto', 'ICMI'),
-  ('ce000000-0000-4000-8000-000000000017', 'EN 10204 3.1 — certificado de material', 'EN-10204-3.1', 'producto', 'producto', 'Laboratorio acreditado'),
-  ('ce000000-0000-4000-8000-000000000018', 'IECEx — atmósferas explosivas', 'IECEx', 'producto', 'producto', 'IECEx'),
-  ('ce000000-0000-4000-8000-000000000019', 'ATEX — atmósferas explosivas (UE)', 'ATEX', 'producto', 'producto', 'Entidad europea notificada'),
-  ('ce000000-0000-4000-8000-000000000020', 'ASME Sección VIII — recipientes a presión', 'ASME-VIII', 'producto', 'producto', 'ASME'),
-  ('ce000000-0000-4000-8000-000000000021', 'GRI-GM13 — geomembranas HDPE', 'GRI-GM13', 'producto', 'producto', 'GSI'),
-  ('ce000000-0000-4000-8000-000000000022', 'EN 590 — especificación diésel', 'EN-590', 'producto', 'producto', 'Laboratorio acreditado'),
-  ('ce000000-0000-4000-8000-000000000023', 'ISO/IEC 17025 — laboratorio acreditado', 'ISO/IEC 17025', 'sistema_gestion', 'empresa', 'OAA'),
-  ('ce000000-0000-4000-8000-000000000024', 'Habilitación ANMaC/RENAR — materiales explosivos', 'RENAR-ANMAC', 'habilitacion_regulatoria', 'empresa', 'ANMaC'),
-  ('ce000000-0000-4000-8000-000000000025', 'Transporte de mercancías peligrosas', 'TRANSP-PELIGROSAS', 'habilitacion_regulatoria', 'proceso', 'CNRT'),
-  ('ce000000-0000-4000-8000-000000000026', 'Habilitación provincial de sustancias peligrosas', 'HAB-SUST-PELIGROSAS', 'habilitacion_regulatoria', 'empresa', 'Secretaría de Minería de Jujuy'),
-  ('ce000000-0000-4000-8000-000000000027', 'Registro Provincial de Proveedores Mineros de Jujuy', 'REG-JUJUY', 'registro', 'empresa', 'Gobierno de Jujuy'),
-  ('ce000000-0000-4000-8000-000000000028', 'Socio CAPMIN', 'CAPMIN', 'registro', 'empresa', 'CAPMIN'),
-  ('ce000000-0000-4000-8000-000000000029', 'Adherente CAEM', 'CAEM', 'registro', 'empresa', 'CAEM'),
-  ('ce000000-0000-4000-8000-000000000030', 'ISO 14064 — huella de carbono reportada', 'ISO-14064', 'esg', 'empresa', 'Bureau Veritas'),
-  ('ce000000-0000-4000-8000-000000000031', 'Reporte de sostenibilidad GRI', 'GRI', 'esg', 'empresa', 'GRI');
+  -- Habilitaciones regulatorias
+  ('Habilitación ANMaC/RENAR para explosivos', 'ANMAC-EXP', 'habilitacion_regulatoria', 'empresa', 'ANMaC', 'Fabricación, almacenamiento y comercio de explosivos'),
+  ('Transporte de mercancías peligrosas', 'TMD', 'habilitacion_regulatoria', 'empresa', 'CNRT', 'Habilitación de transporte de carga peligrosa'),
+  ('Registro Provincial de Proveedores Mineros de Jujuy', 'REG-JUJUY', 'registro', 'empresa', 'Gobierno de Jujuy', 'Decreto 290-DEyP-24 — registro oficial provincial'),
 
--- Requisitos por categoría de insumo (DOCS.md §3.3): un proveedor solo
--- puede recomendarse para un insumo si cumple los obligatorios.
-insert into requisitos_categoria (id, categoria_id, certificacion_id, obligatorio) values
-  ('b1000000-0000-4000-8000-000000000001', 'ca000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000002', 'ca000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000010', true),
-  ('b1000000-0000-4000-8000-000000000003', 'ca000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000012', false),
-  ('b1000000-0000-4000-8000-000000000004', 'ca000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000009', false),
-  ('b1000000-0000-4000-8000-000000000005', 'ca000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000006', 'ca000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000013', true),
-  ('b1000000-0000-4000-8000-000000000007', 'ca000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000008', 'ca000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000002', false),
-  ('b1000000-0000-4000-8000-000000000009', 'ca000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000022', true),
-  ('b1000000-0000-4000-8000-000000000010', 'ca000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000025', true),
-  ('b1000000-0000-4000-8000-000000000011', 'ca000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000012', 'ca000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000013', 'ca000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000002', true),
-  ('b1000000-0000-4000-8000-000000000014', 'ca000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000015', true),
-  ('b1000000-0000-4000-8000-000000000015', 'ca000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000016', false),
-  ('b1000000-0000-4000-8000-000000000016', 'ca000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000026', false),
-  ('b1000000-0000-4000-8000-000000000017', 'ca000000-0000-4000-8000-000000000006', 'ce000000-0000-4000-8000-000000000024', true),
-  ('b1000000-0000-4000-8000-000000000018', 'ca000000-0000-4000-8000-000000000006', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000019', 'ca000000-0000-4000-8000-000000000006', 'ce000000-0000-4000-8000-000000000025', true),
-  ('b1000000-0000-4000-8000-000000000020', 'ca000000-0000-4000-8000-000000000007', 'ce000000-0000-4000-8000-000000000017', true),
-  ('b1000000-0000-4000-8000-000000000021', 'ca000000-0000-4000-8000-000000000007', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000022', 'ca000000-0000-4000-8000-000000000008', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000023', 'ca000000-0000-4000-8000-000000000009', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000024', 'ca000000-0000-4000-8000-000000000009', 'ce000000-0000-4000-8000-000000000002', false),
-  ('b1000000-0000-4000-8000-000000000025', 'ca000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000021', true),
-  ('b1000000-0000-4000-8000-000000000026', 'ca000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000027', 'ca000000-0000-4000-8000-000000000011', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000028', 'ca000000-0000-4000-8000-000000000011', 'ce000000-0000-4000-8000-000000000020', false),
-  ('b1000000-0000-4000-8000-000000000029', 'ca000000-0000-4000-8000-000000000012', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000030', 'ca000000-0000-4000-8000-000000000013', 'ce000000-0000-4000-8000-000000000007', true),
-  ('b1000000-0000-4000-8000-000000000031', 'ca000000-0000-4000-8000-000000000013', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000032', 'ca000000-0000-4000-8000-000000000013', 'ce000000-0000-4000-8000-000000000025', false),
-  ('b1000000-0000-4000-8000-000000000033', 'ca000000-0000-4000-8000-000000000014', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000034', 'ca000000-0000-4000-8000-000000000014', 'ce000000-0000-4000-8000-000000000003', false),
-  ('b1000000-0000-4000-8000-000000000035', 'ca000000-0000-4000-8000-000000000015', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000036', 'ca000000-0000-4000-8000-000000000015', 'ce000000-0000-4000-8000-000000000018', false),
-  ('b1000000-0000-4000-8000-000000000037', 'ca000000-0000-4000-8000-000000000016', 'ce000000-0000-4000-8000-000000000023', true),
-  ('b1000000-0000-4000-8000-000000000038', 'ca000000-0000-4000-8000-000000000016', 'ce000000-0000-4000-8000-000000000002', false),
-  ('b1000000-0000-4000-8000-000000000039', 'ca000000-0000-4000-8000-000000000017', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000040', 'ca000000-0000-4000-8000-000000000017', 'ce000000-0000-4000-8000-000000000020', false),
-  ('b1000000-0000-4000-8000-000000000041', 'ca000000-0000-4000-8000-000000000018', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000042', 'ca000000-0000-4000-8000-000000000019', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000043', 'ca000000-0000-4000-8000-000000000019', 'ce000000-0000-4000-8000-000000000018', false),
-  ('b1000000-0000-4000-8000-000000000044', 'ca000000-0000-4000-8000-000000000020', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000045', 'ca000000-0000-4000-8000-000000000020', 'ce000000-0000-4000-8000-000000000006', false),
-  ('b1000000-0000-4000-8000-000000000046', 'ca000000-0000-4000-8000-000000000021', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000047', 'ca000000-0000-4000-8000-000000000021', 'ce000000-0000-4000-8000-000000000003', false),
-  ('b1000000-0000-4000-8000-000000000048', 'ca000000-0000-4000-8000-000000000022', 'ce000000-0000-4000-8000-000000000001', true),
-  ('b1000000-0000-4000-8000-000000000049', 'ca000000-0000-4000-8000-000000000022', 'ce000000-0000-4000-8000-000000000003', true),
-  ('b1000000-0000-4000-8000-000000000050', 'ca000000-0000-4000-8000-000000000023', 'ce000000-0000-4000-8000-000000000001', false),
-  ('b1000000-0000-4000-8000-000000000051', 'ca000000-0000-4000-8000-000000000024', 'ce000000-0000-4000-8000-000000000023', true),
-  ('b1000000-0000-4000-8000-000000000052', 'ca000000-0000-4000-8000-000000000024', 'ce000000-0000-4000-8000-000000000001', false),
-  ('b1000000-0000-4000-8000-000000000053', 'ca000000-0000-4000-8000-000000000025', 'ce000000-0000-4000-8000-000000000001', false),
-  ('b1000000-0000-4000-8000-000000000054', 'ca000000-0000-4000-8000-000000000026', 'ce000000-0000-4000-8000-000000000006', false),
-  ('b1000000-0000-4000-8000-000000000055', 'ca000000-0000-4000-8000-000000000027', 'ce000000-0000-4000-8000-000000000001', false),
-  ('b1000000-0000-4000-8000-000000000056', 'ca000000-0000-4000-8000-000000000028', 'ce000000-0000-4000-8000-000000000001', false);
+  -- ESG
+  ('Huella de carbono ISO 14064', 'ISO 14064', 'esg', 'empresa', 'DNV / SGS', 'Inventario de gases de efecto invernadero'),
+  ('Reporte de sostenibilidad GRI', 'GRI', 'esg', 'empresa', 'Auto-reportado / verificado', 'Memoria de sostenibilidad bajo estándares GRI'),
+  ('Copper Mark', 'COPPER-MARK', 'esg', 'empresa', 'The Copper Mark', 'Marco de producción responsable de cobre'),
+  ('Exámenes ocupacionales de altura geográfica', 'ALT-GEO', 'habilitacion_regulatoria', 'persona', 'Servicio médico laboral', 'Aptitud del personal para faenas +3.500 msnm');
 
--- ============================ PROVEEDORES ============================
+-- ============================ CATEGORÍAS =====================================
+-- Subset de las ~180 categorías reales de CAPMIN (docs/investigacion-proveedores.md §2)
 
-insert into proveedores (id, razon_social, nombre_fantasia, cuit, condicion_iva, fecha_constitucion, domicilio, localidad, provincia, pais, lat, lng, sitio_web, email, telefono, provincias_operacion, estado, registro_jujuy_estado, fuente, fuente_url, trust_score, trust_score_detalle) values
-  ('f0000000-0000-4000-8000-000000000001', 'Andina de Seguridad Industrial S.R.L.', 'Andina EPP', '30-70823456-7', 'responsable_inscripto', '2009-04-15', 'Av. Fascio 1225', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1858, -65.2995, 'https://www.andinaepp.com.ar', 'ventas@andinaepp.com.ar', '+54 388 424-1234', '{Jujuy,Salta}', 'homologado', 'aprobado', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 91, '{"identidad":19,"compliance":27,"desempeno":27,"esg":8,"capacidad":10}'),
-  ('f0000000-0000-4000-8000-000000000002', 'Lubricantes del Noroeste S.A.', 'LubriNOA', '30-70987654-3', 'responsable_inscripto', '2005-08-02', 'Ruta Nac. 66 km 4,5', 'Palpalá', 'Jujuy', 'AR', -24.2579, -65.2127, 'https://www.lubrinoa.com.ar', 'comercial@lubrinoa.com.ar', '+54 388 491-2200', '{Jujuy,Salta,Tucumán}', 'homologado', 'aprobado', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 87, '{"identidad":17,"compliance":26,"desempeno":26,"esg":9,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000003', 'Reactivos y Químicos San Salvador S.A.', 'Requimsa', '30-68541230-1', 'responsable_inscripto', '1998-11-20', 'Parque Industrial, manzana 7', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.2213, -65.2685, 'https://www.requimsa.com.ar', 'ventas@requimsa.com.ar', '+54 388 433-8810', '{Jujuy,Salta,Catamarca}', 'homologado', 'aprobado', 'registro_jujuy', 'https://proveedores.registrominero.jujuy.gob.ar', 94, '{"identidad":20,"compliance":28,"desempeno":28,"esg":9,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000004', 'Explosivos Andinos S.A.', 'ExploAnd', '30-71004567-8', 'responsable_inscripto', '2012-03-08', 'Zona Industrial Perico, lote 22', 'Perico', 'Jujuy', 'AR', -24.3833, -65.1167, 'https://www.exploand.com.ar', 'operaciones@exploand.com.ar', '+54 388 491-7730', '{Jujuy,Salta}', 'homologado', 'aprobado', 'registro_jujuy', 'https://proveedores.registrominero.jujuy.gob.ar', 88, '{"identidad":18,"compliance":29,"desempeno":25,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000005', 'Aceros y Molienda del Norte S.A.', 'AcerNorte', '30-69991122-4', 'responsable_inscripto', '2001-06-25', 'Av. Tavella 4500', 'Salta', 'Salta', 'AR', -24.7821, -65.4232, 'https://www.acernorte.com.ar', 'ventas@acernorte.com.ar', '+54 387 432-5560', '{Salta,Jujuy,Catamarca}', 'homologado', null, 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 85, '{"identidad":16,"compliance":28,"desempeno":24,"esg":8,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000006', 'Filtros y Filtrados Puna S.R.L.', 'FiltroPuna', '30-71556677-9', 'responsable_inscripto', '2016-09-14', 'Av. Gral. Savio 890', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1992, -65.2871, 'https://www.filtropuna.com.ar', 'info@filtropuna.com.ar', '+54 388 426-9040', '{Jujuy}', 'validado', 'pendiente', 'caem', 'https://caem.com.ar/asociados', 78, '{"identidad":15,"compliance":22,"desempeno":24,"esg":7,"capacidad":10}'),
-  ('f0000000-0000-4000-8000-000000000007', 'Bombas Industriales Quebrada S.A.', 'BombaQ', '30-70223344-6', 'responsable_inscripto', '2007-02-19', 'Parque Industrial Ledesma, calle 12', 'Libertador General San Martín', 'Jujuy', 'AR', -23.8108, -64.7767, 'https://www.bombaq.com.ar', 'repuestos@bombaq.com.ar', '+54 388 497-3350', '{Jujuy,Salta}', 'homologado', null, 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 83, '{"identidad":17,"compliance":25,"desempeno":25,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000008', 'Geomembranas del Altiplano S.R.L.', 'GeoAlt', '30-71445566-2', 'responsable_inscripto', '2015-05-30', 'Av. Chile 1550', 'Salta', 'Salta', 'AR', -24.7905, -65.4012, 'https://www.geoalt.com.ar', 'contacto@geoalt.com.ar', '+54 387 421-8890', '{Salta,Jujuy,Catamarca}', 'homologado', null, 'caem', 'https://caem.com.ar/asociados', 86, '{"identidad":17,"compliance":28,"desempeno":24,"esg":8,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000009', 'Metalmecánica Humahuaca S.R.L.', 'MetalHuac', '30-71778899-5', 'responsable_inscripto', '2018-01-11', 'Calle Belgrano 340', 'Humahuaca', 'Jujuy', 'AR', -23.2053, -65.3505, 'https://www.metalhuac.com.ar', 'metalhuac@gmail.com', '+54 388 742-1150', '{Jujuy}', 'validado', 'pendiente', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 72, '{"identidad":14,"compliance":20,"desempeno":22,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000010', 'Transportes Mineros del NOA S.A.', 'TransNOA', '30-69778855-0', 'responsable_inscripto', '1999-10-02', 'Ruta Nac. 9 km 1287', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1653, -65.3021, 'https://www.transnoa.com.ar', 'logistica@transnoa.com.ar', '+54 388 431-6670', '{Jujuy,Salta,Catamarca,Tucumán}', 'homologado', 'aprobado', 'registro_jujuy', 'https://proveedores.registrominero.jujuy.gob.ar', 84, '{"identidad":18,"compliance":25,"desempeno":25,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000011', 'Energía Solar Puna S.A.', 'ESPuna', '30-71334455-8', 'responsable_inscripto', '2014-07-22', 'Av. 19 de Abril 630', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1944, -65.2842, 'https://www.espuna.com.ar', 'proyectos@espuna.com.ar', '+54 388 429-5520', '{Jujuy,Salta}', 'validado', 'pendiente', 'caem', 'https://caem.com.ar/asociados', 76, '{"identidad":15,"compliance":22,"desempeno":22,"esg":8,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000012', 'Laboratorio Geoquímica Jujuy S.R.L.', 'GeoLab', '30-71112233-7', 'responsable_inscripto', '2011-12-05', 'Pasaje Los Lapachos 120', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1789, -65.3058, 'https://www.geolabjujuy.com.ar', 'lab@geolabjujuy.com.ar', '+54 388 422-7840', '{Jujuy,Salta,Catamarca}', 'homologado', 'aprobado', 'registro_jujuy', 'https://proveedores.registrominero.jujuy.gob.ar', 89, '{"identidad":18,"compliance":27,"desempeno":26,"esg":9,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000013', 'Repuestos Pesados Calilegua S.R.L.', 'RepuCali', '30-71667788-3', 'responsable_inscripto', '2017-04-03', 'Ruta Prov. 1 km 12', 'Calilegua', 'Jujuy', 'AR', -23.6532, -64.8421, 'https://www.repucali.com.ar', 'ventas@repucali.com.ar', '+54 388 491-4480', '{Jujuy}', 'validado', 'pendiente', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 71, '{"identidad":13,"compliance":20,"desempeno":22,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000014', 'Instrumentación y Control Andino S.A.', 'InstruAnd', '30-70445566-9', 'responsable_inscripto', '2008-09-27', 'Parque Industrial Salta, nave 5', 'Salta', 'Salta', 'AR', -24.7618, -65.3894, 'https://www.instruand.com.ar', 'contacto@instruand.com.ar', '+54 387 439-2210', '{Salta,Jujuy,Catamarca}', 'validado', null, 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 74, '{"identidad":14,"compliance":21,"desempeno":23,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000015', 'Perforaciones San Antonio S.A.', 'PeroSA', '30-69554433-2', 'responsable_inscripto', '2003-02-14', 'Ruta Nac. 40 km 98', 'San Antonio de los Cobres', 'Salta', 'AR', -24.2213, -66.3189, 'https://www.perosa.com.ar', 'operaciones@perosa.com.ar', '+54 387 490-3320', '{Salta,Jujuy,Catamarca}', 'homologado', null, 'caem', 'https://caem.com.ar/asociados', 81, '{"identidad":16,"compliance":24,"desempeno":25,"esg":7,"capacidad":9}'),
-  ('f0000000-0000-4000-8000-000000000016', 'Mantenimiento Industrial Ledesma S.R.L.', 'ManLed', '30-71998877-1', 'responsable_inscripto', '2024-08-30', 'Calle Alberdi 215', 'Libertador General San Martín', 'Jujuy', 'AR', -23.8144, -64.7803, null, 'manled.jujuy@gmail.com', '+54 388 498-1120', '{Jujuy}', 'documentado', 'pendiente', 'manual', null, 52, '{"identidad":10,"compliance":13,"desempeno":17,"esg":5,"capacidad":7}'),
-  ('f0000000-0000-4000-8000-000000000017', 'Neumáticos Cerro Rico S.A.', 'NeuCerro', '30-72113344-8', 'responsable_inscripto', '2020-05-18', 'Av. Paraguay 2100', 'Salta', 'Salta', 'AR', -24.7723, -65.4156, 'https://www.neucerro.com.ar', 'ventas@neucerro.com.ar', '+54 387 436-9020', '{Salta,Jujuy}', 'registrado', null, 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 41, '{"identidad":8,"compliance":10,"desempeno":14,"esg":4,"capacidad":5}'),
-  ('f0000000-0000-4000-8000-000000000018', 'Ingeniería y Geotecnia Puna S.R.L.', 'GeoPuna', '30-70998877-4', 'responsable_inscripto', '2013-10-09', 'Lavalle 458, oficina 3', 'San Salvador de Jujuy', 'Jujuy', 'AR', -24.1867, -65.3009, 'https://www.geopuna.com.ar', 'consultas@geopuna.com.ar', '+54 388 423-5560', '{Jujuy,Salta,Catamarca}', 'validado', 'pendiente', 'registro_jujuy', 'https://proveedores.registrominero.jujuy.gob.ar', 77, '{"identidad":15,"compliance":23,"desempeno":23,"esg":8,"capacidad":8}'),
-  ('f0000000-0000-4000-8000-000000000019', 'Combustibles del Valle S.A.', 'CombValle', '30-69662211-5', 'responsable_inscripto', '2004-11-11', 'Zona Industrial Perico, lote 9', 'Perico', 'Jujuy', 'AR', -24.3801, -65.1188, 'https://www.combvalle.com.ar', 'ventas@combvalle.com.ar', '+54 388 491-6630', '{Jujuy,Salta}', 'suspendido', 'pendiente', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 58, '{"identidad":12,"compliance":15,"desempeno":18,"esg":6,"capacidad":7}'),
-  ('f0000000-0000-4000-8000-000000000020', 'Válvulas y Caños Tumbaya S.R.L.', 'ValvTum', '30-71889900-6', 'responsable_inscripto', '2019-06-17', 'Ruta Nac. 9 km 1312', 'Tumbaya', 'Jujuy', 'AR', -23.8567, -65.4667, 'https://www.valvtum.com.ar', 'ventas@valvtum.com.ar', '+54 388 749-2240', '{Jujuy,Salta}', 'auditado', 'pendiente', 'capmin', 'https://capmin.com.ar/directorio-proveedores-mineros', 68, '{"identidad":13,"compliance":19,"desempeno":20,"esg":7,"capacidad":9}');
+insert into categorias (nombre, slug, origen) values
+  ('Elementos Protección Personal',       'epp',                    'capmin'),
+  ('Lubricantes y Selladores',            'lubricantes',            'capmin'),
+  ('Explosivos',                          'explosivos',             'capmin'),
+  ('Fabricante de Explosivos',            'fabricante-explosivos',  'capmin'),
+  ('Bolas de Molino',                     'bolas-molino',           'capmin'),
+  ('Molienda',                            'molienda',               'capmin'),
+  ('Filtros',                             'filtros',                'capmin'),
+  ('Bombas',                              'bombas',                 'capmin'),
+  ('Válvulas',                            'valvulas',               'capmin'),
+  ('Geomembranas',                        'geomembranas',           'capmin'),
+  ('Geosintéticos',                       'geosinteticos',          'capmin'),
+  ('Estructuras Metálicas',               'estructuras-metalicas',  'capmin'),
+  ('Metalmecánica',                       'metalmecanica',          'capmin'),
+  ('Transporte',                          'transporte',             'capmin'),
+  ('Transporte de cargas pesadas',        'transporte-pesado',      'capmin'),
+  ('Higiene y seguridad en el trabajo',   'higiene-seguridad',      'capmin'),
+  ('Ferretería Industrial',               'ferreteria-industrial',  'capmin'),
+  ('Repuestos maquinarias',               'repuestos-maquinarias',  'capmin'),
+  ('Combustibles',                        'combustibles',           'capmin'),
+  ('Informática',                         'informatica',            'capmin'),
+  ('Capacitaciones',                      'capacitaciones',         'capmin'),
+  ('Construcciones',                      'construcciones',         'capmin'),
+  ('Ingeniería',                          'ingenieria',             'capmin'),
+  ('Servicios Mineros',                   'servicios-mineros',      'capmin'),
+  ('Laboratorio de análisis ambientales y ocupacionales', 'laboratorio-ambiental', 'capmin'),
+  ('Motores y generadores',               'motores-generadores',    'capmin'),
+  ('Mangueras',                           'mangueras',              'capmin'),
+  ('Industria química',                   'industria-quimica',      'caem'),
+  ('big bag',                             'big-bag',                'capmin'),
+  ('Infraestructura eléctrica',           'infraestructura-electrica','capmin'),
+  ('CCTV',                                'cctv',                   'capmin'),
+  ('Telecomunicaciones',                  'telecomunicaciones',     'capmin'),
+  ('Consultoría',                         'consultoria',            'capmin'),
+  ('RRHH',                                'rrhh',                   'capmin'),
+  ('Obras y Servicios',                   'obras-servicios',        'capmin'),
+  ('Alquiler y venta de baños y módulos portátiles', 'modulos-portatiles', 'capmin'),
+  ('Servicios operativos',                'servicios-operativos',   'capmin');
 
-insert into contactos_proveedor (id, proveedor_id, nombre, rol, email, telefono) values
-  ('e2000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', 'Hernán Paz', 'Comercial', 'hpaz@andinaepp.com.ar', '+54 388 424-1234'),
-  ('e2000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000002', 'Marcela Duarte', 'Ventas minería', 'mduarte@lubrinoa.com.ar', '+54 388 491-2201'),
-  ('e2000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000003', 'Gustavo Alejandro Soto', 'Gerente comercial', 'gsoto@requimsa.com.ar', '+54 388 433-8811'),
-  ('e2000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000004', 'Claudia Vargas', 'Operaciones', 'cvargas@exploand.com.ar', '+54 388 491-7731'),
-  ('e2000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000005', 'Ricardo Mamaní', 'Ventas', 'rmamani@acernorte.com.ar', '+54 387 432-5561'),
-  ('e2000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000006', 'Silvina Cruz', 'Atención a clientes', 'scruz@filtropuna.com.ar', '+54 388 426-9041'),
-  ('e2000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000007', 'Pablo Nievas', 'Repuestos', 'pnievas@bombaq.com.ar', '+54 388 497-3351'),
-  ('e2000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000008', 'Andrea Tolaba', 'Comercial', 'atolaba@geoalt.com.ar', '+54 387 421-8891'),
-  ('e2000000-0000-4000-8000-000000000009', 'f0000000-0000-4000-8000-000000000010', 'Jorge Luis Fernández', 'Logística', 'jlfernandez@transnoa.com.ar', '+54 388 431-6671'),
-  ('e2000000-0000-4000-8000-000000000010', 'f0000000-0000-4000-8000-000000000012', 'Verónica Salas', 'Directora técnica', 'vsalas@geolabjujuy.com.ar', '+54 388 422-7841'),
-  ('e2000000-0000-4000-8000-000000000011', 'f0000000-0000-4000-8000-000000000015', 'Martín Copa', 'Operaciones', 'mcopa@perosa.com.ar', '+54 387 490-3321'),
-  ('e2000000-0000-4000-8000-000000000012', 'f0000000-0000-4000-8000-000000000013', 'Diego Aramayo', 'Ventas', 'daramayo@repucali.com.ar', '+54 388 491-4481'),
-  ('e2000000-0000-4000-8000-000000000013', 'f0000000-0000-4000-8000-000000000009', 'Rosa Condori', 'Administración', 'rcondori@metalhuac.com.ar', '+54 388 742-1151'),
-  ('e2000000-0000-4000-8000-000000000014', 'f0000000-0000-4000-8000-000000000018', 'Federico Bianchi', 'Socio consultor', 'fbianchi@geopuna.com.ar', '+54 388 423-5561');
+-- ============================ REQUISITOS POR CATEGORÍA =======================
+-- Regla de homologación (docs/modelo-clasificacion.md §3.3): certificaciones obligatorias/optativas
 
-insert into proveedor_categorias (proveedor_id, categoria_id) values
-  ('f0000000-0000-4000-8000-000000000001', 'ca000000-0000-4000-8000-000000000001'),
-  ('f0000000-0000-4000-8000-000000000001', 'ca000000-0000-4000-8000-000000000002'),
-  ('f0000000-0000-4000-8000-000000000002', 'ca000000-0000-4000-8000-000000000003'),
-  ('f0000000-0000-4000-8000-000000000002', 'ca000000-0000-4000-8000-000000000004'),
-  ('f0000000-0000-4000-8000-000000000003', 'ca000000-0000-4000-8000-000000000005'),
-  ('f0000000-0000-4000-8000-000000000004', 'ca000000-0000-4000-8000-000000000006'),
-  ('f0000000-0000-4000-8000-000000000005', 'ca000000-0000-4000-8000-000000000007'),
-  ('f0000000-0000-4000-8000-000000000005', 'ca000000-0000-4000-8000-000000000011'),
-  ('f0000000-0000-4000-8000-000000000006', 'ca000000-0000-4000-8000-000000000008'),
-  ('f0000000-0000-4000-8000-000000000007', 'ca000000-0000-4000-8000-000000000009'),
-  ('f0000000-0000-4000-8000-000000000007', 'ca000000-0000-4000-8000-000000000018'),
-  ('f0000000-0000-4000-8000-000000000007', 'ca000000-0000-4000-8000-000000000003'),
-  ('f0000000-0000-4000-8000-000000000008', 'ca000000-0000-4000-8000-000000000010'),
-  ('f0000000-0000-4000-8000-000000000009', 'ca000000-0000-4000-8000-000000000011'),
-  ('f0000000-0000-4000-8000-000000000009', 'ca000000-0000-4000-8000-000000000012'),
-  ('f0000000-0000-4000-8000-000000000010', 'ca000000-0000-4000-8000-000000000013'),
-  ('f0000000-0000-4000-8000-000000000011', 'ca000000-0000-4000-8000-000000000015'),
-  ('f0000000-0000-4000-8000-000000000011', 'ca000000-0000-4000-8000-000000000019'),
-  ('f0000000-0000-4000-8000-000000000012', 'ca000000-0000-4000-8000-000000000024'),
-  ('f0000000-0000-4000-8000-000000000012', 'ca000000-0000-4000-8000-000000000016'),
-  ('f0000000-0000-4000-8000-000000000013', 'ca000000-0000-4000-8000-000000000018'),
-  ('f0000000-0000-4000-8000-000000000013', 'ca000000-0000-4000-8000-000000000008'),
-  ('f0000000-0000-4000-8000-000000000013', 'ca000000-0000-4000-8000-000000000001'),
-  ('f0000000-0000-4000-8000-000000000014', 'ca000000-0000-4000-8000-000000000020'),
-  ('f0000000-0000-4000-8000-000000000014', 'ca000000-0000-4000-8000-000000000019'),
-  ('f0000000-0000-4000-8000-000000000015', 'ca000000-0000-4000-8000-000000000021'),
-  ('f0000000-0000-4000-8000-000000000016', 'ca000000-0000-4000-8000-000000000022'),
-  ('f0000000-0000-4000-8000-000000000016', 'ca000000-0000-4000-8000-000000000012'),
-  ('f0000000-0000-4000-8000-000000000017', 'ca000000-0000-4000-8000-000000000025'),
-  ('f0000000-0000-4000-8000-000000000018', 'ca000000-0000-4000-8000-000000000023'),
-  ('f0000000-0000-4000-8000-000000000018', 'ca000000-0000-4000-8000-000000000016'),
-  ('f0000000-0000-4000-8000-000000000019', 'ca000000-0000-4000-8000-000000000004'),
-  ('f0000000-0000-4000-8000-000000000019', 'ca000000-0000-4000-8000-000000000013'),
-  ('f0000000-0000-4000-8000-000000000020', 'ca000000-0000-4000-8000-000000000017');
+insert into requisitos_categoria (categoria_id, certificacion_id, obligatorio)
+select c.id, cert.id, req.obligatorio
+from (values
+  -- categoría, código certificación, obligatorio?
+  ('epp',                       'ISO 9001',      true),
+  ('epp',                       'IRAM-EPP',      true),
+  ('epp',                       'NIOSH-42CFR84', false),
+  ('epp',                       'NFPA 2112',     false),
+  ('lubricantes',               'ISO 9001',      true),
+  ('lubricantes',               'GHS-SDS',       true),
+  ('lubricantes',               'ISO 14001',     false),
+  ('explosivos',                'ANMAC-EXP',     true),
+  ('explosivos',                'TMD',           true),
+  ('explosivos',                'ISO 9001',      true),
+  ('fabricante-explosivos',     'ANMAC-EXP',     true),
+  ('fabricante-explosivos',     'ISO 9001',      true),
+  ('fabricante-explosivos',     'ISO 14001',     false),
+  ('bolas-molino',              'ISO 9001',      true),
+  ('bolas-molino',              'EN 10204-3.1',  true),
+  ('molienda',                  'ISO 9001',      true),
+  ('molienda',                  'EN 10204-3.1',  false),
+  ('geomembranas',              'GRI-GM13',      true),
+  ('geomembranas',              'ISO 9001',      true),
+  ('geosinteticos',             'GRI-GM13',      false),
+  ('geosinteticos',             'ISO 9001',      true),
+  ('bombas',                    'ISO 9001',      true),
+  ('valvulas',                  'ISO 9001',      true),
+  ('valvulas',                  'ASME VIII',     false),
+  ('estructuras-metalicas',     'ISO 9001',      true),
+  ('estructuras-metalicas',     'EN 10204-3.1',  true),
+  ('metalmecanica',             'ISO 9001',      true),
+  ('transporte',                'ISO 39001',     false),
+  ('transporte',                'ISO 9001',      false),
+  ('transporte-pesado',         'ISO 39001',     true),
+  ('transporte-pesado',         'TMD',           false),
+  ('higiene-seguridad',         'ISO 45001',     true),
+  ('laboratorio-ambiental',     'ISO 17025',     true),
+  ('laboratorio-ambiental',     'ISO 14001',     false),
+  ('servicios-mineros',         'ISO 9001',      true),
+  ('servicios-mineros',         'ISO 14001',     true),
+  ('servicios-mineros',         'ISO 45001',     true),
+  ('servicios-mineros',         'ALT-GEO',       false),
+  ('informatica',               'ISO 27001',     false),
+  ('informatica',               'ISO 9001',      false),
+  ('infraestructura-electrica', 'ISO 9001',      true),
+  ('infraestructura-electrica', 'IECEx',         false),
+  ('motores-generadores',       'ISO 9001',      true),
+  ('motores-generadores',       'IECEx',         false),
+  ('filtros',                   'ISO 9001',      true),
+  ('repuestos-maquinarias',     'ISO 9001',      false),
+  ('ferreteria-industrial',     'ISO 9001',      false),
+  ('industria-quimica',         'GHS-SDS',       true),
+  ('industria-quimica',         'ISO 14001',     true),
+  ('industria-quimica',         'ICMC',          false),
+  ('combustibles',              'ISO 9001',      true),
+  ('combustibles',              'TMD',           true),
+  ('construcciones',            'ISO 9001',      false),
+  ('ingenieria',                'ISO 9001',      false),
+  ('capacitaciones',            'ISO 45001',     false),
+  ('big-bag',                   'ISO 9001',      false),
+  ('cctv',                      'ISO 9001',      false),
+  ('telecomunicaciones',        'ISO 9001',      false)
+) as req(cat_slug, cert_codigo, obligatorio)
+join categorias c on c.slug = req.cat_slug
+join certificaciones cert on cert.codigo = req.cert_codigo;
 
-insert into documentos (id, proveedor_id, tipo, storage_path, nombre_archivo) values
-  ('d0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', 'certificado', 'f0000000-0000-4000-8000-000000000001/iso9001-andina.pdf', 'iso9001-andina.pdf'),
-  ('d0000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000001', 'certificado', 'f0000000-0000-4000-8000-000000000001/en388-andina.pdf', 'en388-andina.pdf'),
-  ('d0000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000003', 'certificado', 'f0000000-0000-4000-8000-000000000003/icmc-requimsa.pdf', 'icmc-requimsa.pdf'),
-  ('d0000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000004', 'certificado', 'f0000000-0000-4000-8000-000000000004/renar-exploand.pdf', 'renar-exploand.pdf'),
-  ('d0000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000005', 'certificado', 'f0000000-0000-4000-8000-000000000005/en10204-acernorte.pdf', 'en10204-acernorte.pdf'),
-  ('d0000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000008', 'certificado', 'f0000000-0000-4000-8000-000000000008/gm13-geoalt.pdf', 'gm13-geoalt.pdf'),
-  ('d0000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000010', 'certificado', 'f0000000-0000-4000-8000-000000000010/iso39001-transnoa.pdf', 'iso39001-transnoa.pdf'),
-  ('d0000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000010', 'seguro', 'f0000000-0000-4000-8000-000000000010/seguro-rc-transnoa.pdf', 'seguro-rc-transnoa.pdf'),
-  ('d0000000-0000-4000-8000-000000000009', 'f0000000-0000-4000-8000-000000000012', 'certificado', 'f0000000-0000-4000-8000-000000000012/17025-geolab.pdf', '17025-geolab.pdf'),
-  ('d0000000-0000-4000-8000-000000000010', 'f0000000-0000-4000-8000-000000000004', 'auditoria', 'f0000000-0000-4000-8000-000000000004/auditoria-2025-exploand.pdf', 'auditoria-2025-exploand.pdf'),
-  ('d0000000-0000-4000-8000-000000000011', 'f0000000-0000-4000-8000-000000000020', 'auditoria', 'f0000000-0000-4000-8000-000000000020/auditoria-2026-valvtum.pdf', 'auditoria-2026-valvtum.pdf');
+-- ============================ PROVEEDORES ====================================
+-- fuente='capmin': datos reales del directorio CAPMIN (nombre, dirección, web,
+-- categorías). CUITs y resto son sintéticos plausibles.
 
-insert into proveedor_certificaciones (id, proveedor_id, certificacion_id, numero_certificado, organismo, fecha_emision, fecha_vencimiento, alcance, estado, documento_id) values
-  ('e1000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-90211', 'IRAM', '2024-02-10', '2027-02-09', 'Comercialización de EPP', 'verificado', 'd0000000-0000-4000-8000-000000000001'),
-  ('e1000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000010', 'CE-EN388-4410', 'SATRA', '2025-01-15', '2028-01-14', 'Guantes de protección mecánica', 'verificado', 'd0000000-0000-4000-8000-000000000002'),
-  ('e1000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000012', 'TC-84A-9912', 'NIOSH', '2024-06-01', null, 'Respiradores N95', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000013', 'NFPA-2112-3301', 'UL', '2024-09-12', '2027-09-11', 'Vestimenta ignífuga', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000001', 'ce000000-0000-4000-8000-000000000027', 'RPP-JUJ-0187', 'Registro Prov. Jujuy', '2024-05-20', '2027-05-19', 'Registro provincial aprobado', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-88450', 'IRAM', '2023-08-01', '2026-07-31', 'Comercialización de lubricantes y combustibles', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000002', 'AR-IRAM-14021', 'IRAM', '2023-08-01', '2026-07-31', 'Gestión ambiental', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000022', 'EN590-AR-2025-11', 'Laboratorio YPF-Tech', '2025-03-10', '2027-03-09', 'Diésel grado 3', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000009', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000001', 'AR-DNV-55102', 'DNV', '2024-01-22', '2027-01-21', 'Producción y venta de reactivos', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000010', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000002', 'AR-DNV-55103', 'DNV', '2024-01-22', '2027-01-21', 'Gestión ambiental', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000011', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000003', 'AR-DNV-55104', 'DNV', '2024-01-22', '2027-01-21', 'Seguridad y salud ocupacional', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000012', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000015', 'SDS-2025-008', 'Fabricante', '2025-02-01', null, 'SDS de reactivos comercializados', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000013', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000016', 'ICMI-2024-AR-03', 'ICMI', '2024-10-05', '2027-10-04', 'Cadena de custodia de cianuro', 'verificado', 'd0000000-0000-4000-8000-000000000003'),
-  ('e1000000-0000-4000-8000-000000000014', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000027', 'RPP-JUJ-0052', 'Registro Prov. Jujuy', '2023-04-10', '2026-04-09', 'Registro provincial aprobado', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000015', 'f0000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000024', 'ANMAC-EX-0091', 'ANMaC', '2024-03-15', '2027-03-14', 'Fabricación y venta de explosivos', 'verificado', 'd0000000-0000-4000-8000-000000000004'),
-  ('e1000000-0000-4000-8000-000000000016', 'f0000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000001', 'AR-SGS-77012', 'SGS', '2024-03-15', '2027-03-14', 'Emulsiones explosivas', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000017', 'f0000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000025', 'CNRT-MP-1178', 'CNRT', '2024-05-01', '2026-04-30', 'Transporte clase 1', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000018', 'f0000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000027', 'RPP-JUJ-0041', 'Registro Prov. Jujuy', '2023-02-14', '2026-02-13', 'Registro provincial aprobado', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000019', 'f0000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000017', '10204-31-AR-881', 'Laboratorio INTI', '2025-04-02', null, 'Trazabilidad de aceros de molienda', 'verificado', 'd0000000-0000-4000-8000-000000000005'),
-  ('e1000000-0000-4000-8000-000000000020', 'f0000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-90155', 'IRAM', '2024-11-12', '2027-11-11', 'Fundición y forja de aceros', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000021', 'f0000000-0000-4000-8000-000000000005', 'ce000000-0000-4000-8000-000000000003', 'AR-IRAM-45510', 'IRAM', '2024-11-12', '2027-11-11', 'Seguridad y salud ocupacional', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000022', 'f0000000-0000-4000-8000-000000000006', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-91780', 'IRAM', '2025-05-19', '2028-05-18', 'Venta de filtros industriales', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000023', 'f0000000-0000-4000-8000-000000000006', 'ce000000-0000-4000-8000-000000000029', 'CAEM-ADH-0332', 'CAEM', '2025-01-10', '2026-01-09', 'Proveedor adherente', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000024', 'f0000000-0000-4000-8000-000000000007', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-89904', 'IRAM', '2024-04-08', '2027-04-07', 'Venta y service de bombas industriales', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000025', 'f0000000-0000-4000-8000-000000000007', 'ce000000-0000-4000-8000-000000000002', 'AR-IRAM-14412', 'IRAM', '2024-04-08', '2027-04-07', 'Gestión ambiental', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000026', 'f0000000-0000-4000-8000-000000000008', 'ce000000-0000-4000-8000-000000000021', 'GSI-GM13-2024-71', 'GSI', '2024-08-22', '2027-08-21', 'Geomembranas HDPE para pilas de lixiviación', 'verificado', 'd0000000-0000-4000-8000-000000000006'),
-  ('e1000000-0000-4000-8000-000000000027', 'f0000000-0000-4000-8000-000000000008', 'ce000000-0000-4000-8000-000000000001', 'AR-DNV-56211', 'DNV', '2024-08-22', '2027-08-21', 'Fabricación de geosintéticos', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000028', 'f0000000-0000-4000-8000-000000000009', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-92201', 'IRAM', '2025-02-17', '2028-02-16', 'Estructuras metálicas y soldadura', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000029', 'f0000000-0000-4000-8000-000000000009', 'ce000000-0000-4000-8000-000000000020', 'ASME-VIII-PEND-21', 'ASME', null, null, 'Recipientes a presión (en trámite)', 'declarado', null),
-  ('e1000000-0000-4000-8000-000000000030', 'f0000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000007', 'AR-BV-39001-330', 'Bureau Veritas', '2024-06-30', '2027-06-29', 'Gestión de seguridad vial de flota', 'verificado', 'd0000000-0000-4000-8000-000000000007'),
-  ('e1000000-0000-4000-8000-000000000031', 'f0000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000001', 'AR-BV-9001-784', 'Bureau Veritas', '2024-06-30', '2027-06-29', 'Transporte y logística minera', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000032', 'f0000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000025', 'CNRT-MP-0450', 'CNRT', '2025-01-20', '2027-01-19', 'Transporte de mercancías peligrosas', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000033', 'f0000000-0000-4000-8000-000000000011', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-91455', 'IRAM', '2025-06-11', '2028-06-10', 'Proyectos solares y eléctricos', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000034', 'f0000000-0000-4000-8000-000000000011', 'ce000000-0000-4000-8000-000000000003', 'AR-IRAM-45901', 'IRAM', '2025-06-11', '2028-06-10', 'Seguridad y salud ocupacional', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000035', 'f0000000-0000-4000-8000-000000000011', 'ce000000-0000-4000-8000-000000000018', 'IECEX-AR-2026-04', 'IECEx', null, null, 'Equipos para atmósferas explosivas (en trámite)', 'en_revision', null),
-  ('e1000000-0000-4000-8000-000000000036', 'f0000000-0000-4000-8000-000000000012', 'ce000000-0000-4000-8000-000000000023', 'OAA-L-2024-118', 'OAA', '2024-09-02', '2028-09-01', 'Ensayos químicos y ambientales', 'verificado', 'd0000000-0000-4000-8000-000000000009'),
-  ('e1000000-0000-4000-8000-000000000037', 'f0000000-0000-4000-8000-000000000012', 'ce000000-0000-4000-8000-000000000002', 'AR-DNV-57012', 'DNV', '2024-09-02', '2027-09-01', 'Gestión ambiental', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000038', 'f0000000-0000-4000-8000-000000000013', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-92388', 'IRAM', '2025-07-14', '2028-07-13', 'Comercialización de repuestos y EPP', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000039', 'f0000000-0000-4000-8000-000000000013', 'ce000000-0000-4000-8000-000000000003', 'AR-IRAM-46012', 'IRAM', null, null, 'Seguridad y salud ocupacional (en trámite)', 'declarado', null),
-  ('e1000000-0000-4000-8000-000000000040', 'f0000000-0000-4000-8000-000000000014', 'ce000000-0000-4000-8000-000000000001', 'AR-SGS-78211', 'SGS', '2024-12-03', '2027-12-02', 'Instrumentación y control', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000041', 'f0000000-0000-4000-8000-000000000014', 'ce000000-0000-4000-8000-000000000006', 'TUV-27001-AR-112', 'TÜV', '2024-12-03', '2027-12-02', 'Seguridad de la información', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000042', 'f0000000-0000-4000-8000-000000000015', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-90244', 'IRAM', '2024-02-26', '2027-02-25', 'Servicios de perforación', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000043', 'f0000000-0000-4000-8000-000000000015', 'ce000000-0000-4000-8000-000000000003', 'AR-IRAM-45301', 'IRAM', '2024-02-26', '2027-02-25', 'Seguridad y salud ocupacional', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000044', 'f0000000-0000-4000-8000-000000000015', 'ce000000-0000-4000-8000-000000000002', 'AR-IRAM-14118', 'IRAM', '2024-02-26', '2027-02-25', 'Gestión ambiental', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000045', 'f0000000-0000-4000-8000-000000000016', 'ce000000-0000-4000-8000-000000000001', null, null, null, null, 'Declarado por el proveedor', 'declarado', null),
-  ('e1000000-0000-4000-8000-000000000046', 'f0000000-0000-4000-8000-000000000018', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-91220', 'IRAM', '2025-04-21', '2028-04-20', 'Consultoría en ingeniería y geotecnia', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000047', 'f0000000-0000-4000-8000-000000000018', 'ce000000-0000-4000-8000-000000000003', 'AR-IRAM-45702', 'IRAM', '2025-04-21', '2028-04-20', 'Seguridad y salud ocupacional', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000048', 'f0000000-0000-4000-8000-000000000019', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-87', 'IRAM', '2021-05-10', '2024-05-09', 'Venta de combustibles', 'vencido', null),
-  ('e1000000-0000-4000-8000-000000000049', 'f0000000-0000-4000-8000-000000000019', 'ce000000-0000-4000-8000-000000000022', null, 'Laboratorio YPF-Tech', null, null, 'Declarado por el proveedor', 'declarado', null),
-  ('e1000000-0000-4000-8000-000000000050', 'f0000000-0000-4000-8000-000000000020', 'ce000000-0000-4000-8000-000000000001', 'AR-IRAM-92550', 'IRAM', '2025-09-01', '2028-08-31', 'Venta de caños y válvulas', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000051', 'f0000000-0000-4000-8000-000000000020', 'ce000000-0000-4000-8000-000000000020', 'ASME-VIII-REV-31', 'ASME', null, null, 'En revisión por organismo', 'en_revision', null),
-  ('e1000000-0000-4000-8000-000000000052', 'f0000000-0000-4000-8000-000000000002', 'ce000000-0000-4000-8000-000000000030', 'BV-14064-AR-090', 'Bureau Veritas', '2025-08-15', '2028-08-14', 'Huella de carbono verificada', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000053', 'f0000000-0000-4000-8000-000000000003', 'ce000000-0000-4000-8000-000000000030', 'BV-14064-AR-075', 'Bureau Veritas', '2025-06-30', '2028-06-29', 'Huella de carbono verificada', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000054', 'f0000000-0000-4000-8000-000000000012', 'ce000000-0000-4000-8000-000000000027', 'RPP-JUJ-0103', 'Registro Prov. Jujuy', '2024-03-01', '2027-02-28', 'Registro provincial aprobado', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000055', 'f0000000-0000-4000-8000-000000000004', 'ce000000-0000-4000-8000-000000000026', 'SSM-SP-0044', 'Secretaría de Minería de Jujuy', '2024-05-01', '2026-04-30', 'Manejo de sustancias peligrosas', 'verificado', null),
-  ('e1000000-0000-4000-8000-000000000056', 'f0000000-0000-4000-8000-000000000010', 'ce000000-0000-4000-8000-000000000027', 'RPP-JUJ-0175', 'Registro Prov. Jujuy', '2024-07-11', '2027-07-10', 'Registro provincial aprobado', 'verificado', null);
+insert into proveedores
+  (razon_social, cuit, condicion_iva, fecha_constitucion, domicilio, localidad,
+   provincia, lat, lng, sitio_web, provincias_operacion, estado,
+   registro_jujuy_estado, fuente, fuente_url) values
+  -- ---- CAPMIN reales ----
+  ('ACERIAS 4C SA', '30-70892544-1', 'responsable_inscripto', '1994-06-02',
+   'Juan Domingo Perón N°465, Area Industrial', 'Las Parejas', 'Santa Fe',
+   -32.4766, -61.5242, 'https://www.acerias4c.com.ar', '{Santa Fe,Córdoba,San Juan,Jujuy,Salta}',
+   'homologado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('AUSTIN POWDER', '30-50371268-7', 'responsable_inscripto', '1978-11-20',
+   'Luis Maggi 770', 'Rafaela', 'Santa Fe',
+   -31.2526, -61.4924, 'https://www.austinpowder.com', '{Santa Fe,San Juan,Jujuy,Salta,Catamarca}',
+   'homologado', 'aprobado', 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('BAC DALL ARGENTINA SA', '30-68549123-5', 'responsable_inscripto', '1988-04-11',
+   'Coronel Esteban Bonorino 1236', 'CABA', 'CABA',
+   -34.6331, -58.4468, 'https://www.bac-dall.com.ar', '{CABA,Buenos Aires,Jujuy,Salta,Santa Cruz}',
+   'homologado', 'aprobado', 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('ANDREANI LOGÍSTICA SA', '30-51126789-3', 'responsable_inscripto', '1945-02-08',
+   'Av. Pte. Perón 4749, Benavidez', 'Tigre', 'Buenos Aires',
+   -34.4167, -58.6947, 'https://www.andreani.com', '{Buenos Aires,CABA,Córdoba,Mendoza,Salta,Jujuy}',
+   'validado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('3D ELECTRO SAN JUAN', '20-35128967-4', 'responsable_inscripto', '2011-09-14',
+   'Barrio La Superiora, Sector 1', 'Rawson', 'San Juan',
+   -31.5831, -68.5386, 'https://3delectrosanjuan.com', '{San Juan,Mendoza,La Rioja}',
+   'validado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('BMI SA', '30-70712398-2', 'responsable_inscripto', '1997-07-30',
+   'Av. Juventud 11', 'Salta', 'Salta',
+   -24.7893, -65.4106, 'https://www.bmi.com.ar', '{Salta,Jujuy,Tucumán,Catamarca}',
+   'validado', 'pendiente', 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('ANDEMIRA SA', '30-61234455-8', 'responsable_inscripto', '1982-03-19',
+   'Av. Leandro N. Alem 690 Piso 8', 'CABA', 'CABA',
+   -34.6012, -58.3697, 'https://www.andemira.com.ar', '{CABA,San Juan,Jujuy,Salta,Catamarca}',
+   'auditado', 'aprobado', 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('AVINCO CONSTRUCCIONES S.A.', '30-99887766-1', 'responsable_inscripto', '2005-05-05',
+   'Santo Domingo 2373', 'CABA', 'CABA',
+   -34.6079, -58.4022, 'http://www.avinco.com.ar', '{CABA,Buenos Aires}',
+   'registrado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('BRALBOL SA', '30-69881234-9', 'responsable_inscripto', '1992-10-01',
+   'Blvd. Drago 1065', 'Pergamino', 'Buenos Aires',
+   -33.8940, -60.5736, 'https://www.bralbol.com.ar', '{Buenos Aires,Santa Fe,Córdoba}',
+   'documentado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('ALPARDATA SAS', '30-71634521-6', 'responsable_inscripto', '2016-01-22',
+   'Comodoro Rivadavia 1575, Dorrego', 'Mendoza', 'Mendoza',
+   -32.8894, -68.8458, 'https://www.alpardata.com.ar/mining', '{Mendoza,San Juan,Neuquén}',
+   'validado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('ACONCAGUA SERVICIOS MINEROS SRL', '30-70445566-3', 'responsable_inscripto', '2008-12-03',
+   'Av. Rawson 811 Norte', 'San Juan', 'San Juan',
+   -31.5310, -68.5250, 'https://www.aconcagua-trans.com.ar', '{San Juan,La Rioja,Mendoza}',
+   'registrado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('9AMAS', '30-71889900-7', 'responsable_inscripto', '2018-04-17',
+   'Cerro San Martín 250', 'Salta', 'Salta',
+   -24.8000, -65.4200, 'https://www.9amas.com', '{Salta,Jujuy,Tucumán}',
+   'validado', 'pendiente', 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('ASG CONSULTORA', '30-69912345-4', 'responsable_inscripto', '2003-08-27',
+   'Lavalleja 1870', 'Córdoba', 'Córdoba',
+   -31.4201, -64.1888, 'https://asgconsultora.com', '{Córdoba,San Juan,Mendoza,Salta}',
+   'validado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
+  ('BAYTON SA', '30-65223344-0', 'responsable_inscripto', '1985-06-15',
+   'Monseñor Larrumbe 3234', 'Martínez', 'Buenos Aires',
+   -34.4887, -58.5051, 'https://www.bayton.com', '{Buenos Aires,CABA}',
+   'documentado', null, 'capmin', 'https://www.capmin.com.ar/directorio-proveedores-mineros/'),
 
-insert into auditorias (id, proveedor_id, fecha, tipo, auditor, puntaje, informe_documento_id, resultado) values
-  ('a0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', '2025-03-12', 'presencial', 'IRAM', 88, null, 'aprobado'),
-  ('a0000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000003', '2025-06-04', 'presencial', 'DNV', 91, null, 'aprobado'),
-  ('a0000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000004', '2025-09-18', 'presencial', 'Auditoría interna ju-min', 94, 'd0000000-0000-4000-8000-000000000010', 'aprobado'),
-  ('a0000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000010', '2024-11-20', 'remota', 'Bureau Veritas', 76, null, 'con_observaciones'),
-  ('a0000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000020', '2026-05-08', 'presencial', 'IRAM', 82, 'd0000000-0000-4000-8000-000000000011', 'aprobado');
+  -- ---- Sintéticos (fuente='manual') para categorías sin proveedor real en el fetch ----
+  ('LUBRIANDES SA', '30-71662288-2', 'responsable_inscripto', '2001-02-12',
+   'Ruta 9 Km 12, Parque Industrial', 'Córdoba', 'Córdoba',
+   -31.3950, -64.2100, null, '{Córdoba,San Juan,Mendoza,Jujuy,Salta}',
+   'homologado', null, 'manual', null),
+  ('FILTROPUNA SRL', '30-71773344-8', 'responsable_inscripto', '2014-05-30',
+   'Av. Ex Combatientes 1450', 'San Salvador de Jujuy', 'Jujuy',
+   -24.1858, -65.2995, null, '{Jujuy,Salta,Tucumán}',
+   'homologado', 'aprobado', 'manual', null),
+  ('GEOMEMBRANAS DEL NOA SA', '30-71001122-9', 'responsable_inscripto', '2009-09-09',
+   'Parque Industrial Lote 14', 'Salta', 'Salta',
+   -24.8450, -65.4380, null, '{Salta,Jujuy,Catamarca,San Juan}',
+   'homologado', 'aprobado', 'manual', null),
+  ('QUIMIPLANT SRL', '30-70998877-6', 'responsable_inscripto', '2010-11-11',
+   'Carril Rodríguez Peña 3200', 'Guaymallén', 'Mendoza',
+   -32.9150, -68.7850, null, '{Mendoza,San Juan,San Luis}',
+   'validado', null, 'manual', null),
+  ('SEGURIDAD PUNA SRL', '30-71775566-1', 'responsable_inscripto', '2019-03-21',
+   'Av. Senador Pérez 950', 'San Salvador de Jujuy', 'Jujuy',
+   -24.1790, -65.2910, null, '{Jujuy,Salta}',
+   'homologado', 'aprobado', 'manual', null),
+  ('TRANSANDINA LOGÍSTICA SA', '30-71335577-5', 'responsable_inscripto', '2006-07-19',
+   'Ruta Nacional 34 Km 1498', 'General Güemes', 'Salta',
+   -24.6720, -65.0440, null, '{Salta,Jujuy,Tucumán,Formosa}',
+   'homologado', 'aprobado', 'manual', null);
 
--- ============================ INSUMOS Y OFERTAS ============================
+-- ---- proveedor ↔ categorías ----
 
-insert into insumos (id, categoria_id, nombre, unidad, especificacion) values
-  ('10000000-0000-4000-8000-000000000001', 'ca000000-0000-4000-8000-000000000001', 'Guante de nitrilo industrial', 'par', 'Nitrilo 0,38 mm, puño largo'),
-  ('10000000-0000-4000-8000-000000000002', 'ca000000-0000-4000-8000-000000000001', 'Casco de seguridad con barbiquejo', 'unidad', 'EN 397, ventilado'),
-  ('10000000-0000-4000-8000-000000000003', 'ca000000-0000-4000-8000-000000000001', 'Respirador con filtro N95', 'unidad', 'NIOSH 42 CFR 84'),
-  ('10000000-0000-4000-8000-000000000004', 'ca000000-0000-4000-8000-000000000002', 'Chaqueta ignífuga aluminizada', 'unidad', 'NFPA 2112, aramida'),
-  ('10000000-0000-4000-8000-000000000005', 'ca000000-0000-4000-8000-000000000003', 'Aceite lubricante 15W-40', 'litro', 'Motor diésel, API CI-4'),
-  ('10000000-0000-4000-8000-000000000006', 'ca000000-0000-4000-8000-000000000003', 'Grasa multipropósito litio EP2', 'kg', 'Chasis y rodamientos'),
-  ('10000000-0000-4000-8000-000000000007', 'ca000000-0000-4000-8000-000000000005', 'Cianuro de sodio en briquetas', 'kg', 'Lixiviación de oro; requiere ICMC'),
-  ('10000000-0000-4000-8000-000000000008', 'ca000000-0000-4000-8000-000000000005', 'Ácido sulfúrico 98%', 'kg', 'Grado industrial'),
-  ('10000000-0000-4000-8000-000000000009', 'ca000000-0000-4000-8000-000000000005', 'Floculante aniónico', 'kg', 'Para espesadores de relave'),
-  ('10000000-0000-4000-8000-000000000010', 'ca000000-0000-4000-8000-000000000007', 'Bola de acero forjada 3"', 'kg', 'Molino SAG, dureza 60-65 HRC'),
-  ('10000000-0000-4000-8000-000000000011', 'ca000000-0000-4000-8000-000000000008', 'Filtro de aceite para motor diésel', 'unidad', 'Camiones de acarreo CAT 777'),
-  ('10000000-0000-4000-8000-000000000012', 'ca000000-0000-4000-8000-000000000008', 'Filtro de aire primario', 'unidad', 'Camiones de acarreo CAT 777'),
-  ('10000000-0000-4000-8000-000000000013', 'ca000000-0000-4000-8000-000000000010', 'Geomembrana HDPE 1,5 mm', 'm2', 'Pila de lixiviación, GRI-GM13'),
-  ('10000000-0000-4000-8000-000000000014', 'ca000000-0000-4000-8000-000000000009', 'Impeller bomba centrífuga 6×4', 'unidad', 'Bomba de pulpa 6×4×14, alto cromo'),
-  ('10000000-0000-4000-8000-000000000015', 'ca000000-0000-4000-8000-000000000018', 'Correa transportadora EP500 36"', 'metro', '4 lonas, cubierta M24');
+insert into proveedor_categorias (proveedor_id, categoria_id)
+select p.id, c.id from proveedores p, categorias c where
+  (p.razon_social = 'ACERIAS 4C SA'                and c.slug in ('bolas-molino','molienda')) or
+  (p.razon_social = 'AUSTIN POWDER'                and c.slug in ('fabricante-explosivos','explosivos')) or
+  (p.razon_social = 'BAC DALL ARGENTINA SA'        and c.slug in ('epp')) or
+  (p.razon_social = 'ANDREANI LOGÍSTICA SA'        and c.slug in ('transporte','transporte-pesado')) or
+  (p.razon_social = '3D ELECTRO SAN JUAN'          and c.slug in ('cctv','infraestructura-electrica','telecomunicaciones')) or
+  (p.razon_social = 'BMI SA'                       and c.slug in ('construcciones','servicios-mineros','obras-servicios')) or
+  (p.razon_social = 'ANDEMIRA SA'                  and c.slug in ('servicios-mineros')) or
+  (p.razon_social = 'AVINCO CONSTRUCCIONES S.A.'   and c.slug in ('construcciones','ingenieria')) or
+  (p.razon_social = 'BRALBOL SA'                   and c.slug in ('big-bag')) or
+  (p.razon_social = 'ALPARDATA SAS'                and c.slug in ('informatica')) or
+  (p.razon_social = 'ACONCAGUA SERVICIOS MINEROS SRL' and c.slug in ('servicios-mineros','transporte')) or
+  (p.razon_social = '9AMAS'                        and c.slug in ('capacitaciones')) or
+  (p.razon_social = 'ASG CONSULTORA'               and c.slug in ('consultoria','higiene-seguridad')) or
+  (p.razon_social = 'BAYTON SA'                    and c.slug in ('servicios-operativos')) or
+  (p.razon_social = 'LUBRIANDES SA'                and c.slug in ('lubricantes','combustibles')) or
+  (p.razon_social = 'FILTROPUNA SRL'               and c.slug in ('filtros','repuestos-maquinarias','ferreteria-industrial')) or
+  (p.razon_social = 'GEOMEMBRANAS DEL NOA SA'      and c.slug in ('geomembranas','geosinteticos')) or
+  (p.razon_social = 'QUIMIPLANT SRL'               and c.slug in ('industria-quimica','laboratorio-ambiental')) or
+  (p.razon_social = 'SEGURIDAD PUNA SRL'           and c.slug in ('higiene-seguridad','epp')) or
+  (p.razon_social = 'TRANSANDINA LOGÍSTICA SA'     and c.slug in ('transporte-pesado','transporte'));
 
-insert into ofertas_insumo (id, proveedor_id, insumo_id, precio, moneda, lead_time_dias, disponible, vigente_desde) values
-  ('0f000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 3800, 'ARS', 7, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000001', 4100, 'ARS', 15, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 38500, 'ARS', 10, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000002', 41000, 'ARS', 15, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 2900, 'ARS', 7, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000004', 96000, 'ARS', 20, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000005', 9800, 'ARS', 5, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000005', 10400, 'ARS', 12, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000009', 'f0000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000006', 12300, 'ARS', 5, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000010', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000006', 12900, 'ARS', 12, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000011', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000007', 4150, 'ARS', 15, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000012', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000008', 680, 'ARS', 10, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000013', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000009', 5400, 'ARS', 15, false, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000014', 'f0000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000010', 2150, 'ARS', 30, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000015', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000011', 28500, 'ARS', 8, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000016', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000011', 30200, 'ARS', 15, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000017', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000012', 34000, 'ARS', 8, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000018', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000012', 35800, 'ARS', 15, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000019', 'f0000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000013', 3400, 'ARS', 25, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000020', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000014', 420000, 'ARS', 45, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000021', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000014', 455000, 'ARS', 60, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000022', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000015', 95000, 'ARS', 30, true, '2026-09-01'),
-  ('0f000000-0000-4000-8000-000000000023', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000015', 89000, 'ARS', 40, true, '2026-09-01');
+-- ---- contactos ----
 
--- ============================ MINERA Y STOCK ============================
--- Un insumo deliberadamente bajo punto de reorden: dispara el flujo del demo.
+insert into contactos_proveedor (proveedor_id, nombre, rol, email, telefono)
+select p.id, c.nombre, c.rol, c.email, c.telefono
+from proveedores p
+join (values
+  ('ACERIAS 4C SA',         'Mariana Sosa',      'Comercial',        'ventas@acerias4c.com.ar',        '+54 3471 45-2210'),
+  ('AUSTIN POWDER',         'Pablo Ferreyra',    'Cuentas Mining',   'pferreyra@austinpowder.com',     '+54 3492 42-8800'),
+  ('BAC DALL ARGENTINA SA', 'Laura Bianchi',     'Ventas B2B',       'lbianchi@bac-dall.com.ar',       '+54 11 4554-3300'),
+  ('ANDREANI LOGÍSTICA SA', 'Diego Morales',     'Logística Minería','dmorales@andreani.com',          '+54 11 4865-1200'),
+  ('FILTROPUNA SRL',        'Sandra Quispe',     'Dueña / Comercial','ventas@filtropuna.com.ar',       '+54 388 425-9912'),
+  ('GEOMEMBRANAS DEL NOA SA','Martín Arias',     'Director Técnico', 'marias@geonoa.com.ar',           '+54 387 432-7710'),
+  ('SEGURIDAD PUNA SRL',    'Verónica Tolaba',   'Gerente',          'vtolaba@seguridadpuna.com.ar',   '+54 388 422-1145'),
+  ('TRANSANDINA LOGÍSTICA SA','Héctor Luna',     'Operaciones',      'hluna@transandina.com.ar',       '+54 387 491-2200'),
+  ('LUBRIANDES SA',         'Federico Ríos',     'Ventas Industria', 'frios@lubriandes.com.ar',        '+54 351 488-7755')
+) as c(prov, nombre, rol, email, telefono) on p.razon_social = c.prov;
 
-insert into mineras (id, nombre, ubicacion) values
-  ('b0000000-0000-4000-8000-000000000001', 'Sales de Jujuy S.A.', 'Salar de Olaroz, Jujuy');
+-- ---- documentos de evidencia (paths ficticios en bucket 'documentos') ----
 
-insert into stock_minera (id, minera_id, insumo_id, cantidad_actual, punto_reorden, consumo_mensual) values
-  ('50000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 120, 300, 600),
-  ('50000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', 85, 60, 20),
-  ('50000000-0000-4000-8000-000000000003', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', 150, 150, 100),
-  ('50000000-0000-4000-8000-000000000004', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000005', 2400, 800, 900),
-  ('50000000-0000-4000-8000-000000000005', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000010', 48000, 30000, 25000),
-  ('50000000-0000-4000-8000-000000000006', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000011', 60, 25, 12),
-  ('50000000-0000-4000-8000-000000000007', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000007', 950, 500, 400),
-  ('50000000-0000-4000-8000-000000000008', 'b0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000013', 1200, 400, 200);
+insert into documentos (proveedor_id, tipo, storage_path, nombre_archivo)
+select p.id, 'certificado', p.id || '/iso-9001.pdf', 'iso-9001.pdf'
+from proveedores p where p.estado in ('validado','auditado','homologado');
 
--- ============================ CONSULTAS Y RECOMENDACIONES ============================
--- Historial de ejemplo del demo.
+-- ============================ PROVEEDOR_CERTIFICACIONES ======================
 
-insert into consultas (id, minera_id, mensaje, respuesta, estado, created_at) values
-  ('c0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000001', '¿Qué proveedor me entrega guantes de nitrilo más rápido?', 'Recomendé la oferta de Andina EPP: entrega en 7 días, trust score 91.', 'pendiente', '2026-10-20T15:04:00+00'),
-  ('c0000000-0000-4000-8000-000000000002', 'b0000000-0000-4000-8000-000000000001', 'Necesito reponer filtros de aceite para la flota.', 'Recomendé a Filtros y Filtrados Puna por precio y lead time.', 'aprobada', '2026-10-21T11:32:00+00');
+-- ISO 9001 verificado para la mayoría de la red verificada
+insert into proveedor_certificaciones
+  (proveedor_id, certificacion_id, numero_certificado, organismo, fecha_emision, fecha_vencimiento, estado)
+select p.id, c.id, 'AR-9001-' || (row_number() over ()) * 137 + 1000, 'IRAM',
+       date '2024-03-15', date '2027-03-15', 'verificado'
+from proveedores p cross join certificaciones c
+where c.codigo = 'ISO 9001'
+  and p.razon_social in
+    ('ACERIAS 4C SA','AUSTIN POWDER','BAC DALL ARGENTINA SA','ANDREANI LOGÍSTICA SA',
+     '3D ELECTRO SAN JUAN','BMI SA','ANDEMIRA SA','9AMAS','ASG CONSULTORA',
+     'LUBRIANDES SA','FILTROPUNA SRL','GEOMEMBRANAS DEL NOA SA','QUIMIPLANT SRL',
+     'SEGURIDAD PUNA SRL','TRANSANDINA LOGÍSTICA SA');
 
-insert into recomendaciones (id, consulta_id, proveedor_id, insumo_id, justificacion, puntaje, estado, created_at) values
-  ('d1000000-0000-4000-8000-000000000001', 'c0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'Menor lead time entre quienes ofrecen guante de nitrilo (7 días), trust score 91 y certificación EN 388 verificada.', 91, 'pendiente', '2026-10-20T15:04:00+00'),
-  ('d1000000-0000-4000-8000-000000000002', 'c0000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000011', 'Menor precio ($28.500) y menor lead time (8 días); trust score 78, ISO 9001 verificado.', 78, 'aprobada', '2026-10-21T11:32:00+00'),
-  ('d1000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000011', 'Alternativa con mayor precio ($30.200) y mayor lead time (15 días); trust score 71.', 71, 'rechazada', '2026-10-21T11:32:00+00');
+-- Trío HSE (14001+45001) para los homologados/auditados
+insert into proveedor_certificaciones
+  (proveedor_id, certificacion_id, numero_certificado, organismo, fecha_emision, fecha_vencimiento, estado)
+select p.id, c.id, 'AR-' || replace(c.codigo,' ','') || '-' || (row_number() over ()) * 211 + 500,
+       'Bureau Veritas', date '2024-06-01', date '2027-06-01', 'verificado'
+from proveedores p cross join certificaciones c
+where c.codigo in ('ISO 14001','ISO 45001')
+  and p.razon_social in
+    ('AUSTIN POWDER','BAC DALL ARGENTINA SA','ANDEMIRA SA','LUBRIANDES SA',
+     'GEOMEMBRANAS DEL NOA SA','SEGURIDAD PUNA SRL','TRANSANDINA LOGÍSTICA SA','BMI SA','ANDREANI LOGÍSTICA SA');
 
--- ============================ HISTORIAL PARA EL TRUST SCORE ============================
+-- Certificaciones de producto / habilitaciones específicas por proveedor
+insert into proveedor_certificaciones
+  (proveedor_id, certificacion_id, numero_certificado, organismo, fecha_emision, fecha_vencimiento, estado)
+select p.id, c.id, pc.num, pc.org, pc.emision::date, pc.vence::date, pc.estado::estado_verificacion
+from (values
+  ('AUSTIN POWDER',         'ANMAC-EXP',    'RENAR-EXP-0412', 'ANMaC',                '2023-08-10', '2027-08-10', 'verificado'),
+  ('AUSTIN POWDER',         'TMD',          'CNRT-TMD-88213', 'CNRT',                 '2024-01-20', '2027-01-20', 'verificado'),
+  ('AUSTIN POWDER',         'ALT-GEO',      'ALT-0933',       'Servicio Médico NOA',  '2025-05-12', '2027-05-12', 'verificado'),
+  ('BAC DALL ARGENTINA SA', 'IRAM-EPP',     'IRAM-3620-114',  'IRAM',                 '2024-02-01', '2027-02-01', 'verificado'),
+  ('BAC DALL ARGENTINA SA', 'NIOSH-42CFR84','TC-84A-9321',    'NIOSH',                '2023-11-01', null,         'verificado'),
+  ('ACERIAS 4C SA',         'EN 10204-3.1', 'EN4C-2025-0788', 'Lab. Metalúrgico 4C',  '2025-04-22', null,         'verificado'),
+  ('GEOMEMBRANAS DEL NOA SA','GRI-GM13',    'GRI-GM13-AR-017','GSI Labs',             '2025-01-30', '2027-01-30', 'verificado'),
+  ('SEGURIDAD PUNA SRL',    'IRAM-EPP',     'IRAM-3620-287',  'IRAM',                 '2024-09-15', '2027-09-15', 'verificado'),
+  ('SEGURIDAD PUNA SRL',    'ALT-GEO',      'ALT-2210',       'Servicio Médico NOA',  '2025-06-02', '2027-06-02', 'verificado'),
+  ('LUBRIANDES SA',         'GHS-SDS',      'SDS-LUB-2025',   'Lubriandes',           '2025-03-01', null,         'verificado'),
+  ('LUBRIANDES SA',         'TMD',          'CNRT-TMD-91204', 'CNRT',                 '2024-10-10', '2027-10-10', 'verificado'),
+  ('QUIMIPLANT SRL',        'GHS-SDS',      'SDS-QP-2025',    'Quimiplant',           '2025-02-14', null,         'verificado'),
+  ('QUIMIPLANT SRL',        'ISO 17025',    'OAA-LE-4412',    'OAA',                  '2024-05-20', '2028-05-20', 'verificado'),
+  ('TRANSANDINA LOGÍSTICA SA','ISO 39001',  'IRAM-39001-031', 'IRAM',                 '2024-04-05', '2027-04-05', 'verificado'),
+  ('TRANSANDINA LOGÍSTICA SA','TMD',        'CNRT-TMD-77451', 'CNRT',                 '2023-12-01', '2026-12-01', 'verificado'),
+  ('ANDEMIRA SA',           'ALT-GEO',      'ALT-1877',       'Servicio Médico NOA',  '2025-01-15', '2027-01-15', 'verificado'),
+  ('ALPARDATA SAS',         'ISO 27001',    'BV-27001-2215',  'Bureau Veritas',       '2024-08-08', '2027-08-08', 'verificado'),
+  -- un caso con certificado vencido → debe fallar cumple_requisitos
+  ('FILTROPUNA SRL',        'ISO 14001',    'AR-14001-5521',  'IRAM',                 '2021-03-15', '2024-03-15', 'vencido'),
+  -- y uno solo declarado (sin verificar todavía)
+  ('FILTROPUNA SRL',        'GRI-GM13',     null,             null,                   null,         null,         'declarado'),
+  ('9AMAS',                 'ISO 45001',    'AR-45001-2034',  'IRAM',                 '2023-10-10', '2027-10-10', 'verificado'),
+  ('BMI SA',                'ISO 14001',    'AR-14001-8102',  'DNV',                  '2023-05-18', '2027-05-18', 'verificado'),
+  ('BMI SA',                'ISO 45001',    'AR-45001-8103',  'DNV',                  '2023-05-18', '2027-05-18', 'verificado'),
+  ('AUSTIN POWDER',         'ISO 14064',    'DNV-14064-881',  'DNV',                  '2025-02-10', '2027-02-10', 'verificado'),
+  ('ANDEMIRA SA',           'ISO 37001',    'BV-37001-0912',  'Bureau Veritas',       '2024-11-02', '2027-11-02', 'verificado')
+) as pc(prov, cod, num, org, emision, vence, estado)
+join proveedores p on p.razon_social = pc.prov
+join certificaciones c on c.codigo = pc.cod;
 
-insert into entregas (id, proveedor_id, insumo_id, fecha_compromiso, fecha_entrega, conforme) values
-  ('e0000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '2026-06-05', '2026-06-04', true),
-  ('e0000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000002', '2026-07-12', '2026-07-12', true),
-  ('e0000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000003', '2026-08-02', '2026-08-05', true),
-  ('e0000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '2026-09-10', '2026-09-08', true),
-  ('e0000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000005', '2026-06-20', '2026-06-19', true),
-  ('e0000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000006', '2026-07-25', '2026-07-24', true),
-  ('e0000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000005', '2026-08-15', '2026-08-15', true),
-  ('e0000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000007', '2026-05-30', '2026-05-28', true),
-  ('e0000000-0000-4000-8000-000000000009', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000008', '2026-07-08', '2026-07-08', true),
-  ('e0000000-0000-4000-8000-000000000010', 'f0000000-0000-4000-8000-000000000003', '10000000-0000-4000-8000-000000000009', '2026-08-22', '2026-08-25', false),
-  ('e0000000-0000-4000-8000-000000000011', 'f0000000-0000-4000-8000-000000000004', null, '2026-04-15', '2026-04-15', true),
-  ('e0000000-0000-4000-8000-000000000012', 'f0000000-0000-4000-8000-000000000004', null, '2026-08-01', '2026-08-01', true),
-  ('e0000000-0000-4000-8000-000000000013', 'f0000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000010', '2026-06-30', '2026-06-29', true),
-  ('e0000000-0000-4000-8000-000000000014', 'f0000000-0000-4000-8000-000000000005', '10000000-0000-4000-8000-000000000010', '2026-09-05', '2026-09-12', true),
-  ('e0000000-0000-4000-8000-000000000015', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000011', '2026-07-14', '2026-07-14', true),
-  ('e0000000-0000-4000-8000-000000000016', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000012', '2026-08-19', '2026-08-18', true),
-  ('e0000000-0000-4000-8000-000000000017', 'f0000000-0000-4000-8000-000000000006', '10000000-0000-4000-8000-000000000011', '2026-09-22', '2026-09-22', true),
-  ('e0000000-0000-4000-8000-000000000018', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000014', '2026-05-20', '2026-05-22', true),
-  ('e0000000-0000-4000-8000-000000000019', 'f0000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000015', '2026-07-30', '2026-07-30', true),
-  ('e0000000-0000-4000-8000-000000000020', 'f0000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000013', '2026-08-10', '2026-08-09', true),
-  ('e0000000-0000-4000-8000-000000000021', 'f0000000-0000-4000-8000-000000000010', null, '2026-06-11', '2026-06-11', true),
-  ('e0000000-0000-4000-8000-000000000022', 'f0000000-0000-4000-8000-000000000010', null, '2026-09-01', '2026-09-03', true),
-  ('e0000000-0000-4000-8000-000000000023', 'f0000000-0000-4000-8000-000000000012', null, '2026-07-05', '2026-07-05', true),
-  ('e0000000-0000-4000-8000-000000000024', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000011', '2026-08-28', '2026-09-02', true),
-  ('e0000000-0000-4000-8000-000000000025', 'f0000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000002', '2026-09-15', '2026-09-14', true),
-  ('e0000000-0000-4000-8000-000000000026', 'f0000000-0000-4000-8000-000000000015', null, '2026-08-08', '2026-08-08', true),
-  ('e0000000-0000-4000-8000-000000000027', 'f0000000-0000-4000-8000-000000000009', null, '2026-09-19', '2026-09-25', false),
-  ('e0000000-0000-4000-8000-000000000028', 'f0000000-0000-4000-8000-000000000014', null, '2026-09-10', '2026-09-10', true);
+-- ============================ AUDITORÍAS =====================================
 
-insert into trust_score_historial (id, proveedor_id, puntaje, detalle, created_at) values
-  ('a1000000-0000-4000-8000-000000000001', 'f0000000-0000-4000-8000-000000000003', 91, '{"identidad":19,"compliance":27,"desempeno":27,"esg":9,"capacidad":9}', '2026-06-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000002', 'f0000000-0000-4000-8000-000000000003', 94, '{"identidad":20,"compliance":28,"desempeno":28,"esg":9,"capacidad":9}', '2026-09-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000003', 'f0000000-0000-4000-8000-000000000001', 89, '{"identidad":18,"compliance":26,"desempeno":27,"esg":8,"capacidad":10}', '2026-06-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000004', 'f0000000-0000-4000-8000-000000000001', 91, '{"identidad":19,"compliance":27,"desempeno":27,"esg":8,"capacidad":10}', '2026-09-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000005', 'f0000000-0000-4000-8000-000000000006', 74, '{"identidad":14,"compliance":20,"desempeno":24,"esg":6,"capacidad":10}', '2026-06-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000006', 'f0000000-0000-4000-8000-000000000006', 78, '{"identidad":15,"compliance":22,"desempeno":24,"esg":7,"capacidad":10}', '2026-09-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000007', 'f0000000-0000-4000-8000-000000000004', 88, '{"identidad":18,"compliance":29,"desempeno":25,"esg":7,"capacidad":9}', '2026-09-01T09:00:00+00'),
-  ('a1000000-0000-4000-8000-000000000008', 'f0000000-0000-4000-8000-000000000012', 89, '{"identidad":18,"compliance":27,"desempeno":26,"esg":9,"capacidad":9}', '2026-09-01T09:00:00+00');
+insert into auditorias (proveedor_id, fecha, tipo, auditor, puntaje, resultado)
+select p.id, a.fecha::date, a.tipo, a.auditor, a.puntaje, a.resultado
+from proveedores p
+join (values
+  ('ANDEMIRA SA',            '2025-04-12', 'presencial', 'Auditor interno red ju-min', 91.5, 'aprobado'),
+  ('AUSTIN POWDER',          '2025-02-20', 'presencial', 'DNV',                         88.0, 'aprobado'),
+  ('BAC DALL ARGENTINA SA',  '2025-06-03', 'remota',     'Auditor interno red ju-min',  84.5, 'aprobado'),
+  ('BMI SA',                 '2024-11-15', 'presencial', 'Auditor interno red ju-min',  72.0, 'con_observaciones')
+) as a(prov, fecha, tipo, auditor, puntaje, resultado) on p.razon_social = a.prov;
 
-commit;
+-- ============================ INSUMOS Y OFERTAS ==============================
+
+insert into insumos (categoria_id, nombre, unidad, especificacion)
+select c.id, i.nombre, i.unidad, i.spec
+from (values
+  ('bolas-molino',  'Bola de acero forjado para molienda 3"',       'kg',     'Dureza 60-65 HRC, certificado EN 10204 3.1'),
+  ('geomembranas',  'Geomembrana HDPE lisa 1.5 mm',                 'm2',     'Cumple GRI-GM13, rollo 7x140 m'),
+  ('epp',           'Guante de nitrilo industrial (caja x100)',     'caja',   'Nitrilo 0.28 mm, talle 8-10'),
+  ('epp',           'Casco de seguridad con barbiquejo',            'unidad', 'IRAM 3620 / ANSI Z89.1'),
+  ('epp',           'Respirador media cara con filtros P100',       'unidad', 'Aprobación NIOSH 42 CFR 84'),
+  ('lubricantes',   'Aceite hidráulico ISO 46 (tambor 208 L)',      'tambor', 'Anti-wear, HLP'),
+  ('lubricantes',   'Grasa multipropósito litio EP2 (balde 18 kg)', 'balde',  'NLGI 2, drop point 190°C'),
+  ('explosivos',    'Emulsión explosiva encartuchada',              'kg',     'Ø 3", para voladura en banco'),
+  ('explosivos',    'Detonador electrónico programable',            'unidad', 'Precisión 1 ms'),
+  ('filtros',       'Filtro de aire para motor diésel CAT C15',     'unidad', 'Equivalente OEM'),
+  ('bombas',        'Bomba centrífuga horizontal 4x3',              'unidad', 'Impulsor cerrado, acero inox'),
+  ('big-bag',       'Big bag 1.5 t con liner',                      'unidad', '4 asas, factor seguridad 5:1')
+) as i(cat, nombre, unidad, spec)
+join categorias c on c.slug = i.cat;
+
+insert into ofertas_insumo (proveedor_id, insumo_id, precio, moneda, lead_time_dias, disponible)
+select p.id, i.id, o.precio, 'ARS', o.lead, o.disp
+from (values
+  ('ACERIAS 4C SA',           'Bola de acero forjado para molienda 3"',      2350.00, 21, true),
+  ('GEOMEMBRANAS DEL NOA SA', 'Geomembrana HDPE lisa 1.5 mm',                9800.00, 30, true),
+  ('BAC DALL ARGENTINA SA',   'Guante de nitrilo industrial (caja x100)',    18900.00, 7,  true),
+  ('SEGURIDAD PUNA SRL',      'Guante de nitrilo industrial (caja x100)',    21500.00, 3,  true),
+  ('BAC DALL ARGENTINA SA',   'Casco de seguridad con barbiquejo',           15200.00, 7,  true),
+  ('SEGURIDAD PUNA SRL',      'Casco de seguridad con barbiquejo',           13900.00, 5,  true),
+  ('BAC DALL ARGENTINA SA',   'Respirador media cara con filtros P100',      42700.00, 10, true),
+  ('LUBRIANDES SA',           'Aceite hidráulico ISO 46 (tambor 208 L)',     312000.00,14, true),
+  ('LUBRIANDES SA',           'Grasa multipropósito litio EP2 (balde 18 kg)', 98500.00, 14, true),
+  ('AUSTIN POWDER',           'Emulsión explosiva encartuchada',             3200.00, 25, true),
+  ('AUSTIN POWDER',           'Detonador electrónico programable',           17500.00, 25, true),
+  ('FILTROPUNA SRL',          'Filtro de aire para motor diésel CAT C15',    89500.00, 5,  true),
+  ('BAYTON SA',               'Bomba centrífuga horizontal 4x3',            1850000.00,45, false),
+  ('BRALBOL SA',              'Big bag 1.5 t con liner',                     9200.00, 12, true),
+  ('SEGURIDAD PUNA SRL',      'Respirador media cara con filtros P100',      45800.00, 4,  true)
+) as o(prov, ins, precio, lead, disp)
+join proveedores p on p.razon_social = o.prov
+join insumos i on i.nombre = o.ins;
+
+-- ============================ MINERAS Y STOCK ================================
+
+insert into mineras (nombre, ubicacion) values
+  ('Sales de Jujuy S.A.', 'Salar de Olaroz, Jujuy (4.000 msnm)'),
+  ('Minera Exar S.A.',    'Cauchari-Olaroz, Jujuy (4.000 msnm)');
+
+insert into stock_minera (minera_id, insumo_id, cantidad_actual, punto_reorden, consumo_mensual)
+select m.id, i.id, s.actual, s.reorden, s.consumo
+from mineras m
+cross join (values
+  ('Bola de acero forjado para molienda 3"',        8000, 12000, 15000),  -- BAJO REORDEN → alerta
+  ('Geomembrana HDPE lisa 1.5 mm',                    500,   400,   200),
+  ('Guante de nitrilo industrial (caja x100)',         45,    60,    35),  -- BAJO REORDEN
+  ('Casco de seguridad con barbiquejo',                80,    30,    12),
+  ('Respirador media cara con filtros P100',           30,    50,    20),  -- BAJO REORDEN
+  ('Aceite hidráulico ISO 46 (tambor 208 L)',           3,     2,     2),
+  ('Grasa multipropósito litio EP2 (balde 18 kg)',      6,     4,     3),
+  ('Filtro de aire para motor diésel CAT C15',         12,    10,     8)
+) as s(ins, actual, reorden, consumo)
+join insumos i on i.nombre = s.ins
+where m.nombre = 'Sales de Jujuy S.A.';
+
+-- ============================ ENTREGAS (OTIF) ================================
+
+insert into entregas (proveedor_id, insumo_id, fecha_compromiso, fecha_entrega, conforme)
+select p.id,
+       (select id from insumos order by random() limit 1),
+       e.compromiso::date, e.entrega::date, e.conforme
+from proveedores p
+cross join lateral (
+  select *
+  from (values
+    (date '2025-08-04', date '2025-08-03', true),
+    (date '2025-09-01', date '2025-09-01', true),
+    (date '2025-10-06', date '2025-10-09', true)   -- tarde
+  ) v(compromiso, entrega, conforme)
+  order by random() limit 2
+) e
+where p.razon_social in
+  ('ACERIAS 4C SA','AUSTIN POWDER','BAC DALL ARGENTINA SA','ANDREANI LOGÍSTICA SA',
+   'LUBRIANDES SA','FILTROPUNA SRL','GEOMEMBRANAS DEL NOA SA','SEGURIDAD PUNA SRL',
+   'TRANSANDINA LOGÍSTICA SA','QUIMIPLANT SRL','BMI SA','3D ELECTRO SAN JUAN');
+
+-- ============================ CONSULTAS / RECOMENDACIONES ====================
+
+insert into consultas (minera_id, mensaje, respuesta, estado)
+select m.id, q.mensaje, q.respuesta, q.estado::estado_consulta
+from mineras m
+join (values
+  ('El stock de bolas de molienda quedó bajo el punto de reorden. ¿Qué sugerís?',
+   'Detecté 8.000 kg contra un punto de reorden de 12.000 kg. Recomiendo ACERIAS 4C SA: es el único oferente homologado para "Bolas de Molino" (ISO 9001 + EN 10204 3.1 verificados), lead time 21 días, precio $2.350/kg.',
+   'aprobada'),
+  ('Necesito reponer guantes de nitrilo, ¿quién conviene?',
+   'Hay 2 oferentes homologados: SEGURIDAD PUNA SRL ($21.500/caja, lead time 3 días, Jujuy) y BAC DALL ($18.900/caja, 7 días, CABA). Si la urgencia es alta conviene SEGURIDAD PUNA; si podés esperar, BAC DALL es ~12% más barato.',
+   'pendiente')
+) as q(mensaje, respuesta, estado) on m.nombre = 'Sales de Jujuy S.A.';
+
+insert into recomendaciones (consulta_id, proveedor_id, insumo_id, justificacion, puntaje)
+select c.id, p.id, i.id, r.jus, r.puntaje
+from (values
+  ('ACERIAS 4C SA',  'Bola de acero forjado para molienda 3"',       'Único homologado en Bolas de Molino; EN 10204 3.1 verificado; trust score alto', 92.0),
+  ('SEGURIDAD PUNA SRL','Guante de nitrilo industrial (caja x100)',  'Lead time 3 días, local (Jujuy), registro provincial aprobado',                 88.0),
+  ('BAC DALL ARGENTINA SA','Guante de nitrilo industrial (caja x100)','Precio ~12% menor, EPP certificado IRAM/NIOSH verificado',                    90.5)
+) as r(prov, ins, jus, puntaje)
+join proveedores p on p.razon_social = r.prov
+join insumos i on i.nombre = r.ins
+join consultas c on
+     (c.mensaje ilike '%bolas%'   and r.prov = 'ACERIAS 4C SA')
+  or (c.mensaje ilike '%guantes%' and r.prov in ('SEGURIDAD PUNA SRL','BAC DALL ARGENTINA SA'));
+
+-- ============================ TRUST SCORE ====================================
+-- Cálculo determinista (docs/modelo-clasificacion.md §3.2): identidad 20 / compliance 30 /
+-- desempeño 30 / ESG 10 / capacidad 10 — base 40 + señales.
+
+update proveedores p set
+  trust_score = round(least(98, greatest(10,
+      30
+    + case when p.registro_jujuy_estado = 'aprobado' then 15
+           when p.registro_jujuy_estado = 'pendiente' then 5 else 0 end          -- identidad
+    + least(24, (select count(*) * 6
+                 from proveedor_certificaciones pc
+                 where pc.proveedor_id = p.id and pc.estado = 'verificado'
+                   and (pc.fecha_vencimiento is null or pc.fecha_vencimiento > current_date))) -- compliance
+    - (select count(*) * 8
+       from proveedor_certificaciones pc
+       where pc.proveedor_id = p.id and pc.estado in ('vencido','rechazado'))     -- penalización
+    + round(20 * coalesce((select avg(case when e.a_tiempo then 1.0 else 0.0 end)
+                          from entregas e where e.proveedor_id = p.id), 0.5))     -- desempeño OTIF
+    + case when p.estado = 'homologado' then 8
+           when p.estado = 'auditado'   then 6
+           when p.estado = 'validado'   then 4 else 0 end                          -- capacidad/estado
+    + case when exists (select 1 from proveedor_certificaciones pc
+                        join certificaciones c on c.id = pc.certificacion_id
+                        where pc.proveedor_id = p.id and c.tipo = 'esg'
+                          and pc.estado = 'verificado') then 8 else 0 end          -- ESG
+  ))::numeric, 1),
+  trust_score_detalle = jsonb_build_object(
+    'identidad',  case when p.registro_jujuy_estado = 'aprobado' then 15
+                       when p.registro_jujuy_estado = 'pendiente' then 5 else 0 end,
+    'compliance', (select count(*) from proveedor_certificaciones pc
+                   where pc.proveedor_id = p.id and pc.estado = 'verificado'),
+    'otif',       coalesce((select round(avg(case when e.a_tiempo then 1.0 else 0.0 end), 2)
+                            from entregas e where e.proveedor_id = p.id), 0.5),
+    'estado',     p.estado
+  );
+
+insert into trust_score_historial (proveedor_id, puntaje, detalle)
+select id, trust_score, trust_score_detalle from proveedores where trust_score is not null;

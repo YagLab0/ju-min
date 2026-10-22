@@ -1,4 +1,6 @@
+import { withAui } from "@assistant-ui/next";
 import type { NextConfig } from "next";
+import { withEve } from "eve/next";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -14,4 +16,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withEve(withAui(nextConfig));

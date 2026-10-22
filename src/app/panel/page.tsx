@@ -20,6 +20,7 @@ import {
   consultarAlAgenteDesdePanel,
   decidirRecomendacionDesdePanel,
 } from "./acciones";
+import { Consulta } from "./consulta";
 
 export const metadata: Metadata = {
   title: "Panel de la minera",
@@ -62,6 +63,8 @@ export default function Panel() {
         </Suspense>
       </div>
 
+      <ChatAgente />
+
       <Suspense
         fallback={
           <p className="mt-10 border border-bruma/25 bg-roca p-5 text-detalle text-bruma">
@@ -82,6 +85,31 @@ export default function Panel() {
         <TablaStock />
       </Suspense>
     </div>
+  );
+}
+
+function ChatAgente() {
+  return (
+    <section
+      aria-labelledby="chat-agente"
+      className="mt-10 border border-bruma/25 bg-roca"
+    >
+      <div className="border-b border-bruma/25 p-5">
+        <h2
+          id="chat-agente"
+          className="font-display text-titulo font-semibold text-sal"
+        >
+          Conversar con el agente
+        </h2>
+        <p className="mt-2 text-detalle text-bruma">
+          Chat con el agente eve para preguntas abiertas sobre compras. La
+          conversación se retoma al recargar la página.
+        </p>
+      </div>
+      <div className="h-[36rem]">
+        <Consulta />
+      </div>
+    </section>
   );
 }
 

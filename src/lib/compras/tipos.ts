@@ -41,7 +41,6 @@ export type CondicionIva =
 /** Decisión de la minera sobre una recomendación del agente. */
 export type EstadoRecomendacion = "pendiente" | "aprobada" | "rechazada";
 export type DecisionRecomendacion = "aprobada" | "rechazada";
-export type EstadoConsulta = "pendiente" | "aprobada" | "rechazada";
 
 /** Fuente de verificación de la que salió el registro del proveedor. */
 export type FuenteVerificacion =
@@ -189,7 +188,6 @@ export interface Consulta {
   id: string;
   mensaje: string;
   respuesta: string | null;
-  estado: EstadoConsulta;
   recomendaciones: Recomendacion[];
   creadaEn: string;
 }

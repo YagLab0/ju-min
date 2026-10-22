@@ -103,7 +103,6 @@ export class AdaptadorSupabase implements FuenteDatosCompras {
       minera_id: consulta.mineraId,
       mensaje: consulta.mensaje,
       respuesta: consulta.respuesta,
-      estado: "pendiente",
     });
   }
 

@@ -358,8 +358,8 @@ export const SEMILLA: TablasCompras = {
   ],
 
   consultas: [
-    { id: id("c0", 1), minera_id: id("b0", 1), mensaje: "¿Qué proveedor me entrega guantes de nitrilo más rápido?", respuesta: "Recomendé la oferta de Andina EPP: entrega en 7 días, trust score 91.", estado: "pendiente", created_at: "2026-10-20T15:04:00.000Z" },
-    { id: id("c0", 2), minera_id: id("b0", 1), mensaje: "Necesito reponer filtros de aceite para la flota.", respuesta: "Recomendé a Filtros y Filtrados Puna por precio y lead time.", estado: "aprobada", created_at: "2026-10-21T11:32:00.000Z" },
+    { id: id("c0", 1), minera_id: id("b0", 1), mensaje: "¿Qué proveedor me entrega guantes de nitrilo más rápido?", respuesta: "Recomendé la oferta de Andina EPP: entrega en 7 días, trust score 91.", created_at: "2026-10-20T15:04:00.000Z" },
+    { id: id("c0", 2), minera_id: id("b0", 1), mensaje: "Necesito reponer filtros de aceite para la flota.", respuesta: "Recomendé a Filtros y Filtrados Puna por precio y lead time.", created_at: "2026-10-21T11:32:00.000Z" },
   ],
 
   recomendaciones: [

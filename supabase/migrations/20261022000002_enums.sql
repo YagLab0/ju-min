@@ -1,4 +1,4 @@
--- Enums del dominio (DOCS.md §4.3).
+-- Enums del dominio (docs/schema-base-de-datos.md §4.3)
 
 create type estado_proveedor as enum
   ('registrado', 'documentado', 'validado', 'auditado', 'homologado', 'suspendido');

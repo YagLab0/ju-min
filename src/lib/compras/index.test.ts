@@ -271,7 +271,6 @@ describe("consultas y recomendaciones", () => {
         },
       ],
     });
-    expect(consulta.estado).toBe("pendiente");
     expect(consulta.mensaje).toBe("¿Quién vende guantes de nitrilo?");
     expect(consulta.recomendaciones).toHaveLength(1);
     const rec = consulta.recomendaciones[0];

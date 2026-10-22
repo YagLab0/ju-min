@@ -11,7 +11,6 @@
 import type {
   AmbitoCertificacion,
   CondicionIva,
-  EstadoConsulta,
   EstadoProveedor,
   EstadoRecomendacion,
   EstadoVerificacion,
@@ -175,7 +174,6 @@ export interface FilaConsulta {
   minera_id: string | null;
   mensaje: string;
   respuesta: string | null;
-  estado: EstadoConsulta;
   created_at: string;
 }
 
