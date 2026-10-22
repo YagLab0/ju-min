@@ -3,7 +3,12 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { AssistantRuntimeProvider, useAui } from "@assistant-ui/react";
 import { useEveAgentRuntime } from "@assistant-ui/eve";
-import { MessageSquarePlusIcon, Trash2Icon } from "lucide-react";
+import {
+  MessageSquarePlusIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Thread } from "@/components/assistant-ui/elements/thread.aui";
 import { cn } from "@/lib/utils";
 import type { ClientSessionState, MessageStreamEvent } from "eve/client";
@@ -21,6 +26,8 @@ type ConversacionGuardada = {
 type ConsultasGuardadas = {
   /** sessionId de la última conversación abierta. */
   activa?: string;
+  /** Preferencia de UI: sidebar oculta. */
+  barraOculta?: boolean;
   items: ConversacionGuardada[];
 };
 
@@ -243,12 +250,14 @@ function BarraConversaciones({
   onNueva,
   onAbrir,
   onEliminar,
+  onOcultar,
 }: {
   items: ConversacionGuardada[];
   activaId: string | undefined;
   onNueva: () => void;
   onAbrir: (item: ConversacionGuardada) => void;
   onEliminar: (item: ConversacionGuardada) => void;
+  onOcultar: () => void;
 }) {
   const grupos = agruparPorFecha(items);
   return (
@@ -257,13 +266,26 @@ function BarraConversaciones({
       className="flex w-48 shrink-0 flex-col border-r border-linea bg-papel/60"
     >
       <div className="space-y-2.5 border-b border-linea p-3">
-        <div className="flex items-baseline justify-between px-0.5">
+        <div className="flex items-center justify-between px-0.5">
           <span className="text-[0.65rem] font-semibold tracking-wider text-piedra/80 uppercase">
             Conversaciones
           </span>
-          {items.length > 0 && (
-            <span className="text-micro text-piedra">{items.length}</span>
-          )}
+          <span className="flex items-center gap-0.5">
+            {items.length > 0 && (
+              <span className="mr-1 text-micro text-piedra">
+                {items.length}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={onOcultar}
+              aria-label="Ocultar conversaciones"
+              title="Ocultar conversaciones"
+              className="rounded-md p-1 text-piedra transition-colors hover:bg-foreground/[0.06] hover:text-tinta focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+            >
+              <PanelLeftCloseIcon className="size-3.5" aria-hidden="true" />
+            </button>
+          </span>
         </div>
         <button
           type="button"
@@ -416,19 +438,37 @@ function GestorConsultas() {
     }
   };
 
+  const barraVisible = guardadas.barraOculta !== true;
+  const alternarBarra = (visible: boolean) =>
+    setGuardadas((prev) => ({ ...prev, barraOculta: !visible }));
+
   return (
     <div className="flex h-full">
-      <BarraConversaciones
-        items={itemsOrdenados}
-        activaId={sesionActual?.sessionId}
-        onNueva={nuevaConversacion}
-        onAbrir={(item) => {
-          setSlot(item.session.sessionId);
-          setSesionActual(item.session);
-        }}
-        onEliminar={eliminarConversacion}
-      />
-      <div className="min-w-0 flex-1">
+      {barraVisible && (
+        <BarraConversaciones
+          items={itemsOrdenados}
+          activaId={sesionActual?.sessionId}
+          onNueva={nuevaConversacion}
+          onAbrir={(item) => {
+            setSlot(item.session.sessionId);
+            setSesionActual(item.session);
+          }}
+          onEliminar={eliminarConversacion}
+          onOcultar={() => alternarBarra(false)}
+        />
+      )}
+      <div className="relative min-w-0 flex-1">
+        {!barraVisible && (
+          <button
+            type="button"
+            onClick={() => alternarBarra(true)}
+            aria-label="Mostrar conversaciones"
+            title="Mostrar conversaciones"
+            className="absolute top-2.5 left-2.5 z-10 rounded-lg border border-linea bg-ficha p-1.5 text-piedra shadow-sm transition-colors hover:text-tinta focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+          >
+            <PanelLeftOpenIcon className="size-4" aria-hidden="true" />
+          </button>
+        )}
         <ConsultaRuntime
           key={slot}
           inicial={activa}
