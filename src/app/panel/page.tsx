@@ -47,10 +47,12 @@ export default function Panel() {
 
       {/* El chat con el agente es el centro de la pantalla. En la columna
           lateral va todo el circuito de trabajo: la alerta dispara el
-          pedido de recomendación, la respuesta aparece debajo y la cola de
-          pendientes espera la decisión. */}
-      <div className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]">
-        <div className="min-w-0 space-y-6">
+          pedido de recomendación y la cola de pendientes espera la
+          decisión. Ambas columnas se estiran a la misma altura: la última
+          card de cada una crece hasta alinear los bordes y el contenido
+          que sobra scrollea adentro. */}
+      <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]">
+        <div className="flex min-w-0 flex-col gap-6">
           <ChatAgente />
           <Suspense
             fallback={
@@ -60,7 +62,7 @@ export default function Panel() {
             <HistorialConsultas />
           </Suspense>
         </div>
-        <aside className="min-w-0 space-y-6">
+        <aside className="flex min-w-0 flex-col gap-6">
           <Suspense
             fallback={<PanelCargando texto="Cargando las alertas de stock…" />}
           >
@@ -310,53 +312,60 @@ async function ColaPendientes() {
   return (
     <section
       aria-labelledby="cola-pendientes"
-      className="rounded-2xl border border-linea bg-ficha p-5 shadow-sm"
+      className="flex flex-1 flex-col rounded-2xl border border-linea bg-ficha shadow-sm"
     >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2
-          id="cola-pendientes"
-          className="font-display text-subtitulo font-semibold text-tinta"
-        >
-          Recomendaciones pendientes
-        </h2>
-        <p className="text-detalle text-piedra" role="status">
-          {pendientes.length === 1
-            ? "1 pendiente"
-            : `${pendientes.length} pendientes`}
+      <div className="border-b border-linea px-5 py-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2
+            id="cola-pendientes"
+            className="font-display text-subtitulo font-semibold text-tinta"
+          >
+            Recomendaciones pendientes
+          </h2>
+          <p className="text-detalle text-piedra" role="status">
+            {pendientes.length === 1
+              ? "1 pendiente"
+              : `${pendientes.length} pendientes`}
+          </p>
+        </div>
+        <p className="mt-1.5 text-detalle text-piedra">
+          Las recomendaciones nuevas del agente entran a esta cola para que
+          la minera las revise. Al aprobarlas o rechazarlas pasan a
+          «Decididas».
         </p>
       </div>
-      <p className="mt-1.5 text-detalle text-piedra">
-        Las recomendaciones nuevas del agente entran a esta cola para que la
-        minera las revise. Al aprobarlas o rechazarlas pasan a «Decididas».
-      </p>
 
-      {pendientes.length === 0 ? (
-        <p className="mt-4 rounded-xl border border-linea bg-papel p-4 text-detalle text-piedra">
-          No hay recomendaciones pendientes: las que emita el agente
-          aparecen acá.
-        </p>
-      ) : (
-        /* La cola tiene scroll propio para no estirar la página cuando el
-           agente acumula recomendaciones. */
-        <ul className="mt-4 grid max-h-[30rem] gap-4 overflow-y-auto pr-1">
-          {pendientes.map((r) => (
-            <TarjetaRecomendacion key={r.id} rec={r} />
-          ))}
-        </ul>
-      )}
-
-      {decididas.length > 0 && (
-        <div className="mt-6 border-t border-linea pt-4">
-          <h3 className="font-display text-detalle font-semibold text-piedra">
-            Decididas
-          </h3>
-          <ul className="mt-3 grid max-h-[18rem] gap-4 overflow-y-auto pr-1">
-            {decididas.map((r) => (
+      {/* Un solo scroll para pendientes y decididas: el cuerpo de la card
+          crece hasta el borde inferior de la columna y el contenido que
+          sobra scrollea adentro, sin cards cortadas a la mitad por un
+          segundo scrollbar. */}
+      <div className="min-h-[14rem] flex-1 overflow-y-auto p-5">
+        {pendientes.length === 0 ? (
+          <p className="rounded-xl border border-linea bg-papel p-4 text-detalle text-piedra">
+            No hay recomendaciones pendientes: las que emita el agente
+            aparecen acá.
+          </p>
+        ) : (
+          <ul className="grid gap-4">
+            {pendientes.map((r) => (
               <TarjetaRecomendacion key={r.id} rec={r} />
             ))}
           </ul>
-        </div>
-      )}
+        )}
+
+        {decididas.length > 0 && (
+          <div className="mt-6 border-t border-linea pt-4">
+            <h3 className="font-display text-detalle font-semibold text-piedra">
+              Decididas
+            </h3>
+            <ul className="mt-3 grid gap-4">
+              {decididas.map((r) => (
+                <TarjetaRecomendacion key={r.id} rec={r} />
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -483,7 +492,7 @@ async function HistorialConsultas() {
   return (
     <section
       aria-labelledby="historial-consultas"
-      className="rounded-2xl border border-linea bg-ficha shadow-sm"
+      className="flex flex-1 flex-col rounded-2xl border border-linea bg-ficha shadow-sm"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-linea px-5 py-4">
         <h2
@@ -500,14 +509,15 @@ async function HistorialConsultas() {
       </div>
 
       {historial.length === 0 ? (
-        <p className="p-5 text-detalle text-piedra">
+        <p className="min-h-[10rem] flex-1 p-5 text-detalle text-piedra">
           Todavía no hay consultas: las que le hagas al agente quedan
           registradas acá.
         </p>
       ) : (
-        /* Timeline compacto con scroll propio: cada consulta es una línea
-           con sus recomendaciones resumidas, no una tarjeta gigante. */
-        <ol className="max-h-[26rem] overflow-y-auto px-5 py-2">
+        /* Timeline compacto: cada consulta es una línea con sus
+           recomendaciones resumidas. La card se estira hasta el borde de
+           la columna y el contenido scrollea adentro. */
+        <ol className="min-h-[10rem] flex-1 overflow-y-auto px-5 py-2">
           {historial.map((c) => (
             <ConsultaDelHistorial key={c.id} consulta={c} />
           ))}
