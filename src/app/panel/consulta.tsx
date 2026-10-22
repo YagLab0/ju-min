@@ -158,6 +158,40 @@ function ConsultaRuntime({
   );
 }
 
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Agrupa las conversaciones en bandas temporales, como el historial de
+ * ChatGPT. `items` ya viene ordenado por más reciente, así que cada banda
+ * se forma en una sola pasada sin reordenar.
+ */
+function agruparPorFecha(items: ConversacionGuardada[]) {
+  const hoy = new Date();
+  const inicioHoy = new Date(
+    hoy.getFullYear(),
+    hoy.getMonth(),
+    hoy.getDate(),
+  ).getTime();
+  const bandas: { etiqueta: string; desde: number }[] = [
+    { etiqueta: "Hoy", desde: inicioHoy },
+    { etiqueta: "Ayer", desde: inicioHoy - DIA_MS },
+    { etiqueta: "Últimos 7 días", desde: inicioHoy - 6 * DIA_MS },
+    { etiqueta: "Anteriores", desde: Number.NEGATIVE_INFINITY },
+  ];
+  const grupos: { etiqueta: string; items: ConversacionGuardada[] }[] = [];
+  for (const item of items) {
+    const etiqueta = bandas.find((b) => item.actualizadaEn >= b.desde)!
+      .etiqueta;
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo?.etiqueta === etiqueta) {
+      ultimo.items.push(item);
+    } else {
+      grupos.push({ etiqueta, items: [item] });
+    }
+  }
+  return grupos;
+}
+
 function ItemConversacion({
   item,
   activa,
@@ -177,10 +211,10 @@ function ItemConversacion({
         aria-current={activa || undefined}
         title={item.titulo}
         className={cn(
-          "w-full truncate rounded-lg px-2.5 py-2 pr-8 text-start text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
+          "w-full truncate rounded-lg px-2.5 py-2 pr-8 text-start text-micro transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
           activa
-            ? "bg-foreground/[0.07] font-medium text-tinta"
-            : "text-piedra hover:bg-foreground/[0.04] hover:text-tinta",
+            ? "bg-ficha font-medium text-tinta shadow-sm ring-1 ring-linea"
+            : "text-piedra hover:bg-ficha/70 hover:text-tinta",
         )}
       >
         {item.titulo ?? "Conversación sin título"}
@@ -190,7 +224,7 @@ function ItemConversacion({
         onClick={onEliminar}
         aria-label={`Eliminar «${item.titulo ?? "conversación"}»`}
         title="Eliminar conversación"
-        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-md p-1 text-piedra opacity-0 transition-opacity group-hover:opacity-100 hover:bg-foreground/[0.06] hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+        className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-md p-1 text-piedra opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
       >
         <Trash2Icon className="size-3.5" aria-hidden="true" />
       </button>
@@ -199,8 +233,8 @@ function ItemConversacion({
 }
 
 /**
- * Columna de conversaciones anteriores, estilo ChatGPT/Gemini: lista por
- * recientes, click para retomar (la sesión durable de eve sigue viva en el
+ * Columna de conversaciones anteriores, estilo ChatGPT/Gemini: agrupadas por
+ * fecha, click para retomar (la sesión durable de eve sigue viva en el
  * servidor y se resume), tachito para borrar el acceso local.
  */
 function BarraConversaciones({
@@ -216,32 +250,59 @@ function BarraConversaciones({
   onAbrir: (item: ConversacionGuardada) => void;
   onEliminar: (item: ConversacionGuardada) => void;
 }) {
+  const grupos = agruparPorFecha(items);
   return (
     <aside
       aria-label="Conversaciones anteriores"
-      className="flex w-44 shrink-0 flex-col border-r border-linea"
+      className="flex w-48 shrink-0 flex-col border-r border-linea bg-papel/60"
     >
-      <div className="p-2">
+      <div className="space-y-2.5 border-b border-linea p-3">
+        <div className="flex items-baseline justify-between px-0.5">
+          <span className="text-[0.65rem] font-semibold tracking-wider text-piedra/80 uppercase">
+            Conversaciones
+          </span>
+          {items.length > 0 && (
+            <span className="text-micro text-piedra">{items.length}</span>
+          )}
+        </div>
         <button
           type="button"
           onClick={onNueva}
-          className="inline-flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-piedra transition-colors hover:bg-foreground/[0.05] hover:text-tinta focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-linea bg-ficha px-2.5 py-2 text-micro font-medium text-tinta shadow-sm transition-all hover:border-piedra/40 hover:shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
         >
-          <MessageSquarePlusIcon className="size-3.5" aria-hidden="true" />
+          <MessageSquarePlusIcon
+            className="size-3.5 text-piedra"
+            aria-hidden="true"
+          />
           Nueva conversación
         </button>
       </div>
-      <ul className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-2">
-        {items.map((item) => (
-          <ItemConversacion
-            key={item.session.sessionId}
-            item={item}
-            activa={item.session.sessionId === activaId}
-            onAbrir={() => onAbrir(item)}
-            onEliminar={() => onEliminar(item)}
-          />
-        ))}
-      </ul>
+      <nav className="flex-1 overflow-y-auto px-2 py-2">
+        {items.length === 0 ? (
+          <p className="px-2.5 py-6 text-center text-micro text-piedra">
+            Todavía no hay conversaciones guardadas.
+          </p>
+        ) : (
+          grupos.map((grupo) => (
+            <section key={grupo.etiqueta} className="mb-1">
+              <h3 className="px-2.5 pt-2.5 pb-1 text-[0.65rem] font-semibold tracking-wider text-piedra/70 uppercase">
+                {grupo.etiqueta}
+              </h3>
+              <ul className="space-y-0.5">
+                {grupo.items.map((item) => (
+                  <ItemConversacion
+                    key={item.session.sessionId}
+                    item={item}
+                    activa={item.session.sessionId === activaId}
+                    onAbrir={() => onAbrir(item)}
+                    onEliminar={() => onEliminar(item)}
+                  />
+                ))}
+              </ul>
+            </section>
+          ))
+        )}
+      </nav>
     </aside>
   );
 }
