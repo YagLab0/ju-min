@@ -32,7 +32,7 @@ export function Navegacion({ sesion }: { sesion?: ReactNode }) {
             {/* Bancos de un rajo abierto: tres terrazas escalonadas */}
             <path d="M3 6h18v3H6v3h15v3H9v3h12v3H3z" />
           </svg>
-          ju-min
+          Jumin
         </Link>
         <ul className="ml-auto flex items-center gap-1 text-detalle">
           {enlaces.map(({ href, etiqueta }) => {

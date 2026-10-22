@@ -8,7 +8,7 @@ export default function Landing() {
       <section className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-16 sm:py-24 lg:grid-cols-2 lg:items-center">
         <div className="max-w-xl">
           <h1 className="font-display text-display font-bold tracking-tight text-tinta">
-            Cuando un insumo cruza el punto de reorden, ju-min ya sabe a quién
+            Cuando un insumo cruza el punto de reorden, Jumin ya sabe a quién
             comprarle.
           </h1>
           <p className="mt-5 text-subtitulo text-piedra">
@@ -115,7 +115,7 @@ export default function Landing() {
               Suscripción y roadmap
             </h2>
             <p className="mt-4 text-cuerpo text-piedra">
-              ju-min funciona por suscripción para la minera. El siguiente
+              Jumin funciona por suscripción para la minera. El siguiente
               paso del roadmap son los pagos automáticos al detectar falta de
               stock, siempre con aprobación humana previa.
             </p>

@@ -146,7 +146,7 @@ test.describe("reglas del agente: dominio acotado y rechazo fijo", () => {
     request,
     baseURL,
   }) => {
-    const texto = await responderA(request, baseURL!, "¿qué es ju-min?");
+    const texto = await responderA(request, baseURL!, "¿qué es Jumin?");
     expect(texto.length).toBeGreaterThan(0);
     expect(texto).not.toContain(mensajeFijoRechazo());
   });

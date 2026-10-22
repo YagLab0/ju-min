@@ -19,11 +19,11 @@ const sairaSemiCondensed = Saira_Semi_Condensed({
 
 export const metadata: Metadata = {
   title: {
-    default: "ju-min — Consultor inteligente de compras para minería",
-    template: "%s — ju-min",
+    default: "Jumin — Consultor inteligente de compras para minería",
+    template: "%s — Jumin",
   },
   description:
-    "ju-min detecta insumos por debajo del punto de reorden y recomienda comprar a proveedores verificados, con justificación.",
+    "Jumin detecta insumos por debajo del punto de reorden y recomienda comprar a proveedores verificados, con justificación.",
 };
 
 export const viewport: Viewport = {
@@ -58,7 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <footer className="border-t border-linea">
             <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-5 py-6 text-detalle text-piedra sm:flex-row sm:items-center sm:justify-between">
-              <span className="font-display font-semibold text-tinta">ju-min</span>
+              <span className="font-display font-semibold text-tinta">Jumin</span>
               <p>Demo sin transacciones reales: el contacto con proveedores es simulado.</p>
             </div>
           </footer>

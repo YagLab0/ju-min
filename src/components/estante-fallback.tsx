@@ -97,7 +97,7 @@ export function EstanteFallback({ className }: { className?: string }) {
         <rect x="468" y="186" width="156" height="104" fill="var(--escena-panel)" />
         <rect x="468" y="186" width="5" height="104" fill="var(--escena-senal)" />
         <text x="484" y="205" fill="var(--escena-texto-suave)" fontSize="10" fontFamily="var(--font-sans)">
-          Agente ju-min
+          Agente Jumin
         </text>
         <text x="484" y="223" fill="var(--escena-tinta)" fontSize="13" fontWeight="700" fontFamily="var(--font-display)">
           Recomendación

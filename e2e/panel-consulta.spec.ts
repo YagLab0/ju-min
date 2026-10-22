@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { ingresarAlDemo } from "./auth";
 
-const consulta = "¿Qué es ju-min? Respondé en una sola oración.";
+const consulta = "¿Qué es Jumin? Respondé en una sola oración.";
 
 test("enviar una consulta en /panel produce una respuesta del agente", async ({
   page,

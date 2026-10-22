@@ -442,7 +442,7 @@ export function createEstanteScene(
     cardCtx.textBaseline = "middle";
     cardCtx.fillStyle = textoSuave.css;
     cardCtx.font = "500 25px Arial, sans-serif";
-    cardCtx.fillText("Agente ju-min", 40, 46);
+    cardCtx.fillText("Agente Jumin", 40, 46);
     cardCtx.fillStyle = tinta.css;
     cardCtx.font = "700 42px Arial, sans-serif";
     cardCtx.fillText("Recomendación", 40, 100);
