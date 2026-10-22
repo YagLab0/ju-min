@@ -1,12 +1,12 @@
 -- ============================================================================
--- seed.sql — pobla la BD local con datos de demo (DOCS.md §7 Fase 2)
+-- seed.sql — pobla la BD local con datos de demo (docs/plan-implementacion.md — Fase 2)
 -- Corre automáticamente con `pnpm supabase db reset` o `pnpm supabase start`.
 -- Proveedores marcados fuente='capmin' son reales del directorio CAPMIN;
 -- los 'manual' son sintéticos para cubrir categorías sin datos públicos.
 -- ============================================================================
 
 -- ============================ CERTIFICACIONES ================================
--- Catálogo de normas (DOCS.md §1.3 y §1.4)
+-- Catálogo de normas (docs/investigacion-proveedores.md §1.3 y §1.4)
 
 insert into certificaciones (nombre, codigo, tipo, ambito, organismo_tipico, descripcion) values
   -- Sistema de gestión (empresa)
@@ -42,7 +42,7 @@ insert into certificaciones (nombre, codigo, tipo, ambito, organismo_tipico, des
   ('Exámenes ocupacionales de altura geográfica', 'ALT-GEO', 'habilitacion_regulatoria', 'persona', 'Servicio médico laboral', 'Aptitud del personal para faenas +3.500 msnm');
 
 -- ============================ CATEGORÍAS =====================================
--- Subset de las ~180 categorías reales de CAPMIN (DOCS.md §2)
+-- Subset de las ~180 categorías reales de CAPMIN (docs/investigacion-proveedores.md §2)
 
 insert into categorias (nombre, slug, origen) values
   ('Elementos Protección Personal',       'epp',                    'capmin'),
@@ -84,7 +84,7 @@ insert into categorias (nombre, slug, origen) values
   ('Servicios operativos',                'servicios-operativos',   'capmin');
 
 -- ============================ REQUISITOS POR CATEGORÍA =======================
--- Regla de homologación (DOCS.md §3.3): certificaciones obligatorias/optativas
+-- Regla de homologación (docs/modelo-clasificacion.md §3.3): certificaciones obligatorias/optativas
 
 insert into requisitos_categoria (categoria_id, certificacion_id, obligatorio)
 select c.id, cert.id, req.obligatorio
@@ -478,7 +478,7 @@ join consultas c on
   or (c.mensaje ilike '%guantes%' and r.prov in ('SEGURIDAD PUNA SRL','BAC DALL ARGENTINA SA'));
 
 -- ============================ TRUST SCORE ====================================
--- Cálculo determinista (DOCS.md §3.2): identidad 20 / compliance 30 /
+-- Cálculo determinista (docs/modelo-clasificacion.md §3.2): identidad 20 / compliance 30 /
 -- desempeño 30 / ESG 10 / capacidad 10 — base 40 + señales.
 
 update proveedores p set

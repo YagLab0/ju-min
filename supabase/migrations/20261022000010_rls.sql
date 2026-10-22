@@ -1,4 +1,4 @@
--- RLS (decisión DOCS.md §7): lectura anon solo de la "red verificada"
+-- RLS (decisión docs/plan-implementacion.md): lectura anon solo de la "red verificada"
 -- (proveedores validado/auditado/homologado y catálogos públicos).
 -- Sin policies de escritura → solo service role escribe (bypass RLS).
 
