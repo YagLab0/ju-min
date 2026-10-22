@@ -96,22 +96,22 @@ máquina **en la misma red** puede usar la instancia sin configuración extra.
 
 | Servicio | URL para compañeros |
 |---|---|
-| API (PostgREST, Auth, Storage, Realtime) | `http://192.168.1.79:54321` |
-| Postgres directo | `postgresql://postgres:postgres@192.168.1.79:54322/postgres` |
-| Studio (dashboard) | `http://192.168.1.79:54323` |
-| Mailpit (mail mock) | `http://192.168.1.79:54324` |
+| API (PostgREST, Auth, Storage, Realtime) | `http://10.136.190.59:54321` |
+| Postgres directo | `postgresql://postgres:postgres@10.136.190.59:54322/postgres` |
+| Studio (dashboard) | `http://10.136.190.59:54323` |
+| Mailpit (mail mock) | `http://10.136.190.59:54324` |
 
-> La IP `192.168.1.79` es la del host actual (`samas-pc`, WiFi `wlo1`). Si el
+> La IP `10.136.190.59` es la del host actual (`samas-pc`, WiFi `wlo1`) — era 192.168.1.79 en la red anterior. Si el
 > host cambia de red o reinicia DHCP puede cambiar — verificar con `ip -4 addr`.
 
 `.env.local` que debe usar cada compañero (las keys son las del stack local —
 igual sale de `pnpm supabase status` y son idénticas en todas las máquinas):
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=http://192.168.1.79:54321
+NEXT_PUBLIC_SUPABASE_URL=http://10.136.190.59:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
-DATABASE_URL=postgresql://postgres:postgres@192.168.1.79:54322/postgres
+DATABASE_URL=postgresql://postgres:postgres@10.136.190.59:54322/postgres
 ```
 
 Caveats:
