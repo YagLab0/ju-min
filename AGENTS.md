@@ -16,11 +16,11 @@
 
 ## Agente (eve)
 
-- `agent/agent.ts`: modelo. Usa Claude Haiku directo vía `anthropic()` de `eve/models/anthropic`, no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway.
+- `agent/agent.ts`: modelo. Usa Claude Haiku directo vía `@ai-sdk/anthropic` (`createAnthropic`), no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Si la API key es de nivel organización (no scoped a un workspace), definir `ANTHROPIC_WORKSPACE_ID` en `.env.local` para que se envíe el header `anthropic-workspace-id`.
 - `agent/instructions.md`: system prompt (en español).
 - `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `localDev()` abre localhost en dev; `placeholderAuth()` rechaza requests de browser en producción hasta reemplazarlo por auth real (o `none()` para demo pública).
 - `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio `src/lib/compras`; nunca crean clientes de Supabase ni leen tablas.
-- Credenciales: `ANTHROPIC_API_KEY` en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarla como env var del servidor.
+- Credenciales: `ANTHROPIC_API_KEY` (y `ANTHROPIC_WORKSPACE_ID` si la key no es scoped a un workspace) en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarlas como env vars del servidor.
 
 ## pnpm 12
 
