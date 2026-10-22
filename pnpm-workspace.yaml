@@ -1,4 +1,5 @@
 allowBuilds:
+  supabase: true
   unrs-resolver: true
   esbuild: true
   sharp: false
