@@ -32,6 +32,18 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 |---|---|
 | [plan-implementacion.md](plan-implementacion.md) | Fases 0–4 del plan (setup, migraciones, seed, integración en la app, verificación) y decisiones tomadas |
 
+## Negocio
+
+Método de Alex Osterwalder (Value Proposition Canvas + Business Model Canvas).
+
+| Documento | Contenido |
+|---|---|
+| [negocio/propuesta-de-valor.md](negocio/propuesta-de-valor.md) | Value Proposition Canvas de la minera y del proveedor verificado, encaje y declaraciones de propuesta de valor |
+| [negocio/business-model-canvas.md](negocio/business-model-canvas.md) | Los 9 bloques, patrones (plataforma multilateral) y competencia |
+| [negocio/hipotesis.md](negocio/hipotesis.md) | Hipótesis riesgosas del modelo y experimentos para validarlas |
+| [negocio/historias-de-usuario.md](negocio/historias-de-usuario.md) | Casos de uso contados: reponer un insumo crítico y cargar el stock desde Excel |
+| [negocio/beneficios.es.md](negocio/beneficios.es.md) | Documento de beneficios por destinatario, preparado para traducción |
+
 ## Pitch
 
 | Documento | Contenido |
