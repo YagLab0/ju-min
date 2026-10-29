@@ -10,9 +10,11 @@ import { ESTADOS_RED_VERIFICADA } from "./tipos";
 import type {
   Categoria,
   Certificacion,
+  CertificacionAcreditada,
   Consulta,
   ConsultaDetallada,
-  DecisionRecomendacion,
+  ContenidoInforme,
+  Informe,
   Insumo,
   Minera,
   Oferta,
@@ -27,6 +29,7 @@ import type {
   FilaCategoria,
   FilaCertificacion,
   FilaConsulta,
+  FilaInforme,
   FilaInsumo,
   FilaMinera,
   FilaOferta,
@@ -352,46 +355,17 @@ export async function registrarConsulta(
   return mapearConsulta(fila, filas, t);
 }
 
-/** Registra la decisión de la minera sobre una recomendación pendiente.
- * Una recomendación ya decidida no puede decidirse de nuevo. */
-export async function decidirRecomendacion(
-  id: string,
-  decision: DecisionRecomendacion,
-): Promise<Recomendacion> {
-  const t = await tablas();
-  const rec = t.recomendaciones.find((r) => r.id === id);
-  if (!rec) throw new Error("recomendacion_inexistente");
-  if (rec.estado !== "pendiente") throw new Error("recomendacion_ya_decidida");
-
-  const fuente = await fuenteDatos();
-  const actualizada = await fuente.actualizarRecomendacion(id, {
-    estado: decision,
-  });
-  if (!actualizada) throw new Error("recomendacion_inexistente");
-  return mapearRecomendacion(actualizada, t);
-}
-
-/** Cola de pendientes del panel: las recomendaciones aún sin decidir, con
- * insumo, oferta y proveedor ya resueltos. Más nueva primero. */
-export async function listarRecomendacionesPendientes(): Promise<
+/** Recomendaciones de la minera, detalladas y con el código de su informe
+ * si ya se generó. Más nueva primero. */
+export async function listarRecomendaciones(): Promise<
   RecomendacionDetallada[]
 > {
   const t = await tablas();
+  const consultasMinera = new Set(
+    t.consultas.filter((c) => c.minera_id === t.minera.id).map((c) => c.id),
+  );
   return t.recomendaciones
-    .filter((r) => r.estado === "pendiente")
-    .map((r) => detallarRecomendacion(r, t))
-    .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
-}
-
-/** Las recomendaciones ya decididas por la minera (aprobadas o rechazadas),
- * detalladas para mostrarlas separadas de la cola de pendientes. Más nueva
- * primero. */
-export async function listarRecomendacionesDecididas(): Promise<
-  RecomendacionDetallada[]
-> {
-  const t = await tablas();
-  return t.recomendaciones
-    .filter((r) => r.estado !== "pendiente")
+    .filter((r) => consultasMinera.has(r.consulta_id))
     .map((r) => detallarRecomendacion(r, t))
     .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
 }
@@ -434,6 +408,240 @@ export async function listarHistorialConsultas(): Promise<
       ),
     }))
     .sort((a, b) => b.creadaEn.localeCompare(a.creadaEn));
+}
+
+// ---------- Informes ----------
+
+/** Regla cumple_requisitos (DOCS.md §4.4): certificación verificada y
+ * vigente para cada requisito obligatorio de la categoría. */
+export function cumpleRequisito(
+  certificaciones: CertificacionAcreditada[],
+  certificacionId: string,
+  hoy: string,
+): boolean {
+  return certificaciones.some(
+    (c) =>
+      c.certificacion.id === certificacionId &&
+      c.estado === "verificado" &&
+      (c.fechaVencimiento === null || c.fechaVencimiento > hoy),
+  );
+}
+
+/** Quien descarga el informe: la persona con sesión en el panel. */
+export interface AutorInforme {
+  id: string;
+  nombre: string;
+  email: string;
+}
+
+/** Genera el informe de una recomendación de la minera, o devuelve el que
+ * ya existe: cada recomendación tiene un solo informe, así el PDF que la
+ * minera adjunta a su orden de compra es siempre el mismo. */
+export async function generarInforme(
+  recomendacionId: string,
+  autor: AutorInforme,
+): Promise<Informe> {
+  const t = await tablas();
+  const rec = t.recomendaciones.find((r) => r.id === recomendacionId);
+  const consulta = rec && t.consultas.find((c) => c.id === rec.consulta_id);
+  if (!rec || consulta?.minera_id !== t.minera.id) {
+    throw new Error("recomendacion_inexistente");
+  }
+  const existente = t.informes.find((i) => i.recomendacion_id === rec.id);
+  if (existente) return mapearInforme(existente);
+
+  const codigo = nuevoCodigoInforme();
+  const creadoEn = new Date().toISOString();
+  const generadoPor = {
+    id: autor.id,
+    nombre: autor.nombre,
+    email: autor.email,
+  };
+  const contenido = armarContenidoInforme(rec, t);
+  const sello = await sellarInforme({
+    codigo,
+    creadoEn,
+    generadoPor,
+    contenido,
+  });
+  const fuente = await fuenteDatos();
+  const fila = await fuente.insertarInforme({
+    codigo,
+    minera_id: t.minera.id,
+    recomendacion_id: rec.id,
+    generado_por_id: generadoPor.id,
+    generado_por_nombre: generadoPor.nombre,
+    generado_por_email: generadoPor.email,
+    contenido,
+    sello,
+    created_at: creadoEn,
+  });
+  return mapearInforme(fila);
+}
+
+/** Busca un informe por su código y recalcula el sello: `integro` es false
+ * si el registro guardado ya no coincide con el sello original. */
+export async function verificarInforme(
+  codigo: string,
+): Promise<{ informe: Informe; integro: boolean } | null> {
+  const buscado = codigo.trim().toUpperCase();
+  if (!buscado) return null;
+  const t = await tablas();
+  const fila = t.informes.find((i) => i.codigo === buscado);
+  if (!fila) return null;
+  const informe = mapearInforme(fila);
+  const sello = await sellarInforme(informe);
+  return { informe, integro: sello === informe.sello };
+}
+
+/** Alfabeto Crockford base32: sin I, L, O ni U para que el código se dicte
+ * y se tipee sin confusiones. */
+const ALFABETO_CODIGO = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+/** Código del informe: JM-XXXX-XXXX-XXXX (60 bits aleatorios). */
+function nuevoCodigoInforme(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const chars = [...bytes].map((b) => ALFABETO_CODIGO[b % 32]).join("");
+  return `JM-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}`;
+}
+
+/** SHA-256 (hex) del informe en JSON canónico. La fecha se normaliza a ISO
+ * porque Postgres la devuelve con otro formato que el que se selló. */
+async function sellarInforme(
+  informe: Pick<Informe, "codigo" | "creadoEn" | "generadoPor" | "contenido">,
+): Promise<string> {
+  const texto = jsonCanonico({
+    codigo: informe.codigo,
+    creadoEn: new Date(informe.creadoEn).toISOString(),
+    generadoPor: informe.generadoPor,
+    contenido: informe.contenido,
+  });
+  const hash = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(texto),
+  );
+  return [...new Uint8Array(hash)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** JSON con las claves ordenadas: jsonb no conserva el orden de las claves,
+ * y el sello tiene que dar igual al leer el informe de la base. */
+function jsonCanonico(valor: unknown): string {
+  if (Array.isArray(valor)) return `[${valor.map(jsonCanonico).join(",")}]`;
+  if (valor !== null && typeof valor === "object") {
+    const entradas = Object.entries(valor as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entradas
+      .map(([k, v]) => `${JSON.stringify(k)}:${jsonCanonico(v)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(valor);
+}
+
+/** Copia los datos que respaldan la recomendación: la elegida, las otras
+ * ofertas que cumplen y las descartadas con su motivo (mismas reglas que
+ * aplica el agente). */
+function armarContenidoInforme(
+  rec: FilaRecomendacion,
+  t: TablasCompras,
+): ContenidoInforme {
+  const elegida = detallarRecomendacion(rec, t);
+  if (!elegida.insumo || !elegida.oferta || !elegida.proveedor) {
+    throw new Error("recomendacion_incompleta");
+  }
+  const insumo = elegida.insumo;
+  const hoy = new Date().toISOString().slice(0, 10);
+  const requisitos = t.requisitosCategoria
+    .filter((r) => r.categoria_id === insumo.categoriaId && r.obligatorio)
+    .flatMap((r) => {
+      const cert = t.certificaciones.find((c) => c.id === r.certificacion_id);
+      return cert ? [mapearCertificacion(cert)] : [];
+    });
+
+  const alternativas: ContenidoInforme["alternativas"] = [];
+  const descartados: ContenidoInforme["descartados"] = [];
+  for (const fila of t.ofertas) {
+    if (fila.insumo_id !== insumo.id || fila.id === elegida.oferta.id) continue;
+    const proveedorFila = t.proveedores.find((p) => p.id === fila.proveedor_id);
+    const nombre = proveedorFila?.razon_social ?? "Proveedor desconocido";
+    if (!fila.disponible) {
+      descartados.push({ proveedor: nombre, motivo: "Sin disponibilidad" });
+      continue;
+    }
+    if (!proveedorFila || !ESTADOS_RED.has(proveedorFila.estado)) {
+      descartados.push({
+        proveedor: nombre,
+        motivo: "No integra la red verificada",
+      });
+      continue;
+    }
+    const proveedor = mapearProveedor(proveedorFila, t);
+    if (proveedor.estado !== "homologado") {
+      descartados.push({
+        proveedor: nombre,
+        motivo: `No está homologado (estado ${proveedor.estado})`,
+      });
+      continue;
+    }
+    const faltantes = requisitos.filter(
+      (c) => !cumpleRequisito(proveedor.certificaciones, c.id, hoy),
+    );
+    if (faltantes.length > 0) {
+      descartados.push({
+        proveedor: nombre,
+        motivo: `Le faltan requisitos obligatorios: ${faltantes
+          .map((c) => c.codigo ?? c.nombre)
+          .join(", ")}`,
+      });
+      continue;
+    }
+    alternativas.push({
+      proveedor: nombre,
+      precio: fila.precio,
+      moneda: fila.moneda,
+      leadTimeDias: fila.lead_time_dias,
+      trustScore: proveedor.trustScore.valor,
+    });
+  }
+
+  const stock = t.stockMinera.find(
+    (s) => s.minera_id === t.minera.id && s.insumo_id === insumo.id,
+  );
+  return {
+    minera: t.minera.nombre,
+    insumo: {
+      nombre: insumo.nombre,
+      unidad: insumo.unidad,
+      especificacion: insumo.especificacion,
+    },
+    stock: stock
+      ? {
+          cantidadActual: stock.cantidad_actual,
+          puntoReorden: stock.punto_reorden,
+          diasRestantes: stock.consumo_mensual
+            ? Math.round(
+                (stock.cantidad_actual / stock.consumo_mensual) * DIAS_POR_MES,
+              )
+            : null,
+        }
+      : null,
+    proveedor: {
+      razonSocial: elegida.proveedor.razonSocial,
+      cuit: elegida.proveedor.cuit,
+      trustScore: elegida.proveedor.trustScore.valor,
+    },
+    oferta: {
+      precio: elegida.oferta.precio,
+      moneda: elegida.oferta.moneda,
+      leadTimeDias: elegida.oferta.leadTimeDias,
+    },
+    justificacion: elegida.justificacion,
+    requisitos: requisitos.map((c) => c.codigo ?? c.nombre),
+    alternativas,
+    descartados,
+  };
 }
 
 // ---------- Mapeos fila → dominio ----------
@@ -547,7 +755,6 @@ function mapearProveedor(
       desglose: f.trust_score_detalle ?? {
         identidad: 0,
         compliance: 0,
-        desempeno: 0,
         esg: 0,
         capacidad: 0,
       },
@@ -593,6 +800,25 @@ function detallarRecomendacion(
     insumo: insumo ? mapearInsumo(insumo) : null,
     oferta: oferta ? mapearOferta(oferta) : null,
     proveedor: proveedor ? mapearProveedor(proveedor, t) : null,
+    informeCodigo:
+      t.informes.find((i) => i.recomendacion_id === f.id)?.codigo ?? null,
+  };
+}
+
+function mapearInforme(f: FilaInforme): Informe {
+  return {
+    id: f.id,
+    codigo: f.codigo,
+    mineraId: f.minera_id,
+    recomendacionId: f.recomendacion_id,
+    generadoPor: {
+      id: f.generado_por_id,
+      nombre: f.generado_por_nombre,
+      email: f.generado_por_email,
+    },
+    creadoEn: f.created_at,
+    contenido: f.contenido,
+    sello: f.sello,
   };
 }
 

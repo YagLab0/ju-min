@@ -4,6 +4,7 @@
 
 import type {
   FilaConsulta,
+  FilaInforme,
   FilaRecomendacion,
   FuenteDatosCompras,
   NuevaConsulta,
@@ -53,13 +54,11 @@ export class FuenteDatosMemoria implements FuenteDatosCompras {
     return structuredClone(filas);
   }
 
-  async actualizarRecomendacion(
-    id: string,
-    cambios: { estado: FilaRecomendacion["estado"] },
-  ): Promise<FilaRecomendacion | null> {
-    const fila = this.tablas.recomendaciones.find((r) => r.id === id);
-    if (!fila) return null;
-    Object.assign(fila, cambios);
+  async insertarInforme(
+    informe: Omit<FilaInforme, "id">,
+  ): Promise<FilaInforme> {
+    const fila: FilaInforme = { id: crypto.randomUUID(), ...informe };
+    this.tablas.informes.push(fila);
     return structuredClone(fila);
   }
 }

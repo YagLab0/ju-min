@@ -7,7 +7,7 @@ import { CLAVE_DEMO, EMAIL_DEMO } from "./auth";
 // crea (Andina EPP para el guante de nitrilo), nunca a conteos globales.
 
 test.describe("flujo completo del demo", () => {
-  test("alerta de stock → agente → ficha → contacto simulado → aprobación", async ({
+  test("alerta de stock → agente → ficha → contacto simulado → informe PDF", async ({
     page,
   }) => {
     // 1. Entrar a la landing y de ahí al panel de la minera (pide login).
@@ -39,11 +39,9 @@ test.describe("flujo completo del demo", () => {
       .getByRole("button", { name: "Pedir recomendación" })
       .click();
 
-    // 4. La recomendación nueva entra a la cola de pendientes.
-    const cola = page.getByRole("region", {
-      name: "Recomendaciones pendientes",
-    });
-    // El seed trae otra pendiente de Andina EPP para el mismo insumo: la
+    // 4. La recomendación nueva aparece en «Recomendaciones».
+    const cola = page.getByRole("region", { name: "Recomendaciones" });
+    // El seed trae otra recomendación de Andina EPP para el mismo insumo: la
     // que este test crea se distingue por la justificación generada por el
     // agente («Puntaje combinado…»).
     const recomendacion = cola
@@ -51,7 +49,6 @@ test.describe("flujo completo del demo", () => {
       .filter({ hasText: "Andina EPP" })
       .filter({ hasText: "Puntaje combinado" });
     await expect(recomendacion).toContainText("Guante de nitrilo industrial");
-    await expect(recomendacion).toContainText("Pendiente");
     await expect(recomendacion).toContainText("7 días");
     await expect(recomendacion).toContainText("91/100");
 
@@ -85,27 +82,30 @@ test.describe("flujo completo del demo", () => {
     await dialogo.getByRole("button", { name: "Cerrar" }).click();
     await expect(dialogo).toBeHidden();
 
-    // 7. Volver al panel y aprobar la recomendación desde la cola.
+    // 7. Volver al panel y descargar el informe PDF de la recomendación.
     await page.goBack();
     await expect(page).toHaveURL("/panel");
-    await recomendacion
-      .getByRole("button", { name: "Aprobar" })
-      .click();
-    await expect(recomendacion).toContainText("Aprobada");
+    const [descarga] = await Promise.all([
+      page.waitForEvent("download"),
+      recomendacion
+        .getByRole("button", { name: "Descargar informe (PDF)" })
+        .click(),
+    ]);
+    const archivo = descarga.suggestedFilename();
+    expect(archivo).toMatch(/^informe-JM-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}\.pdf$/);
+    const codigo = archivo.replace(/^informe-/, "").replace(/\.pdf$/, "");
 
-    // 8. El historial registra la consulta con la recomendación aprobada.
-    const historial = page.getByRole("region", {
-      name: "Historial de consultas",
-    });
-    const consultaDelDemo = historial
-      .getByRole("listitem")
-      .filter({
-        has: page.getByRole("heading", {
-          name: /Reponer Guante de nitrilo industrial/,
-        }),
-      })
-      .first();
-    await expect(consultaDelDemo).toContainText("Aprobada");
+    // La descarga no recarga el panel: al volver a cargarlo, la
+    // recomendación muestra el código de su informe.
+    await page.reload();
+    await expect(recomendacion).toContainText(codigo);
+
+    // 8. Un auditor verifica el informe por su código, sin sesión.
+    await page.goto(`/verificar?codigo=${codigo}`);
+    await expect(page.getByRole("status")).toContainText("Informe auténtico");
+    await expect(page.getByRole("status")).toContainText(
+      "Andina de Seguridad Industrial S.R.L.",
+    );
   });
 });
 

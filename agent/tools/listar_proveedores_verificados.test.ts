@@ -30,11 +30,11 @@ describe("listar_proveedores_verificados", () => {
     expect(out.proveedores[0].razon_social).toBe(
       "Reactivos y Químicos San Salvador S.A.",
     );
-    expect(out.proveedores[0].trust_score).toBe(94);
+    expect(out.proveedores[0].trust_score).toBe(95);
     // el desglose del trust score viene con cada proveedor
     const d = out.proveedores[0].trust_score_desglose;
-    expect(d.identidad + d.compliance + d.desempeno + d.esg + d.capacidad).toBe(
-      94,
+    expect(d.identidad + d.compliance + d.esg + d.capacidad).toBe(
+      95,
     );
   });
 

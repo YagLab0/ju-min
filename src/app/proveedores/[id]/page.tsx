@@ -83,32 +83,26 @@ const GRUPOS_TRUST: {
   {
     clave: "identidad",
     nombre: "Identidad",
-    peso: 20,
+    peso: 25,
     senales: "CUIT validado, antigüedad fiscal, registro provincial",
   },
   {
     clave: "compliance",
     nombre: "Compliance",
-    peso: 30,
+    peso: 45,
     senales: "Certificaciones vigentes y habilitaciones sectoriales",
-  },
-  {
-    clave: "desempeno",
-    nombre: "Desempeño",
-    peso: 30,
-    senales: "Historial de entregas y rating en directorios",
   },
   {
     clave: "esg",
     nombre: "ESG",
-    peso: 10,
+    peso: 15,
     senales: "Huella de carbono reportada y políticas",
   },
   {
     clave: "capacidad",
     nombre: "Capacidad",
-    peso: 10,
-    senales: "Lead time, cobertura geográfica y respuesta",
+    peso: 15,
+    senales: "Estado de verificación, cobertura geográfica y respuesta",
   },
 ];
 

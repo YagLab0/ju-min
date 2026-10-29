@@ -10,6 +10,7 @@
 
 import type {
   AmbitoCertificacion,
+  ContenidoInforme,
   CondicionIva,
   EstadoProveedor,
   EstadoRecomendacion,
@@ -76,7 +77,6 @@ export interface FilaProveedor {
 export interface TrustScoreDetalleFila {
   identidad: number;
   compliance: number;
-  desempeno: number;
   esg: number;
   capacidad: number;
 }
@@ -206,6 +206,19 @@ export interface FilaTrustScoreHistorial {
   created_at: string;
 }
 
+export interface FilaInforme {
+  id: string;
+  codigo: string;
+  minera_id: string;
+  recomendacion_id: string | null;
+  generado_por_id: string;
+  generado_por_nombre: string;
+  generado_por_email: string;
+  contenido: ContenidoInforme;
+  sello: string;
+  created_at: string;
+}
+
 /** Todas las tablas del dominio, tal como las lee un adaptador. */
 export interface TablasCompras {
   categorias: FilaCategoria[];
@@ -225,6 +238,7 @@ export interface TablasCompras {
   recomendaciones: FilaRecomendacion[];
   entregas: FilaEntrega[];
   trustScoreHistorial: FilaTrustScoreHistorial[];
+  informes: FilaInforme[];
 }
 
 export interface NuevaRecomendacion {
@@ -256,9 +270,6 @@ export interface FuenteDatosCompras {
       puntaje: number | null;
     }[],
   ): Promise<FilaRecomendacion[]>;
-  /** Actualiza el estado de una recomendación; null si no existe. */
-  actualizarRecomendacion(
-    id: string,
-    cambios: { estado: EstadoRecomendacion },
-  ): Promise<FilaRecomendacion | null>;
+  /** Registra un informe generado. */
+  insertarInforme(informe: Omit<FilaInforme, "id">): Promise<FilaInforme>;
 }

@@ -13,6 +13,7 @@ import type {
   FilaContactoProveedor,
   FilaDocumento,
   FilaEntrega,
+  FilaInforme,
   FilaInsumo,
   FilaMinera,
   FilaOferta,
@@ -56,6 +57,7 @@ export class AdaptadorSupabase implements FuenteDatosCompras {
       recomendaciones,
       entregas,
       trustScoreHistorial,
+      informes,
     ] = await Promise.all([
       this.todo<FilaCategoria>("categorias"),
       this.todo<FilaCertificacion>("certificaciones"),
@@ -74,6 +76,7 @@ export class AdaptadorSupabase implements FuenteDatosCompras {
       this.todo<FilaRecomendacion>("recomendaciones"),
       this.todo<FilaEntrega>("entregas"),
       this.todo<FilaTrustScoreHistorial>("trust_score_historial"),
+      this.todo<FilaInforme>("informes"),
     ]);
     const minera = mineras[0];
     if (!minera) throw new Error("minera_no_encontrada");
@@ -95,6 +98,7 @@ export class AdaptadorSupabase implements FuenteDatosCompras {
       recomendaciones,
       entregas,
       trustScoreHistorial,
+      informes,
     };
   }
 
@@ -131,18 +135,10 @@ export class AdaptadorSupabase implements FuenteDatosCompras {
     return data as FilaRecomendacion[];
   }
 
-  async actualizarRecomendacion(
-    id: string,
-    cambios: { estado: FilaRecomendacion["estado"] },
-  ): Promise<FilaRecomendacion | null> {
-    const { data, error } = await this.db
-      .from("recomendaciones")
-      .update({ estado: cambios.estado })
-      .eq("id", id)
-      .select()
-      .maybeSingle();
-    if (error) throw new Error(`supabase: ${error.message}`);
-    return data as FilaRecomendacion | null;
+  async insertarInforme(
+    informe: Omit<FilaInforme, "id">,
+  ): Promise<FilaInforme> {
+    return this.insertar<FilaInforme>("informes", informe);
   }
 
   private async todo<T>(tabla: string): Promise<T[]> {

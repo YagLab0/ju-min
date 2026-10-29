@@ -7,8 +7,7 @@ import { arquetipoParaInsumo } from "@/components/insumo-escena";
 import { PreviewInsumo } from "@/components/preview-insumo";
 import {
   listarHistorialConsultas,
-  listarRecomendacionesDecididas,
-  listarRecomendacionesPendientes,
+  listarRecomendaciones,
   listarStockMinera,
   obtenerMinera,
   type ConsultaDetallada,
@@ -17,10 +16,7 @@ import {
   type StockInsumo,
 } from "@/lib/compras";
 
-import {
-  consultarAlAgenteDesdePanel,
-  decidirRecomendacionDesdePanel,
-} from "./acciones";
+import { consultarAlAgenteDesdePanel } from "./acciones";
 import { Consulta } from "./consulta";
 
 export const metadata: Metadata = {
@@ -39,7 +35,7 @@ export default function Panel() {
       </h1>
       <p className="mt-3 max-w-2xl text-subtitulo text-piedra">
         La vista de trabajo de la minera: qué insumos hay que reponer, qué
-        recomienda el agente y qué decisiones quedan pendientes.
+        recomienda el agente y el informe que respalda cada recomendación.
       </p>
       <Suspense
         fallback={
@@ -53,8 +49,8 @@ export default function Panel() {
 
       {/* El chat con el agente es el centro de la pantalla. En la columna
           lateral va todo el circuito de trabajo: la alerta dispara el
-          pedido de recomendación y la cola de pendientes espera la
-          decisión. Ambas columnas se estiran a la misma altura: la última
+          pedido de recomendación y cada recomendación ofrece su informe
+          PDF; la aprobación sigue en el sistema de la minera. Ambas columnas se estiran a la misma altura: la última
           card de cada una crece hasta alinear los bordes y el contenido
           que sobra scrollea adentro. */}
       <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]">
@@ -75,9 +71,9 @@ export default function Panel() {
             <Alertas />
           </Suspense>
           <Suspense
-            fallback={<PanelCargando texto="Cargando la cola de pendientes…" />}
+            fallback={<PanelCargando texto="Cargando las recomendaciones…" />}
           >
-            <ColaPendientes />
+            <Recomendaciones />
           </Suspense>
         </aside>
       </div>
@@ -108,7 +104,7 @@ function ChatAgente() {
         <p className="mt-1 text-detalle text-piedra">
           Conversá con el agente sobre compras, proveedores y certificaciones.
           Para reponer un insumo concreto usá «Pedir recomendación» en su
-          alerta: la propuesta llega a la cola de pendientes.
+          alerta: la propuesta aparece en «Recomendaciones», con su informe.
         </p>
       </div>
       <div className="h-[38rem]">
@@ -315,70 +311,52 @@ function TarjetaAlerta({ item: s }: { item: StockInsumo }) {
   );
 }
 
-// ---------- Cola de pendientes y decididas ----------
+// ---------- Recomendaciones ----------
 
-async function ColaPendientes() {
+async function Recomendaciones() {
   await connection();
-  const [pendientes, decididas] = await Promise.all([
-    listarRecomendacionesPendientes(),
-    listarRecomendacionesDecididas(),
-  ]);
+  const recomendaciones = await listarRecomendaciones();
 
   return (
     <section
-      aria-labelledby="cola-pendientes"
+      aria-labelledby="recomendaciones"
       className="flex flex-1 flex-col rounded-2xl border border-linea bg-ficha shadow-sm"
     >
       <div className="border-b border-linea px-5 py-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2
-            id="cola-pendientes"
+            id="recomendaciones"
             className="font-display text-subtitulo font-semibold text-tinta"
           >
-            Recomendaciones pendientes
+            Recomendaciones
           </h2>
           <p className="text-detalle text-piedra" role="status">
-            {pendientes.length === 1
-              ? "1 pendiente"
-              : `${pendientes.length} pendientes`}
+            {recomendaciones.length === 1
+              ? "1 recomendación"
+              : `${recomendaciones.length} recomendaciones`}
           </p>
         </div>
         <p className="mt-1.5 text-detalle text-piedra">
-          Las recomendaciones nuevas del agente entran a esta cola para que
-          la minera las revise. Al aprobarlas o rechazarlas pasan a
-          «Decididas».
+          Descargá el informe PDF de cada recomendación y adjuntalo a la orden
+          de compra en el sistema de la minera: la aprobación, el pago y la
+          recepción siguen ahí.
         </p>
       </div>
 
-      {/* Un solo scroll para pendientes y decididas: el cuerpo de la card
-          crece hasta el borde inferior de la columna y el contenido que
-          sobra scrollea adentro, sin cards cortadas a la mitad por un
-          segundo scrollbar. */}
+      {/* El cuerpo de la card crece hasta el borde inferior de la columna y
+          el contenido que sobra scrollea adentro. */}
       <div className="min-h-[14rem] flex-1 overflow-y-auto p-5">
-        {pendientes.length === 0 ? (
+        {recomendaciones.length === 0 ? (
           <p className="rounded-xl border border-linea bg-papel p-4 text-detalle text-piedra">
-            No hay recomendaciones pendientes: las que emita el agente
-            aparecen acá.
+            Todavía no hay recomendaciones: las que emita el agente aparecen
+            acá.
           </p>
         ) : (
           <ul className="grid gap-4">
-            {pendientes.map((r) => (
+            {recomendaciones.map((r) => (
               <TarjetaRecomendacion key={r.id} rec={r} />
             ))}
           </ul>
-        )}
-
-        {decididas.length > 0 && (
-          <div className="mt-6 border-t border-linea pt-4">
-            <h3 className="font-display text-detalle font-semibold text-piedra">
-              Decididas
-            </h3>
-            <ul className="mt-3 grid gap-4">
-              {decididas.map((r) => (
-                <TarjetaRecomendacion key={r.id} rec={r} />
-              ))}
-            </ul>
-          </div>
         )}
       </div>
     </section>
@@ -386,18 +364,6 @@ async function ColaPendientes() {
 }
 
 // ---------- Tarjeta de recomendación ----------
-
-const ETIQUETA_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
-  pendiente: "Pendiente",
-  aprobada: "Aprobada",
-  rechazada: "Rechazada",
-};
-
-const ESTILO_ESTADO: Record<RecomendacionDetallada["estado"], string> = {
-  pendiente: "bg-senal text-tinta",
-  aprobada: "border border-tinta/40 text-tinta",
-  rechazada: "border border-linea text-piedra",
-};
 
 function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
   const proveedor = rec.proveedor;
@@ -409,17 +375,17 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
         <h3 className="font-display font-semibold text-tinta">
           {rec.insumo?.nombre ?? "Insumo"}
         </h3>
-        <span
-          className={`shrink-0 rounded-md px-1.5 py-0.5 text-micro font-semibold ${ESTILO_ESTADO[rec.estado]}`}
-        >
-          {ETIQUETA_ESTADO[rec.estado]}
-        </span>
+        {rec.informeCodigo && (
+          <span className="shrink-0 rounded-md border border-tinta/40 px-1.5 py-0.5 font-mono text-micro font-semibold text-tinta">
+            {rec.informeCodigo}
+          </span>
+        )}
       </div>
 
       {proveedor && (
         <p className="mt-1 text-detalle text-piedra">
           {/* Cada recomendación enlaza a la ficha del proveedor verificado
-              para revisarlo antes de decidir. */}
+              para revisarlo antes de comprar. */}
           <Link
             href={`/proveedores/${proveedor.id}`}
             className="font-semibold text-cobre underline decoration-cobre/40 underline-offset-2 transition-colors hover:text-tinta hover:decoration-tinta"
@@ -467,33 +433,18 @@ function TarjetaRecomendacion({ rec }: { rec: RecomendacionDetallada }) {
         {formatoFecha(rec.creadaEn)}
       </p>
 
-      {/* Solo las pendientes se pueden decidir: una vez aprobada o
-          rechazada la tarjeta muestra el estado y no vuelve a ofrecer
-          acciones. */}
-      {rec.estado === "pendiente" && (
-        <form
-          action={decidirRecomendacionDesdePanel}
-          className="mt-4 flex flex-wrap gap-3"
+      {/* Formulario nativo a la ruta que genera el PDF: el navegador lo
+          descarga. Una recomendación tiene un solo informe, así que
+          descargarlo de nuevo devuelve el mismo código. */}
+      <form action="/informes" method="post" className="mt-4">
+        <input type="hidden" name="recomendacion_id" value={rec.id} />
+        <button
+          type="submit"
+          className="rounded-lg bg-senal px-4 py-2 font-display text-detalle font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
         >
-          <input type="hidden" name="recomendacion_id" value={rec.id} />
-          <button
-            type="submit"
-            name="decision"
-            value="aprobada"
-            className="rounded-lg bg-senal px-4 py-2 font-display text-detalle font-semibold text-tinta transition-colors hover:bg-cobre hover:text-ficha"
-          >
-            Aprobar
-          </button>
-          <button
-            type="submit"
-            name="decision"
-            value="rechazada"
-            className="rounded-lg border border-linea px-4 py-2 font-display text-detalle font-semibold text-piedra transition-colors hover:border-tinta hover:text-tinta"
-          >
-            Rechazar
-          </button>
-        </form>
-      )}
+          Descargar informe (PDF)
+        </button>
+      </form>
     </li>
   );
 }
@@ -591,11 +542,11 @@ function RecomendacionCompacta({ rec }: { rec: RecomendacionDetallada }) {
           {proveedor.nombreFantasia ?? proveedor.razonSocial}
         </Link>
       )}
-      <span
-        className={`rounded px-1.5 py-0.5 font-semibold ${ESTILO_ESTADO[rec.estado]}`}
-      >
-        {ETIQUETA_ESTADO[rec.estado]}
-      </span>
+      {rec.informeCodigo && (
+        <span className="rounded border border-tinta/40 px-1.5 py-0.5 font-mono font-semibold text-tinta">
+          {rec.informeCodigo}
+        </span>
+      )}
     </li>
   );
 }

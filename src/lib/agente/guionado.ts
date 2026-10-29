@@ -10,6 +10,7 @@
 // El agente obtiene datos solo a través del módulo de dominio de compras.
 
 import {
+  cumpleRequisito,
   listarCategorias,
   listarInsumos,
   listarOfertasDeInsumo,
@@ -17,7 +18,6 @@ import {
   listarStockMinera,
   obtenerInsumo,
   obtenerProveedorVerificado,
-  type CertificacionAcreditada,
   type Insumo,
   type Oferta,
   type ProveedorVerificado,
@@ -308,21 +308,6 @@ async function evaluarInsumo(
       ),
     }));
   return { propuestas, motivo: null };
-}
-
-/** Regla cumple_requisitos (DOCS.md §4.4): certificación verificada y
- * vigente para cada requisito obligatorio de la categoría. */
-function cumpleRequisito(
-  certificaciones: CertificacionAcreditada[],
-  certificacionId: string,
-  hoy: string,
-): boolean {
-  return certificaciones.some(
-    (c) =>
-      c.certificacion.id === certificacionId &&
-      c.estado === "verificado" &&
-      (c.fechaVencimiento === null || c.fechaVencimiento > hoy),
-  );
 }
 
 /** Puntaje combinado 0–1: trust score normalizado, plazo y precio

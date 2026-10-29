@@ -40,7 +40,6 @@ export type CondicionIva =
 
 /** Decisión de la minera sobre una recomendación del agente. */
 export type EstadoRecomendacion = "pendiente" | "aprobada" | "rechazada";
-export type DecisionRecomendacion = "aprobada" | "rechazada";
 
 /** Fuente de verificación de la que salió el registro del proveedor. */
 export type FuenteVerificacion =
@@ -75,14 +74,14 @@ export interface Certificacion {
 }
 
 /** Trust score: puntaje 0–100 con desglose por grupo de señales.
- * Pesos de DOCS.md §3.2: identidad 20, compliance 30, desempeño 30, ESG 10,
- * capacidad 10. Los valores del desglose suman el valor total. */
+ * Pesos de DOCS.md §3.2, solo con datos verificables: identidad 25,
+ * compliance 45, ESG 15, capacidad 15. Sin desempeño: ju-min no ve las
+ * entregas. Los valores del desglose suman el valor total. */
 export interface TrustScore {
   valor: number;
   desglose: {
     identidad: number;
     compliance: number;
-    desempeno: number;
     esg: number;
     capacidad: number;
   };
@@ -206,9 +205,52 @@ export interface RecomendacionDetallada extends Recomendacion {
   insumo: Insumo | null;
   oferta: Oferta | null;
   proveedor: ProveedorVerificado | null;
+  /** Código del informe PDF, si ya se generó. */
+  informeCodigo: string | null;
 }
 
 /** Consulta con sus recomendaciones detalladas. */
 export interface ConsultaDetallada extends Omit<Consulta, "recomendaciones"> {
   recomendaciones: RecomendacionDetallada[];
+}
+
+/** Datos de un informe de recomendación, copiados al generarlo: el informe
+ * no cambia aunque después cambien las ofertas, el stock o el trust score. */
+export interface ContenidoInforme {
+  minera: string;
+  insumo: { nombre: string; unidad: string; especificacion: string | null };
+  stock: {
+    cantidadActual: number;
+    puntoReorden: number;
+    diasRestantes: number | null;
+  } | null;
+  proveedor: { razonSocial: string; cuit: string | null; trustScore: number };
+  oferta: { precio: number; moneda: string; leadTimeDias: number | null };
+  justificacion: string;
+  /** Certificaciones obligatorias de la categoría del insumo. */
+  requisitos: string[];
+  /** Otras ofertas que cumplen los requisitos y no se eligieron. */
+  alternativas: {
+    proveedor: string;
+    precio: number;
+    moneda: string;
+    leadTimeDias: number | null;
+    trustScore: number;
+  }[];
+  /** Ofertas que no cumplen, con el motivo. */
+  descartados: { proveedor: string; motivo: string }[];
+}
+
+/** Informe de una recomendación: lo que la minera adjunta a su orden de
+ * compra. El código lo identifica para verificarlo; el sello (SHA-256 del
+ * contenido) permite detectar si el registro fue alterado. */
+export interface Informe {
+  id: string;
+  codigo: string;
+  mineraId: string;
+  recomendacionId: string | null;
+  generadoPor: { id: string; nombre: string; email: string };
+  creadoEn: string;
+  contenido: ContenidoInforme;
+  sello: string;
 }

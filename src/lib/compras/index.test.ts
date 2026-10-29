@@ -5,28 +5,27 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  decidirRecomendacion,
+  generarInforme,
   listarCategorias,
   listarHistorialConsultas,
   listarInsumos,
   listarOfertasDeInsumo,
   listarProveedoresVerificados,
-  listarRecomendacionesDecididas,
-  listarRecomendacionesPendientes,
+  listarRecomendaciones,
   listarStockMinera,
   obtenerMinera,
   obtenerProveedorVerificado,
   registrarConsulta,
+  verificarInforme,
 } from "./index";
 
 const ID_EPP = "ca000000-0000-4000-8000-000000000001";
 const ID_FILTROS = "ca000000-0000-4000-8000-000000000008";
 const ID_GUANTE = "10000000-0000-4000-8000-000000000001";
-const ID_FILTRO_ACEITE = "10000000-0000-4000-8000-000000000011";
 const ID_OFERTA_GUANTE_ANDINA = "0f000000-0000-4000-8000-000000000001";
 const ID_ANDINA = "f0000000-0000-4000-8000-000000000001";
 const ID_REGISTRADO = "f0000000-0000-4000-8000-000000000017";
-const ID_REC_APROBADA = "d1000000-0000-4000-8000-000000000002";
+const AUTOR = { id: "u-1", nombre: "Julián Paredes", email: "julian@minera.test" };
 
 describe("listarProveedoresVerificados", () => {
   it("lista solo la red verificada: proveedores validados y homologados", async () => {
@@ -57,7 +56,7 @@ describe("listarProveedoresVerificados", () => {
     expect(andina!.certificaciones.length).toBeGreaterThan(0);
     // el desglose del trust score suma el valor total
     const d = andina!.trustScore.desglose;
-    expect(d.identidad + d.compliance + d.desempeno + d.esg + d.capacidad).toBe(
+    expect(d.identidad + d.compliance + d.esg + d.capacidad).toBe(
       andina!.trustScore.valor,
     );
   });
@@ -67,17 +66,17 @@ describe("listarProveedoresVerificados", () => {
     expect(proveedores[0].razonSocial).toBe(
       "Reactivos y Químicos San Salvador S.A.",
     );
-    expect(proveedores[0].trustScore.valor).toBe(94);
+    expect(proveedores[0].trustScore.valor).toBe(95);
     expect(proveedores[1].trustScore.valor).toBe(91);
-    expect(proveedores.at(-1)!.trustScore.valor).toBe(71);
+    expect(proveedores.at(-1)!.trustScore.valor).toBe(70);
   });
 
   it("ordena por trust score ascendente cuando se pide", async () => {
     const proveedores = await listarProveedoresVerificados({
       orden: "trust_score_asc",
     });
-    expect(proveedores[0].trustScore.valor).toBe(71);
-    expect(proveedores.at(-1)!.trustScore.valor).toBe(94);
+    expect(proveedores[0].trustScore.valor).toBe(70);
+    expect(proveedores.at(-1)!.trustScore.valor).toBe(95);
   });
 
   it("ordena por nombre cuando se pide", async () => {
@@ -148,7 +147,7 @@ describe("obtenerProveedorVerificado", () => {
     );
     expect(proveedor!.ofertas.length).toBe(4);
     const d = proveedor!.trustScore.desglose;
-    expect(d.identidad + d.compliance + d.desempeno + d.esg + d.capacidad).toBe(
+    expect(d.identidad + d.compliance + d.esg + d.capacidad).toBe(
       91,
     );
   });
@@ -292,33 +291,7 @@ describe("consultas y recomendaciones", () => {
     ).rejects.toThrow();
   });
 
-  it("ciclo de una recomendación: pendiente → aprobada, sin decidir dos veces", async () => {
-    const consulta = await registrarConsulta({
-      mensaje: "Reponer filtros de aceite",
-      recomendaciones: [
-        {
-          ofertaId: "0f000000-0000-4000-8000-000000000015",
-          justificacion: "Menor precio y menor lead time.",
-          puntaje: 78,
-        },
-      ],
-    });
-    const rec = consulta.recomendaciones[0];
-
-    const decidida = await decidirRecomendacion(rec.id, "aprobada");
-    expect(decidida.estado).toBe("aprobada");
-    expect(decidida.insumoId).toBe(ID_FILTRO_ACEITE);
-
-    await expect(decidirRecomendacion(rec.id, "rechazada")).rejects.toThrow();
-    await expect(
-      decidirRecomendacion(ID_REC_APROBADA, "aprobada"),
-    ).rejects.toThrow();
-    await expect(
-      decidirRecomendacion("99999999-9999-4999-8999-999999999999", "aprobada"),
-    ).rejects.toThrow();
-  });
-
-  it("ciclo de una recomendación: pendiente → rechazada", async () => {
+  it("lista las recomendaciones detalladas, más nueva primero", async () => {
     const consulta = await registrarConsulta({
       mensaje: "Reponer guantes de nitrilo",
       recomendaciones: [
@@ -331,46 +304,14 @@ describe("consultas y recomendaciones", () => {
     });
     const rec = consulta.recomendaciones[0];
 
-    const decidida = await decidirRecomendacion(rec.id, "rechazada");
-    expect(decidida.estado).toBe("rechazada");
-
-    await expect(decidirRecomendacion(rec.id, "aprobada")).rejects.toThrow();
+    const lista = await listarRecomendaciones();
+    expect(lista[0].id).toBe(rec.id);
+    // viene con insumo, oferta y proveedor resueltos para el panel
+    expect(lista[0].insumo?.id).toBe(ID_GUANTE);
+    expect(lista[0].oferta?.id).toBe(ID_OFERTA_GUANTE_ANDINA);
+    expect(lista[0].proveedor?.id).toBe(ID_ANDINA);
+    expect(lista[0].informeCodigo).toBeNull();
   });
-
-  it("una recomendación decidida sale de la cola de pendientes y aparece entre las decididas", async () => {
-    const consulta = await registrarConsulta({
-      mensaje: "Reponer guantes de nitrilo",
-      recomendaciones: [
-        {
-          ofertaId: ID_OFERTA_GUANTE_ANDINA,
-          justificacion: "Menor lead time: 7 días.",
-          puntaje: 91,
-        },
-      ],
-    });
-    const rec = consulta.recomendaciones[0];
-
-    expect(
-      (await listarRecomendacionesPendientes()).map((r) => r.id),
-    ).toContain(rec.id);
-
-    await decidirRecomendacion(rec.id, "aprobada");
-
-    expect(
-      (await listarRecomendacionesPendientes()).map((r) => r.id),
-    ).not.toContain(rec.id);
-    const decididas = await listarRecomendacionesDecididas();
-    const vista = decididas.find((r) => r.id === rec.id);
-    expect(vista).toBeDefined();
-    expect(vista!.estado).toBe("aprobada");
-    // la decidida viene con insumo, oferta y proveedor resueltos para el panel
-    expect(vista!.insumo?.id).toBe(ID_GUANTE);
-    expect(vista!.oferta?.id).toBe(ID_OFERTA_GUANTE_ANDINA);
-    expect(vista!.proveedor?.id).toBe(ID_ANDINA);
-    // la cola de decididas no muestra pendientes
-    expect(decididas.every((r) => r.estado !== "pendiente")).toBe(true);
-  });
-
   it("lee el historial de consultas con sus recomendaciones", async () => {
     const historial = await listarHistorialConsultas();
     const semilla = historial.find(
@@ -400,5 +341,79 @@ describe("catálogo para los filtros del explorer", () => {
     expect(categorias.some((c) => c.id === ID_FILTROS)).toBe(true);
     expect(insumos.some((i) => i.id === ID_GUANTE)).toBe(true);
     expect(insumos.length).toBeGreaterThanOrEqual(15);
+  });
+});
+
+describe("informes de recomendación", () => {
+  async function nuevaRecomendacion() {
+    const consulta = await registrarConsulta({
+      mensaje: "Reponer filtros de aceite",
+      recomendaciones: [
+        {
+          ofertaId: "0f000000-0000-4000-8000-000000000015",
+          justificacion: "Menor precio y menor lead time.",
+          puntaje: 78,
+        },
+      ],
+    });
+    return consulta.recomendaciones[0];
+  }
+
+  it("genera un informe con código, autor y una copia de la recomendación", async () => {
+    const rec = await nuevaRecomendacion();
+    const informe = await generarInforme(rec.id, AUTOR);
+
+    expect(informe.codigo).toMatch(/^JM-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/);
+    expect(informe.recomendacionId).toBe(rec.id);
+    expect(informe.generadoPor).toEqual(AUTOR);
+    expect(informe.sello).toMatch(/^[0-9a-f]{64}$/);
+    expect(informe.contenido.insumo.nombre).toBe(
+      "Filtro de aceite para motor diésel",
+    );
+    expect(informe.contenido.justificacion).toBe("Menor precio y menor lead time.");
+    // la elegida no se repite entre alternativas ni descartadas
+    const otros = [
+      ...informe.contenido.alternativas.map((a) => a.proveedor),
+      ...informe.contenido.descartados.map((d) => d.proveedor),
+    ];
+    expect(otros).not.toContain(informe.contenido.proveedor.razonSocial);
+    // la otra oferta del insumo figura, como alternativa o descartada
+    expect(otros).toContain("Repuestos Pesados Calilegua S.R.L.");
+    for (const d of informe.contenido.descartados) expect(d.motivo).not.toBe("");
+  });
+
+  it("una recomendación tiene un solo informe", async () => {
+    const rec = await nuevaRecomendacion();
+    const primero = await generarInforme(rec.id, AUTOR);
+    const segundo = await generarInforme(rec.id, {
+      id: "u-2",
+      nombre: "Otra persona",
+      email: "otra@minera.test",
+    });
+    expect(segundo.codigo).toBe(primero.codigo);
+    expect(segundo.generadoPor).toEqual(AUTOR);
+
+    const lista = await listarRecomendaciones();
+    expect(lista.find((r) => r.id === rec.id)?.informeCodigo).toBe(
+      primero.codigo,
+    );
+  });
+
+  it("verifica un informe por su código, sin importar mayúsculas ni espacios", async () => {
+    const rec = await nuevaRecomendacion();
+    const informe = await generarInforme(rec.id, AUTOR);
+
+    const resultado = await verificarInforme(`  ${informe.codigo.toLowerCase()} `);
+    expect(resultado?.integro).toBe(true);
+    expect(resultado?.informe.sello).toBe(informe.sello);
+
+    expect(await verificarInforme("JM-0000-0000-0000")).toBeNull();
+    expect(await verificarInforme("   ")).toBeNull();
+  });
+
+  it("no genera informes de recomendaciones inexistentes", async () => {
+    await expect(
+      generarInforme("99999999-9999-4999-8999-999999999999", AUTOR),
+    ).rejects.toThrow();
   });
 });

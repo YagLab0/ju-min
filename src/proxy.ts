@@ -6,7 +6,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { NOMBRE_COOKIE_SESION, verificarSello } from "@/lib/auth/sello";
 
-const RUTAS_PROTEGIDAS = [/^\/panel(?:\/|$)/, /^\/proveedores(?:\/|$)/];
+const RUTAS_PROTEGIDAS = [
+  /^\/panel(?:\/|$)/,
+  /^\/proveedores(?:\/|$)/,
+  /^\/informes(?:\/|$)/,
+];
 
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -31,5 +35,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/panel/:path*", "/proveedores/:path*", "/login"],
+  matcher: ["/panel/:path*", "/proveedores/:path*", "/informes/:path*", "/login"],
 };
