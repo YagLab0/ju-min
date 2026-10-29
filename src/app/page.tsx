@@ -87,21 +87,21 @@ export default function Landing() {
         <div className={styles.decisionCopy}>
           <p className={styles.eyebrow}><span className={styles.sectionMarker} /> INTELIGENCIA + CRITERIO HUMANO</p>
           <h2 id="decision-titulo">El agente propone.<br /><span>La minera decide.</span></h2>
-          <p>Consultá, por ejemplo: «¿Quién me entrega respiradores más rápido?». El agente compara precio, plazo de entrega y trust score. Tu equipo aprueba o rechaza; la justificación y la decisión quedan en el historial.</p>
-          <p>Datos separados por minera y acceso por roles: comprador, aprobador y administrador.</p>
+          <p>Consultá, por ejemplo: «¿Quién me entrega respiradores más rápido?». El agente compara precio, plazo de entrega y trust score. Descargá el informe PDF con la justificación y adjuntalo a la orden de compra: la aprobación sigue en tu sistema.</p>
+          <p>Datos separados por minera. Cada informe lleva un código que cualquiera puede verificar.</p>
           <Link href="/panel" className={styles.darkLink}>Conocé tu espacio de trabajo <ArrowRight size={16} /></Link>
         </div>
         <div className={styles.decisionDiagram} aria-label="El agente propone, una persona decide y la decisión queda registrada">
           <div className={styles.diagramTop}><span><Sparkles size={14} /> PROPUESTA DEL AGENTE</span><span className={styles.diagramTag}>Ejemplo ilustrativo</span></div>
           <div className={styles.proposal}><span className={styles.proposalIcon}><ScanLine size={24} /></span><div><strong>Reposición de respiradores</strong><span>Oferta, plazo y confianza comparados.</span></div><Check size={18} /></div>
           <div className={styles.approvalBridge} aria-hidden="true"><span /><UserRoundCheck size={18} /><span /></div>
-          <div className={styles.humanDecision}><span className={styles.humanAvatar}>TU</span><div><strong>La última palabra es tuya.</strong><span>Revisar → Aprobar o rechazar</span></div><span className={styles.humanBadge}>Control humano</span></div>
+          <div className={styles.humanDecision}><span className={styles.humanAvatar}>TU</span><div><strong>La última palabra es tuya.</strong><span>Revisar → Descargar informe → Aprobar en tu sistema</span></div><span className={styles.humanBadge}>Control humano</span></div>
           <p className={styles.auditTrail}><Fingerprint size={13} /> Decisión registrada. Historial consultable.</p>
         </div>
       </section>
 
       <section className={styles.network} aria-labelledby="red-titulo">
-        <div className={styles.networkIntro}><p className={styles.eyebrow}><span className={styles.sectionMarker} /> CONFIANZA TRANSPARENTE</p><h2 id="red-titulo">Un puntaje.<br />Cinco dimensiones.</h2><p>El trust score va de 0 a 100 y muestra su desglose: identidad, compliance, desempeño, ESG y capacidad. Consultá la ficha del proveedor, sus certificaciones y vencimientos antes de decidir.</p><Link href="/proveedores" className={styles.outlineButton}>Explorar proveedores <ArrowRight size={16} /></Link></div>
+        <div className={styles.networkIntro}><p className={styles.eyebrow}><span className={styles.sectionMarker} /> CONFIANZA TRANSPARENTE</p><h2 id="red-titulo">Un puntaje.<br />Cuatro dimensiones.</h2><p>El trust score va de 0 a 100 y muestra su desglose, solo con datos verificables: identidad, compliance, ESG y capacidad. Consultá la ficha del proveedor, sus certificaciones y vencimientos antes de decidir.</p><Link href="/proveedores" className={styles.outlineButton}>Explorar proveedores <ArrowRight size={16} /></Link></div>
         <div className={styles.faq}>
           {[
             { n: "01", title: "¿Qué respalda una recomendación?", text: "Precio, plazo de entrega y trust score, siempre entre proveedores que cumplen los requisitos obligatorios del insumo. Si falta información, el agente debe decirlo: no completar datos ni inventar ofertas." },

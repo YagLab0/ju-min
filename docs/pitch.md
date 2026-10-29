@@ -40,8 +40,8 @@ ju-min junta tres piezas que hoy están separadas:
 
 - **Red de proveedores verificados** — 277 proveedores en la red, relevados de
   fuentes públicas reales (directorio CAPMIN + Registro Provincial de Jujuy).
-  Cada uno con un **trust score 0–100 con desglose**: identidad, compliance,
-  desempeño, ESG y capacidad.
+  Cada uno con un **trust score 0–100 con desglose**, solo con datos
+  verificables: identidad, compliance, ESG y capacidad.
 - **Alertas de stock** — la minera carga su stock con punto de reorden por
   insumo; ju-min detecta qué está por faltar y cuántos días de margen quedan.
 - **El agente** — un consultor en lenguaje natural, acotado al dominio de
@@ -55,15 +55,16 @@ ju-min junta tres piezas que hoy están separadas:
 
 ### 3. El demo (90 s)
 
-> "Alerta de stock → consulta → recomendación justificada → aprobación humana."
+> "Alerta de stock → consulta → recomendación justificada → informe verificable."
 
 1. El panel muestra un insumo en alerta (bajo el punto de reorden).
 2. La minera le consulta al agente: *"¿quién me entrega respiradores más
    rápido?"* — el agente entiende "rápido" y pondera lead time.
 3. El agente responde con la oferta justificada: proveedor, precio, lead time y
    trust score — con datos reales, nunca inventados.
-4. La minera aprueba o rechaza en el panel. El agente nunca compra: propone, la
-   persona decide.
+4. La minera descarga el **informe PDF** y lo adjunta a su orden de compra.
+   La aprobación sigue en su propio sistema: ju-min no le cambia la forma de
+   trabajar. Con el código del informe, un auditor lo verifica en ju-min.
 5. Bonus para el jurado: probarle *"¿cómo está el clima?"* — responde un
    rechazo fijo. Está acotado a su dominio por diseño.
 
@@ -76,17 +77,19 @@ vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
   propio), 188 categorías, 58 reglas de requisitos por categoría. Si Supabase
   no responde, la app cae a un seed en memoria — el demo nunca queda en blanco.
 - **Seguridad real**: RLS en Postgres — el público solo ve la red verificada;
-  cada minera ve solo sus datos; roles comprador/aprobador/admin.
-- **Auditable**: cada recomendación guarda su justificación; el historial de
-  decisiones es consultable.
+  cada minera ve solo sus datos; el alta de cuentas la hace ju-min (sin
+  registro abierto).
+- **Auditable**: cada recomendación se entrega en un informe PDF con código
+  único y sello SHA-256; ju-min registra cada informe y cualquiera lo
+  verifica por su código.
 
 ### 5. Modelo y cierre (45 s)
 
 - **Modelo**: suscripción por minera — el consultor de procurement como
   servicio. ju-min no procesa pagos ni cobra comisiones: recomienda, una
   persona aprueba y la minera compra por sus canales de siempre.
-- **Roadmap**: carga del stock desde Excel o CSV, orden de compra armada y
-  lista para aprobar, verificación contra registros públicos (Jujuy, AFIP),
+- **Roadmap**: carga del stock desde Excel o CSV, exportar el informe al ERP,
+  scraping semanal de las fuentes, verificación contra registros públicos (Jujuy, AFIP),
   APIs de compras públicas (ChileCompra), integración con ERPs y facturación
   electrónica.
 
@@ -116,7 +119,8 @@ No: sus instrucciones le prohíben inventar datos — si no tiene el dato, lo
 dice. Solo lee a través del módulo de dominio.
 
 **¿Puede comprar solo?**
-No: aprobación humana obligatoria. El agente propone, la minera decide.
+No. El agente propone y la minera decide en su propio sistema de compras,
+con el informe de ju-min adjunto a la orden de compra.
 
 **¿Es solo un chatbot?**
 No: dominio completo — stock, ofertas, trust score, historial de consultas y

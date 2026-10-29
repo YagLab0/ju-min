@@ -14,7 +14,9 @@ siguen por los canales de la minera.
 **Scope de la demo:** los proveedores, insumos y cotizaciones están mockeados.
 No hay transacciones reales — el contacto con proveedores es un botón simulado.
 El foco es el loop del agente: *alerta de stock → consulta → recomendación con
-justificación → aprobación humana*.
+justificación → informe PDF verificable*. ju-min es un consultor: la
+aprobación, la compra, el pago y la recepción siguen en el sistema de la
+minera, que adjunta el informe a su orden de compra.
 
 ## Stack
 
@@ -35,13 +37,16 @@ justificación → aprobación humana*.
 | Ruta | Descripción |
 | --- | --- |
 | `/` | Landing: hero con maqueta industrial 3D, widgets en loop de stock, proveedores y recomendación; control humano, preguntas frecuentes y accesos al panel y al explorer. |
-| `/panel` | Panel de la minera: stock con alertas de punto de reorden, consultas al agente, cola de recomendaciones pendientes e historial con las decisiones tomadas. |
+| `/panel` | Panel de la minera: stock con alertas de punto de reorden, consultas al agente, recomendaciones con el botón "Descargar informe (PDF)" e historial de consultas. |
+| `/informes` | `POST`: genera (o reutiliza) el informe de una recomendación y devuelve el PDF. `GET /informes/[codigo]`: lo vuelve a descargar. Requieren sesión. |
+| `/verificar` | Pública: un auditor ingresa el código del informe y ve sus datos originales; el sello SHA-256 detecta si el registro fue alterado. |
 | `/proveedores` | Explorer: catálogo de proveedores verificados filtrable por insumo/categoría, con trust score, ubicación y certificaciones. |
 | `/proveedores/[id]` | Ficha del proveedor: insumos ofrecidos con precio y lead time, historial de entregas, desglose del trust score y botón "Contactar" (mock). |
 
 La landing conserva la paleta mineral (papel, tinta, amarillo señal y cobre).
 Su contenido sigue el pitch del proyecto: proveedores certificados, trust score
-en cinco dimensiones, alertas de stock y recomendaciones con aprobación humana.
+en cuatro dimensiones verificables, alertas de stock y recomendaciones con
+informe para la orden de compra.
 El bloque de alcance recoge las cifras del pitch (277 proveedores, 188 categorías
 y 58 reglas); las integraciones futuras se presentan aparte como roadmap.
 Las cifras de los widgets son ejemplos ilustrativos, no consultas al stock real.
@@ -60,11 +65,13 @@ Los estilos están aislados en CSS Modules, excluidos del loader de Tailwind en
 - **`Proveedor`**: nombre, CUIT, ubicación, certificaciones, trust score, contacto.
 - **`OfertaInsumo`**: insumo ofrecido por un proveedor — precio, unidad, lead time, disponibilidad.
 - **`StockMinera`**: insumo que la minera trackea — cantidad actual, punto de reorden, consumo mensual.
-- **`Consulta`**: mensaje del usuario, respuesta del agente, recomendaciones asociadas, estado (pendiente/aprobada/rechazada), timestamp.
+- **`Consulta`**: mensaje del usuario, respuesta del agente, recomendaciones asociadas, timestamp.
+- **`Informe`**: código único (`JM-XXXX-XXXX-XXXX`), quién lo generó, fecha, copia fija de la recomendación (elegido, alternativas y descartados con motivo) y sello SHA-256. Una recomendación tiene un solo informe.
 
-El trust score es una señal calculada sobre datos simulados (historial de
-entregas, certificaciones, CUIT validado, tiempo de respuesta). En la demo se
-presenta como "red verificada".
+El trust score es una señal calculada solo con datos que ju-min puede
+verificar: registro provincial, certificaciones y habilitaciones vigentes,
+ESG y estado de verificación (pesos 25/45/15/15). No incluye desempeño: la
+recepción ocurre en el sistema de la minera y ju-min no ve las entregas.
 
 ## Flujo del demo
 
@@ -72,13 +79,17 @@ presenta como "red verificada".
 2. El usuario le pregunta al agente qué hacer (o el agente sugiere proactivamente).
 3. El agente recomienda un proveedor con justificación (precio, lead time, trust score).
 4. El usuario revisa la ficha del proveedor en el explorer y lo contacta.
-5. La recomendación queda registrada como aprobada en el historial.
+5. Descarga el informe PDF de la recomendación y lo adjunta a la orden de
+   compra en el sistema de la minera. Con el código, cualquiera lo verifica en
+   `/verificar`.
 
 ## Roadmap (pitch)
 
 - Verificación real de proveedores contra registros públicos.
 - Carga del stock de la minera desde Excel o CSV.
-- Orden de compra armada y lista para aprobar, exportable al ERP.
+- Exportar el informe al ERP de la minera.
+- Scraping semanal de CAPMIN y del registro de Jujuy, sin pisar los datos internos.
+- Alta de mineras por invitación (hoy: seed).
 - Integración con ERPs y facturación electrónica.
 
 ## Desarrollo
@@ -145,5 +156,5 @@ pnpm test:e2e
 Los tests E2E levantan solos el build de producción en un puerto dedicado
 (`3200`; se puede cambiar con `JUMIN_E2E_PORT`) y no dependen de red externa:
 verifican el flujo completo del demo — alerta de stock → consulta al agente →
-recomendación → ficha del proveedor → contacto simulado → aprobación en el
-historial — y el respaldo del estante con `prefers-reduced-motion`.
+recomendación → ficha del proveedor → contacto simulado → informe PDF y su
+verificación — y el respaldo del estante con `prefers-reduced-motion`.

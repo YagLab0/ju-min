@@ -62,7 +62,7 @@ export function LandingWidgets() {
               <div className={styles.verificationLine} aria-hidden="true" />
             </div>
           </div>
-          <div className={styles.copy}><span className={styles.step}>02 / RED VERIFICADA</span><h3>Confianza que se puede revisar.</h3><p>Un trust score de 0 a 100, desglosado en identidad, compliance, desempeño, ESG y capacidad. Más certificaciones y vigencias, no solo precio.</p></div>
+          <div className={styles.copy}><span className={styles.step}>02 / RED VERIFICADA</span><h3>Confianza que se puede revisar.</h3><p>Un trust score de 0 a 100, desglosado en identidad, compliance, ESG y capacidad. Más certificaciones y vigencias, no solo precio.</p></div>
         </article>
 
         <article className={styles.card}>

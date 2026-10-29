@@ -39,9 +39,9 @@ Tools, sobre el módulo de dominio de compras (el nombre sale del archivo):
   búsqueda y una búsqueda web contradice el dominio acotado.
 
 El agente es de solo lectura: recomienda en el texto de la consulta con
-precio, lead time y trust score reales; no registra recomendaciones en la
-cola de pendientes del panel (esa sigue siendo exclusiva del agente
-guionado).
+precio, lead time y trust score reales; no registra recomendaciones en el
+panel (las registra el agente guionado al usar «Pedir recomendación», y de
+ahí sale el informe PDF).
 
 ## Flujo de datos
 
@@ -54,8 +54,8 @@ guionado).
    → el modelo razona → stream NDJSON → assistant-ui renderiza en vivo.
 4. El agente recomienda en el texto de la consulta, justificando con precio,
    lead time y trust score de las ofertas leídas por las tools.
-5. La minera aprueba o rechaza → la recomendación queda registrada con su
-   decisión. La sesión es durable: `useEveAgentRuntime({ resume: true })`
+5. La minera descarga el informe PDF de la recomendación del panel y aprueba
+   en su propio sistema de compras. La sesión es durable: `useEveAgentRuntime({ resume: true })`
    re-adjunta tras reload; cada `sessionId` equivale a una Consulta en el
    historial.
 
