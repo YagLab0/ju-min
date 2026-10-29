@@ -8,7 +8,8 @@ de una empresa minera a partir de una red de proveedores verificados.
 Las mineras usan el agente como consultor de procurement: monitorea el stock de
 insumos, detecta faltantes, recomienda proveedores de la red verificada y genera
 propuestas de compra que un humano aprueba. El modelo de negocio es por
-suscripción y escala a pagos automáticos al detectar falta de stock.
+suscripción: ju-min es un consultor y no procesa pagos; la compra y el pago
+siguen por los canales de la minera.
 
 **Scope de la demo:** los proveedores, insumos y cotizaciones están mockeados.
 No hay transacciones reales — el contacto con proveedores es un botón simulado.
@@ -20,7 +21,7 @@ justificación → aprobación humana*.
 - Next.js 16 (App Router, Turbopack) + React 19 + TypeScript
 - Tailwind CSS 4
 - Agente: [eve](https://eve.dev) (Vercel, beta) en `agent/`, montado en Next.js con `withEve` (`/eve/v1/*`)
-- Modelo: Claude Haiku directo vía `eve/models/anthropic`
+- Modelo: DeepSeek V4.1 Flash vía OpenCode Zen (`@ai-sdk/openai-compatible`)
 - Package manager: **pnpm**
 - Datos: seed en memoria (`src/lib/compras/semilla.ts`) o Supabase local
   (`supabase/`) detrás del mismo adaptador — ver [Fuente de datos](#fuente-de-datos)
@@ -42,7 +43,7 @@ La landing conserva la paleta mineral (papel, tinta, amarillo señal y cobre).
 Su contenido sigue el pitch del proyecto: proveedores certificados, trust score
 en cinco dimensiones, alertas de stock y recomendaciones con aprobación humana.
 El bloque de alcance recoge las cifras del pitch (277 proveedores, 188 categorías
-y 58 reglas); las integraciones y pagos futuros se presentan aparte como roadmap.
+y 58 reglas); las integraciones futuras se presentan aparte como roadmap.
 Las cifras de los widgets son ejemplos ilustrativos, no consultas al stock real.
 Los widgets y la escena tienen controles de pausa y respetan
 `prefers-reduced-motion`; la escena usa un render WebP propio de alta resolución
@@ -76,7 +77,8 @@ presenta como "red verificada".
 ## Roadmap (pitch)
 
 - Verificación real de proveedores contra registros públicos.
-- Pagos automáticos al detectar falta de stock.
+- Carga del stock de la minera desde Excel o CSV.
+- Orden de compra armada y lista para aprobar, exportable al ERP.
 - Integración con ERPs y facturación electrónica.
 
 ## Desarrollo
@@ -85,7 +87,7 @@ Requiere Node 24 (el agente eve lo exige). Con nvm: `nvm install && nvm use` lee
 
 ```bash
 pnpm install
-echo "ANTHROPIC_API_KEY=<tu-key>" > .env.local  # https://console.anthropic.com/
+echo "OPENCODE_API_KEY=<tu-key>" > .env.local  # https://opencode.ai/console
 pnpm dev
 ```
 

@@ -114,7 +114,7 @@ export default function Landing() {
 
       <section className={styles.roadmap} aria-labelledby="modelo-titulo">
         <div className={styles.roadmapIntro}><p className={styles.eyebrow}><span className={styles.sectionMarker} /> MODELO Y PRÓXIMOS PASOS</p><h2 id="modelo-titulo">Tu consultor de compras,<br />como servicio.</h2><p>El modelo es una suscripción por minera. Hoy, el circuito llega de la alerta a la recomendación y a la decisión humana registrada.</p></div>
-        <div className={styles.roadmapList}><p className={styles.rulesLabel}>ROADMAP / NO DISPONIBLE EN LA DEMO</p><ul><li>Verificación contra registros públicos de Jujuy y AFIP.</li><li>Conexión con APIs de compras públicas, como ChileCompra.</li><li>Integración con ERPs y facturación electrónica.</li><li>Pagos automáticos con aprobación humana configurable.</li></ul></div>
+        <div className={styles.roadmapList}><p className={styles.rulesLabel}>ROADMAP / NO DISPONIBLE EN LA DEMO</p><ul><li>Verificación contra registros públicos de Jujuy y AFIP.</li><li>Conexión con APIs de compras públicas, como ChileCompra.</li><li>Integración con ERPs y facturación electrónica.</li><li>Orden de compra lista para aprobar, exportable al ERP.</li></ul></div>
       </section>
 
       <section className={styles.cta} aria-labelledby="cta-titulo">

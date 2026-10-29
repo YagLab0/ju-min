@@ -83,10 +83,11 @@ vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
 ### 5. Modelo y cierre (45 s)
 
 - **Modelo**: suscripción por minera — el consultor de procurement como
-  servicio. Escala a pagos automáticos al detectar falta de stock, con
-  aprobación humana configurable.
-- **Roadmap**: verificación contra registros públicos (Jujuy, AFIP), APIs de
-  compras públicas (ChileCompra), integración con ERPs y facturación
+  servicio. ju-min no procesa pagos ni cobra comisiones: recomienda, una
+  persona aprueba y la minera compra por sus canales de siempre.
+- **Roadmap**: carga del stock desde Excel o CSV, orden de compra armada y
+  lista para aprobar, verificación contra registros públicos (Jujuy, AFIP),
+  APIs de compras públicas (ChileCompra), integración con ERPs y facturación
   electrónica.
 
 > "ju-min no reemplaza al comprador: le devuelve las horas que hoy pierde
@@ -98,7 +99,7 @@ vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
 
 ## Stack
 
-Next.js 16 · eve (agente durable de Vercel) con Gemini · Assistant UI ·
+Next.js 16 · eve (agente durable de Vercel) con DeepSeek V4.1 Flash (vía OpenCode Zen) · Assistant UI ·
 Supabase (Postgres + Auth + RLS + Storage) · TypeScript · Tailwind.
 Datos: 271 proveedores CAPMIN con scraper propio + seed curado.
 
