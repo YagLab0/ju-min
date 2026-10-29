@@ -352,6 +352,19 @@
   .ab-tit { margin-top: 18px !important; }
   table.ab { width: 100%; font-size: 12px; }
   table.ab td:last-child { font-weight: 600; }
+  /* Hoja 1: cómo funciona */
+  .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .rol { padding: 12px 14px; font-size: 13px; line-height: 1.45; background: var(--papel); border: 1px solid var(--linea); border-radius: 10px; }
+  .rol.m { background: var(--m-fondo); border-color: var(--m); }
+  .rol.p { background: var(--p-fondo); border-color: var(--p); }
+  .rol b { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; font: 700 13px var(--cond); letter-spacing: .8px; text-transform: uppercase; }
+  .rol .seg { width: 10px; height: 10px; border-radius: 3px; }
+  .rec-tit { margin: 0 0 10px; font: 700 13px var(--cond); letter-spacing: .9px; text-transform: uppercase; color: var(--piedra); }
+  .recorrido { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; counter-reset: rec; }
+  .recorrido li { position: relative; counter-increment: rec; padding: 22px 10px 10px; font-size: 12px; line-height: 1.4; background: var(--ficha); border: 1px solid var(--linea); border-radius: 10px; }
+  .recorrido li::before { content: counter(rec); position: absolute; top: -11px; left: 10px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--senal); color: var(--oscuro); font: 700 12px var(--cond); }
+  .recorrido li b { display: block; font: 700 13px var(--cond); color: var(--tinta); margin-bottom: 2px; }
+  .hu-bandas.dos { grid-template-columns: repeat(2, 1fr); }
   .declaracion {
     display: flex; gap: 12px; align-items: flex-start;
     margin-top: 16px; padding: 12px 16px;
@@ -432,6 +445,8 @@
 
   /* ---------- Responsive ---------- */
   @media screen and (max-width: 960px) {
+    .recorrido { grid-template-columns: repeat(2, 1fr); gap: 16px 10px; }
+    .roles { grid-template-columns: 1fr; }
     .linea { grid-template-columns: repeat(2, 1fr); gap: 20px 14px; }
     .linea li + li::after { display: none; }
     .vpc, .vpc-titulos { grid-template-columns: 1fr; }
@@ -455,6 +470,7 @@
     .z-alegria, .z-dolor { align-items: stretch; }
   }
   @media screen and (max-width: 760px) {
+    .recorrido, .hu-bandas.dos { grid-template-columns: 1fr; }
     .ben-grid { grid-template-columns: 1fr; }
     .ben li { padding-right: 12px; }
     .ben li > .fit { position: static; display: inline-block; margin-top: 4px; }
@@ -514,6 +530,11 @@
     .hoja { border: 0; border-radius: 0; box-shadow: none; padding: 0; margin: 0; overflow: visible; }
     .hoja::before { display: none; }
     section.hoja + section.hoja { break-before: page; }
+    .rol { font-size: 10.5px; padding: 9px 11px; }
+    .rol b { font-size: 10.5px; }
+    .recorrido li { font-size: 10px; padding: 18px 8px 8px; }
+    .recorrido li b { font-size: 11px; }
+    .rec-tit { font-size: 10.5px; }
     .ben li { font-size: 10px; padding: 5px 9px; padding-right: 80px; }
     .ben li b { font-size: 10.5px; }
     .ben li > .fit { font-size: 8px; top: 6px; }
@@ -600,7 +621,7 @@
 <main>
 
   <!-- ============ Hoja 1 · Encabezado + VPC Minera ============ -->
-  <section class="hoja historia">
+  <section class="hoja como">
     <header class="cabecera">
       <div>
         <h1>ju<em>-</em>min <span class="rest">· Modelo de negocio</span></h1>
@@ -611,7 +632,7 @@
         <li class="grupo">Segmentos</li>
         <li><i class="lg" style="background:var(--m-fondo);border:1.5px solid var(--m)"></i>Minera</li>
         <li><i class="lg" style="background:var(--p-fondo);border:1.5px solid var(--p)"></i>Proveedor verificado</li>
-        <li class="grupo">Zonas (hojas 3–4)</li>
+        <li class="grupo">Zonas (hojas 4–5)</li>
         <li><i class="lg" style="background:var(--d-fondo);border:1.5px solid var(--d)"></i>Lo que complica ↔ cómo lo resolvemos</li>
         <li><i class="lg" style="background:var(--a-fondo);border:1.5px solid var(--a)"></i>Lo que quiere lograr ↔ cómo lo ayudamos</li>
         <li><i class="lg" style="background:var(--n-fondo);border:1.5px solid var(--n-borde-izq)"></i>Lo que hace ↔ lo que ofrecemos</li>
@@ -620,7 +641,33 @@
       </ul>
     </header>
 
-    <h2 class="hoja-tit"><i class="seg m"></i>Caso de uso · Reponer un insumo crítico<span class="pg">1 / 7</span></h2>
+    <h2 class="hoja-tit">Cómo funciona<span class="pg">1 / 8</span></h2>
+    <p class="hu proposito"><span><b>En una frase:</b> ju-min avisa a la minera cuando un insumo está por faltar, le recomienda un proveedor que cumple todos los requisitos y le entrega un <b>informe PDF verificable</b> que respalda esa elección. La minera aprueba, compra y paga en su propio sistema, como siempre.</span></p>
+    <div class="roles">
+      <div class="rol m"><b><i class="seg m"></i>La minera</b>Es la cuenta: paga la suscripción y ve solo sus datos. Almacenes pide la reposición; la Gerencia aprueba en el sistema de la minera.</div>
+      <div class="rol p"><b><i class="seg p"></i>Los proveedores</b>Aparecen en ju-min pero no usan la app: sus datos salen de CAPMIN y del registro de Jujuy.</div>
+      <div class="rol"><b>El equipo de ju-min</b>Da de alta cada minera y sus usuarios. Nadie se registra solo.</div>
+    </div>
+    <h3 class="rec-tit">El recorrido, de punta a punta</h3>
+    <ol class="recorrido">
+      <li><b>Entrar</b>Con su email y su clave.</li>
+      <li><b>Ver las alertas</b>Insumos bajo el punto de reorden y cuántos días quedan.</li>
+      <li><b>Pedir recomendación</b>Descarta a quien no cumple y ordena por precio, plazo y confianza.</li>
+      <li><b>Revisar al proveedor</b>Ficha, certificados y vencimientos.</li>
+      <li><b>Descargar el informe PDF</b>Código único, el porqué, alternativas y descartados.</li>
+      <li><b>Comprar en su sistema</b>Adjunta el informe a la orden de compra.</li>
+      <li><b>Auditar</b>Cualquiera verifica el informe por su código en ju-min.</li>
+    </ol>
+    <div class="hu-bandas dos">
+      <p class="banda no"><b>Qué no hace</b>No aprueba, no compra ni paga, no cobra comisiones y no reemplaza el sistema de compras de la minera.</p>
+      <p class="banda"><b>Real y demo</b>Reales: proveedores, reglas, recomendación, informe y verificación. De prueba: stock, precios y contacto con el proveedor.</p>
+    </div>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Explicación completa en lenguaje común: <b>docs/como-funciona.md</b> y su PDF.</span></p>
+  </section>
+
+  <section class="hoja historia">
+
+    <h2 class="hoja-tit"><i class="seg m"></i>Caso de uso · Reponer un insumo crítico<span class="pg">2 / 8</span></h2>
     <p class="hu"><span><b>Como</b> responsable de reponer stock en una minera, <b>quiero</b> que ju-min me avise antes de que falte un insumo y me recomiende un proveedor que cumpla todos los requisitos y me dé un informe que lo respalde, <b>para</b> reponer a tiempo sin frenar la planta, sin comprarle a alguien no habilitado y sin cambiar mi sistema de compras.</span></p>
     <ol class="linea">
       <li>
@@ -658,11 +705,11 @@
       <p class="banda no"><b>Lo que ju-min no hace</b>No aprueba, no compra ni paga: eso sigue en el sistema de la minera.</p>
       <p class="banda"><b>Próximo <span class="road">roadmap</span></b>Stock desde el Excel de la minera; exportar el informe al ERP.</p>
     </div>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Los códigos (D4, AL4, CR1…) son los ítems del canvas de la hoja 3 que aparecen en cada paso. Personas de ejemplo; datos del seed de la demo (Sales de Jujuy). <b>Historia completa en docs/negocio/historias-de-usuario.md</b>.</span></p>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Los códigos (D4, AL4, CR1…) son los ítems del canvas de la hoja 4 que aparecen en cada paso. Personas de ejemplo; datos del seed de la demo (Sales de Jujuy). <b>Historia completa en docs/negocio/historias-de-usuario.md</b>.</span></p>
   </section>
 
   <section class="hoja beneficios">
-    <h2 class="hoja-tit">Beneficios<span class="pg">2 / 7</span></h2>
+    <h2 class="hoja-tit">Beneficios<span class="pg">3 / 8</span></h2>
     <div class="ben-grid">
       <div class="ben-col">
         <h3><i class="seg m"></i>Para la minera</h3>
@@ -703,7 +750,7 @@
 
   <section class="hoja vpc-m">
 
-    <h2 class="hoja-tit"><i class="seg m"></i>Propuesta de valor · Minera<span class="pg">3 / 7</span></h2>
+    <h2 class="hoja-tit"><i class="seg m"></i>Propuesta de valor · Minera<span class="pg">4 / 8</span></h2>
     <ol class="como-leer" aria-label="Cómo leer esta hoja">
       <li class="t">Cómo leer esta hoja</li>
       <li><b class="paso">1</b>Empezá por el círculo: la minera, sin nombrar a ju-min.</li>
@@ -787,7 +834,7 @@
 
   <!-- ============ Hoja 2 · VPC Proveedor ============ -->
   <section class="hoja vpc-p">
-    <h2 class="hoja-tit"><i class="seg p"></i>Propuesta de valor · Proveedor verificado<span class="pg">4 / 7</span></h2>
+    <h2 class="hoja-tit"><i class="seg p"></i>Propuesta de valor · Proveedor verificado<span class="pg">5 / 8</span></h2>
     <div class="vpc-titulos" aria-hidden="true"><span><b class="paso">2</b>Mapa de valor · lo que hace ju-min</span><span></span><span><b class="paso">1</b>Empezá acá · Perfil del cliente</span></div>
     <div class="vpc">
       <div class="cuadrado" role="group" aria-label="Mapa de valor">
@@ -862,7 +909,7 @@
 
   <!-- ============ Hoja 3 · Business Model Canvas ============ -->
   <section class="hoja bmc-h">
-    <h2 class="hoja-tit">Business Model Canvas<span class="pg">5 / 7</span></h2>
+    <h2 class="hoja-tit">Business Model Canvas<span class="pg">6 / 8</span></h2>
     <div class="bmc">
       <div class="soc">
         <h3><span class="num">8</span>Socios clave<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7-7.1l-1.2 1.1"/><path d="M14 10a5 5 0 0 0-7.1 0l-2 2a5 5 0 0 0 7 7.1l1.2-1.1"/></svg></h3>
@@ -952,7 +999,7 @@
 
   <!-- ============ Hoja 4 · Hipótesis + pie ============ -->
   <section class="hoja competencia">
-    <h2 class="hoja-tit">Competencia<span class="pg">6 / 7</span></h2>
+    <h2 class="hoja-tit">Competencia<span class="pg">7 / 8</span></h2>
     <div class="tabla-scroll">
     <table>
       <thead><tr><th>Tipo</th><th>Alternativa</th><th>Qué cubre</th><th>Qué no cubre</th></tr></thead>
@@ -973,7 +1020,7 @@
   </section>
 
   <section class="hoja">
-    <h2 class="hoja-tit">Hipótesis riesgosas<span class="pg">7 / 7</span></h2>
+    <h2 class="hoja-tit">Hipótesis riesgosas<span class="pg">8 / 8</span></h2>
     <div class="tabla-scroll">
     <table>
       <thead><tr><th>#</th><th>Hipótesis</th><th>Tipo</th><th>Experimento</th><th>Criterio de éxito</th></tr></thead>
