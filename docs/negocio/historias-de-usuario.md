@@ -80,8 +80,8 @@ busca el código en ju-min y confirma que el informe es auténtico.
 | Alerta por punto de reorden y días de stock | **[hoy]** |
 | "Pedir recomendación" con filtro de requisitos | **[hoy]** |
 | Recomendación con precio, plazo y trust score | **[hoy]** |
-| Informe PDF con código y registro | **[roadmap]** — en desarrollo (reemplaza la cola de Aprobar/Rechazar) |
-| Verificar un informe por su código | **[roadmap]** |
+| Informe PDF con código y registro | **[hoy]** — botón "Descargar informe (PDF)" en el panel |
+| Verificar un informe por su código | **[hoy]** — página pública `/verificar` |
 | Stock tomado del Excel o del sistema de la minera | **[roadmap]** — ver HU2 |
 | Que la minera adjunte el informe a su orden de compra | Hipótesis H7 |
 

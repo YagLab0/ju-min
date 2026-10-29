@@ -80,7 +80,7 @@ hipótesis H1.
 - Panel de stock con alertas por punto de reorden **[hoy]**
 - Explorer de proveedores verificados: fichas, certificaciones, vencimientos **[hoy]**
 - Agente: consultas → recomendaciones justificadas **[hoy]**
-- Informe de recomendación en PDF, con código único, registrado en ju-min y verificable **[roadmap]** (hoy: cola con Aprobar/Rechazar, que se reemplaza por el informe)
+- Informe de recomendación en PDF, con código único, registrado en ju-min y verificable en `/verificar` **[hoy]**
 - Cuenta por minera; cada persona con su email; cada minera ve solo sus datos (RLS) **[hoy]**
 - Integración con ERP y facturación electrónica **[roadmap]**
 - Carga del stock desde Excel o CSV **[roadmap]** (hoy el stock de la demo se carga directo en la base de datos)
@@ -108,7 +108,7 @@ compra, el pago y la recepción siguen en el sistema de la minera.
 | CR2 | Recomendación con tres números: precio, lead time, trust score `[pitch]` | A4 |
 | CR3 | Consultas en lenguaje natural, acotadas al dominio `[pitch]` | A5 |
 | CR4 | Trust score 0–100 con desglose, solo con datos verificables (registro, certificados, habilitaciones, ESG, estado de verificación) | A9 |
-| CR5 | Informe PDF con código verificable; cada informe queda registrado **[roadmap]** | A8 |
+| CR5 | Informe PDF con código verificable; cada informe queda registrado `[hoy]` | A8 |
 | CR6 | Filtro por ubicación y fuente (registro de Jujuy) en el explorer | A7 |
 
 ### Encaje
@@ -120,7 +120,7 @@ compra, el pago y la recepción siguen en el sistema de la minera.
 | D3 No habilitados | Alta | AL3 | Agente | 58 reglas cargadas |
 | D4 Faltantes | Alta | AL4 | Panel | Demo con stock simulado |
 | D5 Homologación duplicada | Media | AL5 | Explorer | Parcial: un proveedor sigue homologándose con cada minera |
-| D6 Justificar | Media | AL6, CR5 | Informe PDF | **[roadmap]** |
+| D6 Justificar | Media | AL6, CR5 | Informe PDF | Demo: informe con código y sello |
 | A1 Solo los que cumplen | Requerida | AL3 | Agente | 58 reglas |
 | A2 Aprobación humana | Requerida | CR1 | Sistema de la minera | Regla del producto |
 | A3 Enterarse antes del faltante | Esperada | AL4 | Panel | Demo con stock simulado |

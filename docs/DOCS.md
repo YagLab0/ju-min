@@ -49,4 +49,5 @@ Método de Alex Osterwalder (Value Proposition Canvas + Business Model Canvas).
 | Documento | Contenido |
 |---|---|
 | [pitch.md](pitch.md) | Guion extendido del pitch (5 min): gancho, solución, demo, defensibilidad, modelo/roadmap y respuestas al jurado |
+| [como-funciona.md](como-funciona.md) ([PDF](como-funciona.pdf)) | Cómo funciona la aplicación de punta a punta, en lenguaje común: recorrido de la minera, informe PDF y verificación, origen de los datos y qué es demo |
 | [slide-deck.html](../public/slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — se sirve desde la app en `/slide-deck.html` |

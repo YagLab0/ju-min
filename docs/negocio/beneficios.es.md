@@ -21,7 +21,7 @@ de confianza. Una persona aprueba siempre la compra.
 | `benefit.minera.certificados-vigentes` | Control de vigencia por fecha | Un certificado vencido saca al proveedor de las recomendaciones | La minera no depende de revisar fechas a mano | D2, AL2 | Función `cumple_requisitos()` |
 | `benefit.minera.aviso-antes-del-faltante` | Alerta por punto de reorden | La minera ve qué insumo falta y cuántos días de margen quedan | La minera puede comprar antes de que se detenga la operación | D4, AL4 | Demo con stock simulado |
 | `benefit.minera.menos-tiempo-validando` | Red de 277 proveedores ya relevados | La minera no busca proveedores en PDF ni en listas sueltas | El comprador dedica menos horas a validar proveedores | D1, AL1 | Ahorro de horas sin medir (supuesto, H1) |
-| `benefit.minera.decision-defendible` | Informe PDF con precio, plazo de entrega, trust score y descartados, con código verificable | La minera lo adjunta a su orden de compra | El aprobador puede explicar cada compra ante una auditoría | D6, AL6, CR5 | Plan: informe en desarrollo |
+| `benefit.minera.decision-defendible` | Informe PDF con precio, plazo de entrega, trust score y descartados, con código verificable | La minera lo adjunta a su orden de compra | El aprobador puede explicar cada compra ante una auditoría | D6, AL6, CR5 | Demo: informe PDF con código y verificación |
 | `benefit.minera.control-humano` | El agente propone y no compra | La aprobación y la compra siguen en el sistema de la minera | La minera mantiene el control sin cambiar su forma de trabajar | A2, CR1 | Regla del producto |
 
 ## Beneficios para el proveedor verificado
