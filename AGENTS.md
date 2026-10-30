@@ -18,7 +18,7 @@
 
 - `agent/agent.ts`: modelo. Usa OpenCode Go (el modelo sale de `OPENCODE_MODEL`, default `beam-free` gratis bajo la suscripción) vía `@ai-sdk/openai-compatible` (`createOpenAICompatible` con `baseURL` `https://opencode.ai/inference/go/openai/v1` — Go tiene base URL distinta del pay-as-you-go), no AI Gateway. El gateway exige `x-opencode-session` + user-agent propio en headers, y `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Lista de modelos Go: `GET https://opencode.ai/zen/go/v1/models`.
 - `agent/instructions.md`: system prompt (en español).
-- `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `localDev()` abre localhost en dev; `placeholderAuth()` rechaza requests de browser en producción hasta reemplazarlo por auth real (o `none()` para demo pública).
+- `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `sesionApp()` acepta la cookie firmada `ju-min.sesion` (el mismo login de `/panel`, verificada con `src/lib/auth/sello.ts` y `JUMIN_AUTH_SECRET`); después `vercelOidc()` para el TUI/deployments y `localDev()` para localhost. Sin sesión válida, producción responde 401.
 - `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio (`@/lib/compras/dominio`); nunca crean clientes de Supabase ni leen tablas.
 - Credenciales: `OPENCODE_API_KEY` en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarla como env var del servidor.
 
