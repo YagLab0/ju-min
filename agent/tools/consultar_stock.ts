@@ -1,6 +1,6 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { listarStockMinera } from "@/lib/compras";
+import { listarStockMinera } from "@/lib/compras/dominio";
 
 export default defineTool({
   description:

@@ -4,7 +4,7 @@ import {
   listarInsumos,
   listarOfertasDeInsumo,
   listarProveedoresVerificados,
-} from "@/lib/compras";
+} from "@/lib/compras/dominio";
 
 function normalizarTexto(texto: string): string {
   return texto
