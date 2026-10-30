@@ -16,7 +16,7 @@
 
 ## Agente (eve)
 
-- `agent/agent.ts`: modelo. Usa OpenCode Zen (`deepseek-v4.1-flash`) directo vía `@ai-sdk/openai-compatible` (`createOpenAICompatible` con `baseURL` `https://opencode.ai/inference/openai/v1`), no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Zen expone endpoints nativos por proveedor bajo `/inference/<proveedor>/v1` — para cambiar de familia (Claude/Gemini/GPT) cambiar el SDK y el baseURL.
+- `agent/agent.ts`: modelo. Usa OpenCode Go (el modelo sale de `OPENCODE_MODEL`, default `beam-free` gratis bajo la suscripción) vía `@ai-sdk/openai-compatible` (`createOpenAICompatible` con `baseURL` `https://opencode.ai/inference/go/openai/v1` — Go tiene base URL distinta del pay-as-you-go), no AI Gateway. El gateway exige `x-opencode-session` + user-agent propio en headers, y `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Lista de modelos Go: `GET https://opencode.ai/zen/go/v1/models`.
 - `agent/instructions.md`: system prompt (en español).
 - `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `localDev()` abre localhost en dev; `placeholderAuth()` rechaza requests de browser en producción hasta reemplazarlo por auth real (o `none()` para demo pública).
 - `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio `src/lib/compras`; nunca crean clientes de Supabase ni leen tablas.
