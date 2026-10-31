@@ -1,232 +1,65 @@
-# Propuesta de valor — Value Proposition Canvas
+# Value Proposition Canvas — ju-min
 
-Parte de la documentación de ju-min — índice en [DOCS.md](../DOCS.md).
-
-Método: Value Proposition Canvas de Alex Osterwalder (Strategyzer). Un canvas
-por segmento. Relacionados: [business-model-canvas.md](business-model-canvas.md),
-[hipotesis.md](hipotesis.md), [beneficios.es.md](beneficios.es.md).
-
-**Convenciones**
-
-- Etiquetas de segmento: `[M]` **Minera**, `[P]` **Proveedor verificado** (términos del [glosario](../../GLOSSARY.md)).
-- Fuentes: `[pitch]` [pitch.md](../pitch.md), `[README]`, `[inv]` [investigacion-proveedores.md](../investigacion-proveedores.md),
-  `[clasif]` [modelo-clasificacion.md](../modelo-clasificacion.md), `[web]` investigación de competencia (links en el BMC).
-- `(supuesto)`: sin evidencia todavía; está en [hipotesis.md](hipotesis.md) si es crítico.
-- Nombres de las zonas: título en lenguaje común y, entre paréntesis, el término oficial de la edición en español de Osterwalder. Códigos: `D` frustraciones, `A` alegrías, `AL` aliviadores, `CR` creadores (con `P` en el proveedor).
-- Estado del producto: **[hoy]** existe en la demo · **[roadmap]** planificado.
-
-## Segmentos
-
-ju-min es una **plataforma multilateral**: la minera y el proveedor verificado
-se encuentran a través del producto. Hoy solo la minera usa ju-min de forma
-activa; el lado proveedor está poblado con datos públicos (CAPMIN, registro de
-Jujuy) y todavía no interactúa con la plataforma `[inv]`.
-
-| Segmento | Quién decide | Quién usa | ¿Paga? |
-|---|---|---|---|
-| `[M]` Minera | Gerencia de Supply Chain o de Abastecimiento (aprueba) | Almacenes / Inventarios (pide la reposición) y Compras (compra). En ju-min: cada persona entra con su email, sin roles; la aprobación sigue en el sistema de la minera | Sí: suscripción `[README]` |
-| `[P]` Proveedor verificado | Dueño o comercial de la empresa | Comercial, responsable de calidad | No hoy (ver BMC) |
+> **Regla de oro del modelo**: `ju-min` es un **SaaS B2B de un solo lado (100 % del lado de la minera)** que funciona como **capa de vigilancia de proveedores y respaldo de auditoría sobre el ERP existente** (SAP, Oracle, etc.).
+> - **No mete al proveedor como usuario del sistema**: los proveedores no tienen que crearse cuenta ni subir papeles para que `ju-min` funcione.
+> - **No compite con el ERP**: el ERP gestiona stock, aprobaciones contables, órdenes de compra y pagos. `ju-min` vigila fuentes públicas por scraping, controla los vencimientos de los certificados que recibe Compras, filtra entre los 277 proveedores de la red según 58 reglas técnicas y el **Decreto Acuerdo Nº 290-DEyP/2024** de Jujuy, y emite un **informe PDF verificable (SHA-256)** para adjuntar a la Orden de Compra en el ERP.
 
 ---
 
-## `[M]` Minera
+## Perfil del Cliente — Operadora Minera en Jujuy / NOA
 
-### Perfil del cliente
+Dentro de la cuenta cliente (**la operación minera**: en Jujuy hay 3 operaciones industriales en producción —*Sales de Jujuy / Rio Tinto* en Olaroz, *Minera Exar* en Cauchari-Olaroz y *SSR Mining* en Chinchillas/Pirquitas— más los proyectos en construcción y expansión del NOA) intervienen dos roles:
+- **Usuario diario**: Comprador operativo / Analista de Abastecimiento y Almacenes.
+- **Decisor y pagador**: Gerencia de Supply Chain / Abastecimiento y Compliance.
 
-**Lo que tiene que hacer** (trabajos del cliente, de más a menos importante)
+### Trabajos del cliente (*Customer Jobs*)
+1. **T1 — Comprar solo a proveedores con papeles vigentes** *(Funcional)*: Adjudicar compras de insumos y servicios críticos únicamente a proveedores cuyas habilitaciones técnicas (ANMaC, IRAM, ISO 9001/14001/45001) y registro fiscal estén al día al momento de emitir la orden de compra.
+2. **T2 — Cumplir y demostrar el 70 % de compre local en Jujuy** *(Funcional / Legal)*: Alcanzar el mínimo del **70 % del monto anual contratado** con proveedores inscriptos en el Registro Provincial (`CerProv` vigente), presentar el **informe anual de compras** (Art. 7 del **Decreto Acuerdo Nº 290-DEyP/2024**) y presentar la **declaración jurada anual de excepciones** cuando un insumo crítico no tiene oferta local que cumpla requisitos técnicos, financieros o de plazo (Art. 8).
+3. **T3 — Justificar cada elección ante auditoría interna y Provincia** *(Social / Emocional)*: Dejar constancia objetiva e inalterable de por qué se eligió a un proveedor (y por qué se descartó al resto) en cada orden de compra, sin depender de correos sueltos.
+4. **T4 — Reponer insumos críticos antes del quiebre de stock** *(Funcional)*: Detectar a tiempo qué insumo cayó bajo el punto de reorden y encontrar rápidamente un proveedor habilitado con disponibilidad y plazo de entrega compatible.
 
-| Tipo | Trabajo |
-|---|---|
-| Funcional | Reponer insumos antes de que el stock caiga bajo el punto de reorden |
-| Funcional | Elegir solo proveedores que cumplan los requisitos obligatorios de cada categoría |
-| Funcional | Comparar ofertas por precio, lead time y confianza |
-| Funcional | Dejar registro de por qué se eligió cada proveedor |
-| Social | Comprador: ser quien previene paradas de planta, no quien las causa (supuesto) |
-| Social | Aprobador: poder defender cada compra ante dirección y auditoría (supuesto) |
-| Emocional | Tener la tranquilidad de no haber comprado a alguien sin habilitación |
+### Frustraciones (*Pains*)
+- **D1 — Validar certificados a mano en PDFs y planillas** *(Severidad: Alta)*: El ERP avisa qué comprar, pero revisar si los proveedores que cotizan cumplen las normas de esa categoría (entre 58 reglas de ANMaC, IRAM, ISO) se hace abriendo PDFs y planillas de Excel a mano.
+- **D2 — No saber si el `CerProv` anual o un certificado venció entre compras** *(Severidad: Extrema — por qué es suscripción)*: El certificado oficial del Registro Minero de Jujuy (`CerProv`) **vence al año de su emisión** (Art. 3, Decreto 290/2024) y los certificados ISO/IRAM vencen en distintas fechas del año. Si a un proveedor habitual se le cae el `CerProv` a estado `pendiente` o se le vence una norma y la minera le sigue comprando sin enterarse, esa compra no computa para el 70 % local o queda observada en auditoría.
+- **D3 — Padrones públicos dispersos que no cruzan requisitos por insumo** *(Severidad: Media-Alta)*: El Registro Provincial de Jujuy (384 empresas), CAPMIN (232 empresas) y el Registro Federal (Res. SM 84/2022, que declara expresamente que *no fiscaliza ni certifica* cumplimiento técnico ni fiscal) están separados y no indican qué proveedor cumple las normas específicas de un insumo.
+- **D4 — Riesgo de multas millonarias y observaciones al defender compras o excepciones** *(Severidad: Extrema)*: Incumplir el Decreto 290/2024 expone a la minera a multas de **hasta 1.000.000 de litros de gasoil grado 3** (~USD 1,1M, Art. 9). Además, para excluir un insumo crítico del cálculo del 70 % (Art. 8), la minera debe demostrar documentalmente que buscó proveedores locales y ninguno cumplía los requisitos técnicos o de plazo.
+- **D5 — Faltante de insumo crítico que frena la operación** *(Severidad: Alta — disparador)*: Quedarse sin stock de seguridad de un reactivo, EPP o repuesto mientras se demora la validación documental de un proveedor alternativo.
 
-**Lo que le complica** (frustraciones)
-
-| # | Frustración | Fuente |
-|---|---|---|
-| D1 | Valida cada proveedor a mano entre PDFs, planillas y listas desactualizadas | `[pitch]` |
-| D2 | No sabe si un certificado sigue vigente | `[pitch]` |
-| D3 | Un proveedor sin habilitación (ANMaC, alta montaña) es riesgo de seguridad y legal | `[pitch]` `[inv]` |
-| D4 | Un faltante de insumo crítico puede detener la planta | `[pitch]` — costo por hora sin dato (supuesto) |
-| D5 | Cada minera homologa con su propio proceso: trabajo duplicado | `[web]` MineriAR, Loup |
-| D6 | Le cuesta justificar la elección ante auditoría | (supuesto) |
-
-No hay dato de cuántas horas lleva hoy validar un proveedor: medirlo es la
-hipótesis H1.
-
-**Lo que quiere lograr** (alegrías)
-
-| # | Alegría | Nivel |
-|---|---|---|
-| A1 | Ver solo proveedores que cumplen los requisitos de la categoría | Requerida |
-| A2 | Que una persona apruebe siempre la compra | Requerida |
-| A3 | Enterarse antes del faltante, con días de margen | Esperada |
-| A4 | Comparar ofertas en un solo lugar | Esperada |
-| A5 | Preguntar en lenguaje natural ("¿quién entrega más rápido?") | Deseada |
-| A6 | Conectarlo con su ERP | Deseada |
-| A7 | Descubrir proveedores locales del NOA | Deseada (supuesto) |
-| A8 | Respaldo de cada decisión listo para auditoría | Inesperada |
-| A9 | Trust score que explica de dónde sale cada punto | Inesperada |
-
-### Mapa de valor
-
-**Lo que ofrecemos** (productos y servicios)
-
-- Panel de stock con alertas por punto de reorden **[hoy]**
-- Explorer de proveedores verificados: fichas, certificaciones, vencimientos **[hoy]**
-- Agente: consultas → recomendaciones justificadas **[hoy]**
-- Informe de recomendación en PDF, con código único, registrado en ju-min y verificable en `/verificar` **[hoy]**
-- Cuenta por minera; cada persona con su email; cada minera ve solo sus datos (RLS) **[hoy]**
-- Integración con ERP y facturación electrónica **[roadmap]**
-- Carga del stock desde Excel o CSV **[roadmap]** (hoy el stock de la demo se carga directo en la base de datos)
-- Exportar el informe al ERP de la minera **[roadmap]**
-
-ju-min es un **consultor**: recomienda y entrega el informe. La aprobación, la
-compra, el pago y la recepción siguen en el sistema de la minera.
-
-**Cómo se lo resolvemos** (aliviadores de frustraciones)
-
-| # | Aliviador | Frustración |
-|---|---|---|
-| AL1 | Red ya cargada: 277 proveedores, 188 categorías `[pitch]` | D1 |
-| AL2 | `cumple_requisitos()` controla la vigencia por fecha; un certificado vencido saca al proveedor de las recomendaciones `[pitch]` | D2 |
-| AL3 | 58 reglas de requisitos por categoría en la base de datos, no en el prompt `[pitch]` | D3 |
-| AL4 | Alerta cuando el stock cruza el punto de reorden, con días de margen `[pitch]` | D4 |
-| AL5 | Verificación hecha una vez y reutilizada en cada consulta | D1, D5 |
-| AL6 | Cada recomendación guarda su justificación `[pitch]` | D6 |
-
-**Cómo lo ayudamos a lograrlo** (creadores de alegrías)
-
-| # | Creador | Alegría |
-|---|---|---|
-| CR1 | El agente nunca compra: propone, y la persona decide en su propio sistema `[pitch]` | A2 |
-| CR2 | Recomendación con tres números: precio, lead time, trust score `[pitch]` | A4 |
-| CR3 | Consultas en lenguaje natural, acotadas al dominio `[pitch]` | A5 |
-| CR4 | Trust score 0–100 con desglose, solo con datos verificables (registro, certificados, habilitaciones, ESG, estado de verificación) | A9 |
-| CR5 | Informe PDF con código verificable; cada informe queda registrado `[hoy]` | A8 |
-| CR6 | Filtro por ubicación y fuente (registro de Jujuy) en el explorer | A7 |
-
-### Encaje
-
-| Frustración / alegría | Importancia | Aliviador / creador | Producto | Evidencia |
-|---|---|---|---|---|
-| D1 Validación manual | Alta | AL1, AL5 | Explorer | Demo con datos reales de CAPMIN |
-| D2 Vigencia | Alta | AL2 | Explorer + agente | Función en la base de datos |
-| D3 No habilitados | Alta | AL3 | Agente | 58 reglas cargadas |
-| D4 Faltantes | Alta | AL4 | Panel | Demo con stock simulado |
-| D5 Homologación duplicada | Media | AL5 | Explorer | Parcial: un proveedor sigue homologándose con cada minera |
-| D6 Justificar | Media | AL6, CR5 | Informe PDF | Demo: informe con código y sello |
-| A1 Solo los que cumplen | Requerida | AL3 | Agente | 58 reglas |
-| A2 Aprobación humana | Requerida | CR1 | Sistema de la minera | Regla del producto |
-| A3 Enterarse antes del faltante | Esperada | AL4 | Panel | Demo con stock simulado |
-| A6 ERP | Deseada | — | **[roadmap]** | **Hueco** |
-| A7 Proveedores locales | Deseada | CR6 | Explorer | Parcial |
-
-**Huecos:** A6 (integración con ERP) no tiene respuesta hoy. D5 se alivia solo
-del lado de la minera: el proveedor todavía no puede "homologarse una vez para
-todas".
+### Alegrías (*Gains*)
+- **A1 — Saber a quién comprar en minutos** *(Esperada)*: Obtener al instante una terna de proveedores locales que cumplen todos los requisitos del insumo, ordenados por precio, plazo y puntaje de confianza.
+- **A2 — Una elección que se defiende sola** *(Requerida)*: Contar con el desglose transparente de por qué ganó el proveedor recomendado y el motivo exacto por el que fueron descartadas las demás ofertas.
+- **A3 — Un respaldo que auditoría y Provincia acepten sin fricción** *(Requerida)*: Archivar un comprobante con código único y sello criptográfico que cualquier auditor pueda verificar en segundos, respaldando tanto la compra local (Art. 7) como la excepción por falta de oferta local (Art. 8).
+- **A4 — No cambiar ni tocar su sistema de compras (ERP)** *(Requerida)*: Seguir aprobando órdenes y pagando en SAP/Oracle como siempre, sumando únicamente el PDF de respaldo a la orden de compra.
+- **A5 — Visibilidad continua del 70 % de compre local** *(Deseada)*: Conocer mes a mes el estado del padrón local sin sorpresas a fin de año.
 
 ---
 
-## `[P]` Proveedor verificado
+## Mapa de Valor — Lo que ofrece `ju-min`
 
-### Perfil del cliente
+### Productos y Servicios
+- **P1 — Recomendación de proveedor con filtro de 58 reglas y agente IA `[hoy]`**: Cruza el insumo requerido contra 277 proveedores de Jujuy/CAPMIN, 188 categorías y 58 reglas de certificaciones obligatorias.
+- **P2 — Informe PDF verificable con sello SHA-256 `[hoy]`**: Documento con código único (`JM-XXXX-...`), proveedor recomendado, alternativas válidas, proveedores descartados con su motivo y verificación pública en `/verificar`.
+- **P3 — Vigilancia continua por scraping programado + control de vencimientos `[roadmap]`**:
+  1. **Scraping semanal automático** sobre el Registro Provincial de Proveedores Mineros de Jujuy (`CerProv` `aprobado`/`pendiente`), CAPMIN y estado fiscal de CUIT (ARCA), sin depender de que el proveedor entre al sistema.
+  2. **Control de vencimientos del legajo de Compras**: cuando Compras recibe un certificado técnico (ISO, IRAM, ANMaC) de un proveedor y lo guarda en `ju-min`, el sistema lee su fecha de vencimiento y alerta al comprador 30 días antes de que venza.
+- **P4 — Panel de alertas de reposición y exportación desde ERP `[hoy / roadmap]`**: Disparador por punto de reorden y días de margen (hoy con datos de demo; en `[roadmap]` mediante importación de Excel/CSV del ERP).
 
-**Lo que tiene que hacer** (trabajos del cliente)
+### Aliviadores de Frustraciones (*Pain Relievers*)
+- **AL1 → alivia D1**: Descarta automáticamente a los proveedores que no cumplen las certificaciones obligatorias de la categoría o no tienen disponibilidad, sin revisar PDFs a mano.
+- **AL2 → alivia D2**: Controla vencimientos todas las semanas combinando **scraping programado** del Registro de Jujuy (`CerProv`) y alertas automáticas sobre las fechas de vencimiento cargadas en el legajo de la minera.
+- **AL3 → alivia D3**: Unifica en un solo buscador los 277 proveedores de CAPMIN y del Registro Minero de Jujuy con sus categorías y reglas técnicas asociadas.
+- **AL4 → alivia D4**: Genera el informe PDF inmutable que documenta tanto al proveedor elegido como a los descartados con su causa exacta (prueba documental directa para los Arts. 7 y 8 del Decreto 290/2024).
+- **AL5 → alivia D5**: Alerta qué insumo cayó bajo el stock mínimo y entrega en segundos las alternativas habilitadas con su plazo de entrega en días.
 
-| Tipo | Trabajo |
-|---|---|
-| Funcional | Vender insumos a mineras |
-| Funcional | Pasar la homologación de cada minera |
-| Funcional | Mantener certificaciones y documentos al día |
-| Funcional | Aparecer en la categoría correcta cuando una minera busca |
-| Social | Ser visto como proveedor confiable de la gran minería |
-| Emocional | Sentir que compite por mérito y no por contactos (supuesto) |
-
-**Lo que le complica** (frustraciones)
-
-| # | Frustración | Fuente |
-|---|---|---|
-| DP1 | Cada minera exige su propio proceso de homologación | `[web]` MineriAR |
-| DP2 | Repite los mismos papeles para cada minera | (supuesto, derivado de DP1) |
-| DP3 | No sabe qué certificación le falta para una categoría | (supuesto) |
-| DP4 | Las PyMEs locales son poco visibles frente a proveedores grandes | (supuesto) |
-| DP5 | Los directorios quedan desactualizados | `[pitch]` |
-
-**Lo que quiere lograr** (alegrías)
-
-| # | Alegría | Nivel |
-|---|---|---|
-| AP1 | Llegar a mineras de la Puna | Requerida |
-| AP2 | Demostrar cumplimiento una vez y que valga para varias mineras | Deseada |
-| AP3 | Saber qué le falta para calificar en una categoría | Deseada |
-| AP4 | Que el buen desempeño (entregas a tiempo) sume puntos | Inesperada |
-
-### Mapa de valor
-
-**Lo que ofrecemos** (productos y servicios)
-
-- Ficha pública en el explorer, alimentada desde CAPMIN y el registro de Jujuy **[hoy]**
-- Pipeline de verificación: registrado → documentado → validado → auditado → homologado `[clasif]` **[hoy, en datos]**
-- Contacto desde la ficha **[hoy, simulado]**
-- Autogestión de la ficha y carga de certificados **[roadmap]**
-- Validación automática contra el registro de Jujuy y ARCA (ex AFIP) **[roadmap]**
-
-**Cómo se lo resolvemos** (aliviadores de frustraciones)
-
-| # | Aliviador | Frustración |
-|---|---|---|
-| ALP1 | La verificación de ju-min sirve para todas las mineras de la red | DP1, DP2 (**[roadmap]**: hoy no hay autogestión) |
-| ALP2 | Requisitos por categoría visibles | DP3 |
-| ALP3 | Datos tomados de fuentes oficiales y cámaras | DP5 |
-
-**Cómo lo ayudamos a lograrlo** (creadores de alegrías)
-
-| # | Creador | Alegría |
-|---|---|---|
-| CRP1 | Recomendación por cumplimiento, precio y lead time, no por tamaño | AP1, DP4 |
-| CRP2 | — (el desempeño salió del trust score: ju-min no ve las entregas) | AP4 |
-| CRP3 | Estado del pipeline visible | AP3 |
-
-### Encaje
-
-| Frustración / alegría | Importancia | Aliviador / creador | Producto | Evidencia |
-|---|---|---|---|---|
-| DP1 Homologación por minera | Alta | ALP1 | **[roadmap]** | Ninguna todavía |
-| AP2 Cumplimiento una vez para varias mineras | Deseada | ALP1 | **[roadmap]** | Ninguna todavía |
-| DP4 Visibilidad PyME | Media | CRP1 | Agente | (supuesto) |
-| AP1 Llegar a mineras | Requerida | CRP1 | Explorer + agente | Depende de tener mineras en la red |
-| AP3 Qué me falta | Deseada | ALP2, CRP3 | **[roadmap]** | Ninguna |
-
-**Huecos:** AP4 (que el buen desempeño sume) no tiene respuesta: la recepción
-ocurre en el sistema de la minera. Más adelante, una pregunta opcional de un
-clic ("¿cómo te fue con este proveedor?") al pedir un nuevo informe. Además,
-hoy el proveedor recibe valor solo de forma pasiva (aparecer en
-recomendaciones). Casi todo lo que le resuelve frustraciones es roadmap.
+### Creadores de Alegrías (*Gain Creators*)
+- **CR1 → crea A1**: Recomendación en un clic con explicación redactada y comparativa inmediata.
+- **CR2 → crea A2**: Tabla comparativa con precio unitario, plazo de entrega, estado en el Registro de Jujuy y puntaje de confianza desglosado.
+- **CR3 → crea A3**: Código único por informe y verificador público sin login (`/verificar`) que comprueba el hash SHA-256 del documento.
+- **CR4 → crea A4**: Informe PDF listo para adjuntar a la solicitud u Orden de Compra en el ERP actual de la minera, sin integración invasiva de TI.
+- **CR5 → crea A5**: Trazabilidad acumulada de informes emitidos y estado `aprobado`/`pendiente` en el Registro de Jujuy para preparar el reporte anual del Art. 7 (`[roadmap]`).
 
 ---
 
-## Nivel de encaje
+## Encaje (*Fit*) y Declaración de Propuesta de Valor
 
-| Nivel (Osterwalder) | `[M]` Minera | `[P]` Proveedor |
-|---|---|---|
-| Problema–solución | **En papel.** Problema descrito en el pitch; no hay entrevistas documentadas | En papel |
-| Producto–mercado | No alcanzado: no hay mineras usando la demo | No alcanzado |
-| Modelo de negocio | No alcanzado | No alcanzado |
-
-## Declaraciones de propuesta de valor
-
-**`[M]` Minera.** ju-min ayuda a la minera que necesita reponer insumos
-críticos sin riesgo, avisándole antes del faltante y recomendándole solo
-proveedores que cumplen todos los requisitos vigentes de la categoría, a
-diferencia de validar a mano entre PDFs, planillas y directorios.
-
-**`[P]` Proveedor verificado.** ju-min ayuda al proveedor que quiere venderle a
-la minería del NOA a ser recomendado por lo que cumple y entrega, a diferencia
-de repetir la homologación con cada minera y depender de directorios
-desactualizados.
+> **`ju-min`** ayuda a las gerencias de **Abastecimiento y Compliance de las mineras en Jujuy y el NOA** a **comprar solo a proveedores con papeles vigentes y demostrar el cumplimiento del 70 % de compre local (Decreto 290-DEyP/2024)**, sumándose **como capa sobre su propio ERP** con vigilancia continua por scraping, control de vencimientos e **informes PDF verificables en cada compra**, a diferencia de los registros públicos que no cruzan requisitos por insumo o de las planillas manuales que quedan desactualizadas mes a mes.

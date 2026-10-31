@@ -4,7 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ju-min · Modelo de negocio</title>
-<!-- Generado desde docs/negocio/*.md con la skill canvas-osterwalder. Los .md son la fuente: editar ahí y regenerar. -->
+<!--
+  PLANTILLA de la skill canvas-osterwalder (references/version-visual.md).
+  - Copiá este archivo a docs/negocio/visual/canvas.html y completá los {{…}}.
+  - NO cambies el CSS del círculo (bloque "Círculo del perfil del cliente") ni
+    las posiciones de las zonas: están probados. Si un texto no entra,
+    acortá el texto; el ajuste automático achica la letra de esa zona hasta
+    un mínimo y el chequeo avisa si igual no entra.
+  - Máximo 4 post-its por zona. Para más segmentos, duplicá la <section> del
+    VPC. Las demás hojas (cómo funciona, caso de uso, beneficios, competencia,
+    hipótesis) usan las clases que ya están en el CSS: .hu, .roles,
+    .recorrido, .linea, .hu-bandas/.banda, .ben, table, .declaracion, .nota.
+  - Antes de entregar: abrir con Chrome headless con --dump-dom y leer el
+    atributo data-chequeo de <html>: tiene que decir "ok".
+-->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@400;500;600;700&family=Saira+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -18,10 +31,10 @@
     --senal: #f5b301;
     --cobre: #a8662f;
     --oscuro: #1c1915;
-    --m: #a8662f;            /* Minera */
+    --m: #a8662f;            /* Segmento A */
     --m-fondo: #f2d2a3;
     --m-borde: #dda96f;
-    --p: #2f6f68;            /* Proveedor verificado */
+    --p: #2f6f68;            /* Segmento B */
     --p-fondo: #a9dcd0;
     --p-borde: #6cb8ab;
     --n-fondo: #efece3;      /* neutro: trabajos y productos */
@@ -603,9 +616,6 @@
     /* las hojas 2–4 tienen menos densidad: se centran y agrandan un poco */
     section.hoja { display: flex; flex-direction: column; }
     section.hoja:nth-of-type(n+2) { min-height: 182mm; justify-content: center; }
-    section.hoja.vpc-p ul.post li, section.hoja.bmc-h ul.post li { font-size: 9.4px; padding: 3px 6px 3px 7px; }
-    section.hoja.vpc-p .vpc ul.post li { font-size: 10px; }
-    section.hoja.vpc-p .cuadrado > div { padding: 8px 10px; }
     section.hoja.bmc-h .bmc > div { padding: 8px 10px; }
     section.hoja.bmc-h .bmc h3 { font-size: 10px; }
     /* stacks más compactos dentro de los sectores del círculo */
@@ -615,176 +625,213 @@
     section.hoja .circulo .cod, section.hoja .circulo .fit, section.hoja .circulo .tag { font-size: 6.8px; padding: 0 4px; }
     section.hoja .circulo .hueco-tag { font-size: 6.5px; }
   }
+
+  /* ---- Círculo del perfil del cliente: todo escala con el círculo ----
+     Las medidas internas van en cqw (% del ancho del círculo), así la
+     proporción es la misma en pantalla, en impresión y en cualquier ancho.
+     --escala la baja el ajuste automático (script al final) por zona si el
+     texto no entra. Solo aplica cuando el círculo se dibuja (no en móvil). */
+  @media print, screen and (min-width: 961px) {
+    .vpc .circulo { container-type: inline-size; }
+    html .vpc .circulo .zona { --escala: 1; }
+    html .vpc .circulo .z-trabajo { left: 63.5%; right: 8%; top: 28%; bottom: 28%; }
+    html .vpc .circulo .z-alegria { left: 11%; right: 47%; top: 11%; bottom: 51.5%; }
+    html .vpc .circulo .z-dolor   { left: 11%; right: 47%; top: 52.5%; bottom: 10%; }
+    html .vpc .circulo .z-alegria ul, html .vpc .circulo .z-dolor ul { width: 100%; }
+    /* Los títulos van dentro de su zona (no flotando afuera): así entran en
+       el ajuste y no los tapa ningún post-it. Frustraciones lleva el título
+       abajo, junto al borde inferior del círculo. */
+    html .vpc .circulo .zona h3 {
+      position: static; transform: none; flex: none;
+      align-self: center; width: fit-content; max-width: 100%;
+      justify-content: center; text-align: center;
+      font-size: 2.3cqw; margin: 0 0 1cqw; letter-spacing: .12cqw; gap: .8cqw;
+    }
+    html .vpc .circulo .z-dolor { flex-direction: column-reverse; }
+    html .vpc .circulo .z-dolor h3 { margin: 1cqw 0 0; }
+    html .vpc .circulo .zona h3 svg { width: 2.6cqw; height: 2.6cqw; }
+    /* Título en una sola línea: "LO QUE QUIERE LOGRAR · alegrías". */
+    html .vpc .circulo .zona h3 { flex-wrap: nowrap; white-space: nowrap; }
+    html .vpc .circulo .zona h3 .of { flex-basis: auto; font-size: 1.9cqw; letter-spacing: 0; }
+    html .vpc .circulo .zona h3 .of::before { content: "· "; }
+    html .vpc .circulo .z-trabajo h3 { flex-wrap: wrap; white-space: normal; }
+    html .vpc .circulo .z-trabajo h3 .of { flex-basis: 100%; }
+    html .vpc .circulo .z-trabajo h3 .of::before { content: none; }
+    html .vpc .circulo ul.post { gap: calc(.9cqw * var(--escala)); }
+    html .vpc .circulo ul.post li {
+      font-size: calc(2.25cqw * var(--escala)); line-height: 1.3;
+      padding: calc(.6cqw * var(--escala)) calc(1.3cqw * var(--escala));
+    }
+    html .vpc .circulo .cod, html .vpc .circulo .fit, html .vpc .circulo .tag {
+      font-size: calc(1.6cqw * var(--escala)); padding: 0 calc(.9cqw * var(--escala));
+    }
+    html .vpc .circulo .cod { margin-right: calc(.9cqw * var(--escala)); }
+    html .vpc .circulo .fit, html .vpc .circulo .tag, html .vpc .circulo .hueco-tag { margin-left: calc(.6cqw * var(--escala)); }
+    html .vpc .circulo .hueco-tag { font-size: calc(1.5cqw * var(--escala)); }
+  }
 </style>
 </head>
 <body>
 <main>
 
-  <!-- ============ Hoja 1 · Encabezado + VPC Minera ============ -->
-  <section class="hoja como">
+<section class="hoja como">
     <header class="cabecera">
       <div>
         <h1>ju<em>-</em>min <span class="rest">· Modelo de negocio</span></h1>
-        <p class="sub">Consultor inteligente de compras para minería · Método Osterwalder · <time>2026-10-29</time></p>
+        <p class="sub">Comprale a proveedores que cumplen, y demostralo en un clic · Capa de cumplimiento sobre el ERP · Método Osterwalder · <time>2026-10-30</time></p>
       </div>
-      <div class="tag-innoa">Hackathon INNOA — Jujuy</div>
+      <div class="tag-innoa">NOA minero — Jujuy</div>
       <ul class="leyenda">
-        <li class="grupo">Segmentos</li>
-        <li><i class="lg" style="background:var(--m-fondo);border:1.5px solid var(--m)"></i>Minera</li>
-        <li><i class="lg" style="background:var(--p-fondo);border:1.5px solid var(--p)"></i>Proveedor verificado</li>
-        <li class="grupo">Zonas (hojas 4–5)</li>
+        <li class="grupo">Cliente (SaaS B2B)</li>
+        <li><i class="lg" style="background:var(--m-fondo);border:1.5px solid var(--m)"></i>Minera (Compras / Supply Chain)</li>
+        <li class="grupo">Zonas (hoja 4)</li>
         <li><i class="lg" style="background:var(--d-fondo);border:1.5px solid var(--d)"></i>Lo que complica ↔ cómo lo resolvemos</li>
         <li><i class="lg" style="background:var(--a-fondo);border:1.5px solid var(--a)"></i>Lo que quiere lograr ↔ cómo lo ayudamos</li>
         <li><i class="lg" style="background:var(--n-fondo);border:1.5px solid var(--n-borde-izq)"></i>Lo que hace ↔ lo que ofrecemos</li>
         <li><span class="road" style="margin-left:0">roadmap</span><span class="leyenda-txt">planificado, no existe hoy</span></li>
-        <li><span class="sup">(supuesto)</span><span class="leyenda-txt">sin evidencia todavía</span></li>
+        <li><span class="sup">(supuesto)</span><span class="leyenda-txt">sin entrevistas propias todavía</span></li>
       </ul>
     </header>
 
-    <h2 class="hoja-tit">Cómo funciona<span class="pg">1 / 8</span></h2>
-    <p class="hu proposito"><span><b>En una frase:</b> ju-min avisa a la minera cuando un insumo está por faltar, le recomienda un proveedor que cumple todos los requisitos y le entrega un <b>informe PDF verificable</b> que respalda esa elección. La minera aprueba, compra y paga en su propio sistema, como siempre.</span></p>
+    <h2 class="hoja-tit">Cómo funciona y por qué es una suscripción<span class="pg">1 / 7</span></h2>
+    <p class="hu"><span><b>El problema (documentado) y por qué se paga mes a mes:</b> en Jujuy el <b>Decreto 290-DEyP/2024</b> exige contratar <b>≥ 70 % con proveedores locales inscriptos</b> en el Registro Minero (Art. 5), presentar un <b>informe anual</b> (Art. 7) y justificar por DDJJ cuando se compra afuera (Art. 8), con multas de hasta <b>1.000.000 de litros de gasoil</b> (Art. 9). Como el padrón (`CerProv` anual) cambia mes a mes, <b>ju-min actualiza los registros públicos por scraping</b> y ante cada reposición emite el <b>informe PDF verificable</b> (elegido y descartados) que <b>Reposición</b> le envía a <b>Compras</b> para hacer el pedido en su ERP.</span></p>
     <div class="roles">
-      <div class="rol m"><b><i class="seg m"></i>La minera</b>Es la cuenta: paga la suscripción y ve solo sus datos. Almacenes pide la reposición; la Gerencia aprueba en el sistema de la minera.</div>
-      <div class="rol p"><b><i class="seg p"></i>Los proveedores</b>Aparecen en ju-min pero no usan la app: sus datos salen de CAPMIN y del registro de Jujuy.</div>
-      <div class="rol"><b>El equipo de ju-min</b>Da de alta cada minera y sus usuarios. Nadie se registra solo.</div>
+      <div class="rol m"><b><i class="seg m"></i>1. Reposición / Almacenes (quien consulta)</b>Recibe el aviso de falta de stock, le consulta al agente de ju-min a quién comprarle según el padrón vigente y <b>descarga el informe PDF</b>.</div>
+      <div class="rol m"><b><i class="seg m"></i>2. Compras / Supply Chain (quien pide y paga)</b>Recibe el PDF de Reposición, <b>ejecuta la compra por fuera de ju-min (en su ERP)</b> y guarda el PDF para defender la auditoría anual (Arts. 7 y 8) <span class="sup">(supuesto H1)</span>.</div>
+      <div class="rol"><b>El motor de ju-min</b>Scrapea periódicamente el Registro Minero de Jujuy (`aprobado`/`pendiente`) y CAPMIN, cruza las 58 reglas por rubro y sella cada informe con SHA-256.</div>
     </div>
-    <h3 class="rec-tit">El recorrido, de punta a punta</h3>
+    <h3 class="rec-tit">El circuito continuo (de Reposición a Compras, comprando por fuera de ju-min)</h3>
     <ol class="recorrido">
-      <li><b>Entrar</b>Con su email y su clave.</li>
-      <li><b>Ver las alertas</b>Insumos bajo el punto de reorden y cuántos días quedan.</li>
-      <li><b>Pedir recomendación</b>Descarta a quien no cumple y ordena por precio, plazo y confianza.</li>
-      <li><b>Revisar al proveedor</b>Ficha, certificados y vencimientos.</li>
-      <li><b>Descargar el informe PDF</b>Código único, el porqué, alternativas y descartados.</li>
-      <li><b>Comprar en su sistema</b>Adjunta el informe a la orden de compra.</li>
-      <li><b>Auditar</b>Cualquiera verifica el informe por su código en ju-min.</li>
+      <li><b>Scraping</b>Actualiza el padrón del Reg. Minero de Jujuy y CAPMIN <span class="road">roadmap</span>.</li>
+      <li><b>Falta stock</b>El sistema avisa a Reposición que un insumo cayó bajo el mínimo.</li>
+      <li><b>Consultar al agente</b>ju-min filtra quién está aprobado en el Registro y cumple el rubro.</li>
+      <li><b>Elegir opción</b>Muestra al proveedor recomendado y por qué descartó al resto.</li>
+      <li><b>Descargar PDF</b>Reposición baja el informe con código único y se lo envía a Compras.</li>
+      <li><b>Comprar afuera</b>Compras hace el pedido en su ERP y adjunta el PDF como respaldo.</li>
+      <li><b>Auditar</b>Auditoría o Provincia verifica el código del PDF en `/verificar`.</li>
     </ol>
     <div class="hu-bandas dos">
-      <p class="banda no"><b>Qué no hace</b>No aprueba, no compra ni paga, no cobra comisiones y no reemplaza el sistema de compras de la minera.</p>
-      <p class="banda"><b>Real y demo</b>Reales: proveedores, reglas, recomendación, informe y verificación. De prueba: stock, precios y contacto con el proveedor.</p>
+      <p class="banda no"><b>La compra se hace por fuera de ju-min</b>No reemplaza al ERP, no ejecuta pedidos ni pagos y no requiere cargar certificados privados a mano.</p>
+      <p class="banda"><b>Real hoy y roadmap</b>Hoy: 277 proveedores, 58 reglas, filtro, agente IA, PDF y sello SHA-256. Roadmap: scraping programado del Registro y conexión de stock del ERP.</p>
     </div>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Explicación completa en lenguaje común: <b>docs/como-funciona.md</b> y su PDF.</span></p>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Fuentes primarias verificadas: Boletín Oficial de Jujuy Nº 27 (Dec. 290-DEyP/2024), Res. SM 84/2022 (RFPM) e informe CAEM–UIA–BID. Detalle en <b>docs/negocio/como-funciona.md</b>.</span></p>
   </section>
 
-  <section class="hoja historia">
-
-    <h2 class="hoja-tit"><i class="seg m"></i>Caso de uso · Reponer un insumo crítico<span class="pg">2 / 8</span></h2>
-    <p class="hu"><span><b>Como</b> responsable de reponer stock en una minera, <b>quiero</b> que ju-min me avise antes de que falte un insumo y me recomiende un proveedor que cumpla todos los requisitos y me dé un informe que lo respalde, <b>para</b> reponer a tiempo sin frenar la planta, sin comprarle a alguien no habilitado y sin cambiar mi sistema de compras.</span></p>
+<section class="hoja historia">
+    <h2 class="hoja-tit"><i class="seg m"></i>Caso de uso · De Reposición a Compras con respaldo del Registro Minero<span class="pg">2 / 7</span></h2>
+    <p class="hu"><span><b>Como</b> encargado de Reposición / Almacenes en una minera, <b>quiero</b> que cuando falta stock el agente me recomiende a quién comprarle dentro del Registro Minero (o justifique por qué se descartaron) y genere un informe PDF, <b>para</b> enviárselo a Compras y que ejecute el pedido en el ERP con el respaldo del Decreto 290 listo.</span></p>
     <ol class="linea">
       <li>
         <p class="cuando">Lunes · 8:00</p>
-        <h3>Llega la alerta</h3>
-        <p class="quien">Julián · Almacenes</p>
-        <p>El panel avisa: <b>bola de acero para molienda 3"</b>. Quedan 8.000 kg, el punto de reorden es 12.000 kg. Alcanza para <b>unos 16 días</b>. Sin bolas, el molino para.</p>
-        <p class="chips"><span class="fit d">D4</span><span class="fit d">AL4</span></p>
+        <h3>Falta stock (Reposición)</h3>
+        <p class="quien">Julián · Reposición / Almacenes</p>
+        <p>El sistema avisa que quedan <b>45 cajas de guantes de nitrilo</b> (mínimo 60). Julián le consulta al agente de ju-min a quién comprarle.</p>
+        <p class="chips"><span class="fit d">AL5</span></p>
       </li>
       <li>
         <p class="cuando">Lunes · 8:05</p>
-        <h3>Pide la recomendación</h3>
-        <p class="quien">Julián · Almacenes</p>
-        <p>Toca <b>"Pedir recomendación"</b> en la alerta. ju-min <b>descarta a los que no cumplen</b> (certificado faltante o vencido) y recomienda uno con <b>precio, plazo y confianza</b>, explicando por qué.</p>
-        <p>Toca <b>"Descargar informe (PDF)"</b>: con código único, quién lo generó y la fecha. ju-min guarda el registro.</p>
-        <p class="chips"><span class="fit d">AL2</span><span class="fit d">AL3</span><span class="fit a">CR2</span><span class="fit a">CR5</span></p>
+        <h3>Elige y genera el PDF</h3>
+        <p class="quien">Julián · Reposición / Almacenes</p>
+        <p>Con los datos públicos actualizados del <b>Registro Minero de Jujuy</b> y CAPMIN, ju-min muestra quién cumple y por qué descartó al resto.</p>
+        <p>Descarga el <b>informe PDF</b> con la opción tomada y las descartadas y <b>se lo envía a Compras</b>.</p>
+        <p class="chips"><span class="fit d">AL1</span><span class="fit d">AL2</span><span class="fit d">AL4</span><span class="fit a">CR1</span><span class="fit a">CR2</span></p>
       </li>
       <li>
-        <p class="cuando">Lunes · 11:00</p>
-        <h3>Aprueba en su sistema</h3>
-        <p class="quien">Julián y Laura · Abastecimiento</p>
-        <p>Julián carga el pedido <b>en el sistema de compras de la minera</b> y adjunta el informe. Laura lo aprueba ahí, sin entrar a ju-min. Pago y recepción siguen igual.</p>
-        <p class="chips"><span class="fit a">CR1</span></p>
+        <p class="cuando">Lunes · 8:20</p>
+        <h3>Compras pide en su ERP</h3>
+        <p class="quien">Área de Compras / Supply Chain</p>
+        <p>Recibe el PDF de Reposición, <b>hace el pedido por fuera de ju-min (en el ERP de la minera)</b> y adjunta el PDF a la orden de compra.</p>
+        <p class="chips"><span class="fit a">CR4</span></p>
       </li>
       <li>
-        <p class="cuando">3 meses después</p>
-        <h3>Llega la auditoría</h3>
-        <p class="quien">Laura · Gerencia de Abastecimiento</p>
-        <p>"¿Por qué le compraron a ese proveedor?" El informe está adjunto: <b>la respuesta ya está escrita</b>. Con el código, se verifica en ju-min que es auténtico.</p>
-        <p class="chips"><span class="fit d">AL6</span><span class="fit a">CR5</span></p>
+        <p class="cuando">6 meses después</p>
+        <h3>Auditoría y Decreto 290</h3>
+        <p class="quien">Auditora / Control provincial</p>
+        <p>Revisa el cumplimiento del Decreto 290 (Arts. 7 y 8). Con el código del PDF adjunto, <b>verifica en `/verificar` que el informe es íntegro</b>.</p>
+        <p class="chips"><span class="fit d">AL4</span><span class="fit a">CR3</span></p>
       </li>
     </ol>
     <div class="hu-bandas">
-      <p class="banda ok"><b>Funciona hoy en la demo</b>Alerta, "Pedir recomendación" con filtro de requisitos, informe PDF y su verificación por código.</p>
-      <p class="banda no"><b>Lo que ju-min no hace</b>No aprueba, no compra ni paga: eso sigue en el sistema de la minera.</p>
-      <p class="banda"><b>Próximo <span class="road">roadmap</span></b>Stock desde el Excel de la minera; exportar el informe al ERP.</p>
+      <p class="banda ok"><b>Funciona hoy en la demo</b>Alerta de stock, agente IA, filtro del Registro Minero + 58 reglas, informe PDF y verificación SHA-256.</p>
+      <p class="banda no"><b>Lo que ju-min no hace</b>La compra se hace por fuera de ju-min: no reemplaza al ERP, no emite órdenes ni procesa pagos.</p>
+      <p class="banda"><b>Próximo <span class="road">roadmap</span></b>Scraping programado del Registro Minero de Jujuy + CAPMIN (HU2) y conexión de stock con el ERP (HU3).</p>
     </div>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Los códigos (D4, AL4, CR1…) son los ítems del canvas de la hoja 4 que aparecen en cada paso. Personas de ejemplo; datos del seed de la demo (Sales de Jujuy). <b>Historia completa en docs/negocio/historias-de-usuario.md</b>.</span></p>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Los códigos (AL1, CR2…) son los ítems del canvas de la hoja 4. Personas de ejemplo; datos de la demo (Sales de Jujuy). <b>Historias completas (HU1–HU3) en docs/negocio/historias-de-usuario.md</b>.</span></p>
   </section>
 
-  <section class="hoja beneficios">
-    <h2 class="hoja-tit">Beneficios<span class="pg">3 / 8</span></h2>
+<section class="hoja beneficios">
+    <h2 class="hoja-tit">Beneficios<span class="pg">3 / 7</span></h2>
     <div class="ben-grid">
       <div class="ben-col">
-        <h3><i class="seg m"></i>Para la minera</h3>
+        <h3><i class="seg m"></i>Para Compras y Supply Chain (quien hace el pedido y paga)</h3>
         <ul class="ben">
-          <li><b>Menos riesgo legal y de seguridad</b>Reduce el riesgo de comprarle a un proveedor no habilitado.<span class="fit d">D3 · AL3</span></li>
-          <li><b>Certificados siempre al día</b>No depende de revisar fechas a mano.<span class="fit d">D2 · AL2</span></li>
-          <li><b>Compra antes del faltante</b>Repone antes de que se detenga la operación.<span class="fit d">D4 · AL4</span></li>
-          <li><b>Menos horas validando</b>El comprador dedica menos horas a validar proveedores. <span class="sup">(supuesto, H1)</span><span class="fit d">D1 · AL1</span></li>
-          <li><b>Decisiones que se defienden</b>Un informe PDF verificable para adjuntar a cada orden de compra.<span class="fit d">D6 · AL6</span></li>
-          <li><b>Sin cambiar su sistema</b>La aprobación y la compra siguen donde están hoy.<span class="fit a">A2 · CR1</span></li>
+          <li><b>Cumplir con el Registro Minero o justificar por qué se compró afuera</b>El informe PDF deja documentado al proveedor elegido y a los descartados con su motivo (respalda Arts. 7 y 8 del Dec. 290 frente a multas de Art. 9).<span class="fit d">D4 · AL4</span></li>
+          <li><b>Padrón público siempre actualizado por scraping</b>ju-min monitorea quién está `aprobado` o `pendiente` en el Registro de Jujuy y CAPMIN sin revisar portales a mano <span class="road">roadmap</span>.<span class="fit d">D2 · AL2</span></li>
+          <li><b>La compra sigue por fuera de ju-min, en su propio ERP</b>Compras recibe el PDF de Reposición y lo adjunta al pedido en su sistema actual.<span class="fit a">A4 · CR4</span></li>
         </ul>
       </div>
       <div class="ben-col">
-        <h3><i class="seg p"></i>Para el proveedor <span class="ben-nota">pasivo hoy</span></h3>
+        <h3><i class="seg m"></i>Para Reposición y Almacenes <span class="ben-nota">quien detecta el faltante y consulta</span></h3>
         <ul class="ben">
-          <li class="p"><b>Compite por mérito</b>Un proveedor regional puede competir con empresas grandes. <span class="sup">(supuesto)</span><span class="fit a">DP4 · CRP1</span></li>
-          <li class="p"><b>Verificarse una vez</b>Hoy cada minera le pide los mismos papeles; verificado en ju-min, le sirve para todas. <span class="road">roadmap</span><span class="fit d">DP1 · ALP1</span></li>
+          <li><b>Consultar al agente IA a quién comprarle y por qué</b>Cruza el insumo que falta contra 277 proveedores del Registro de Jujuy y CAPMIN y las 58 reglas del rubro.<span class="fit d">D1 · AL1</span></li>
+          <li><b>Armar el pedido para Compras en minutos</b>Descarga el PDF listo con precio, plazo, confianza y motivos de descarte.<span class="fit a">A1 · CR1</span></li>
         </ul>
-        <h3 class="ab-tit">Antes y después</h3>
+        <h3 class="ab-tit">Antes y después (comprando por fuera de ju-min)</h3>
         <table class="ab">
           <thead><tr><th>Antes</th><th>Con ju-min</th></tr></thead>
           <tbody>
-            <tr><td>Valida proveedores en PDF, planillas y directorios</td><td>Consulta una red de proveedores ya verificados</td></tr>
-            <tr><td>Nadie sabe si un certificado sigue vigente</td><td>Un certificado vencido saca al proveedor</td></tr>
-            <tr><td>El faltante se detecta cuando ya no hay insumo</td><td>La alerta llega al cruzar el punto de reorden</td></tr>
-            <tr><td>La justificación de la compra no queda escrita</td><td>Un informe PDF verificable la respalda</td></tr>
+            <tr><td>Falta stock y Reposición no sabe qué proveedor del Registro Minero vende ese rubro</td><td>Le consulta al agente de ju-min y ve al instante quién cumple y quién no</td></tr>
+            <tr><td>El estado en el Registro Minero (`CerProv` anual) cambia sin que se enteren</td><td>Scraping periódico del Registro de Jujuy y CAPMIN <span class="road">roadmap</span></td></tr>
+            <tr><td>Si compran afuera de Jujuy cuesta justificar por qué ante la Provincia (Art. 8)</td><td>El PDF documenta qué proveedores locales se evaluaron y por qué se descartaron</td></tr>
+            <tr><td>Idas y vueltas entre Reposición, Compras y Auditoría</td><td>Reposición envía el PDF verificable a Compras y queda adjunto en el ERP</td></tr>
           </tbody>
         </table>
       </div>
     </div>
     <div class="hu-bandas">
-      <p class="banda ok"><b>Prueba</b>271 proveedores reales de CAPMIN, 188 categorías y 58 reglas en la demo.</p>
-      <p class="banda no"><b>Lo que todavía no hay</b>Mineras usando ju-min ni testimonios.</p>
-      <p class="banda"><b>Próximo paso</b>Minera: pedir un piloto de dos semanas con sus insumos críticos.</p>
+      <p class="banda ok"><b>Evidencia</b>Dec. 290-DEyP/2024 (70 % local y multas), Res. 84/2022, 277 proveedores y 58 reglas reales.</p>
+      <p class="banda no"><b>Lo que todavía no hay</b>Mineras pagando ni entrevistas propias documentadas (H1–H6).</p>
+      <p class="banda"><b>Próximo paso</b>Automatizar el scraper del Registro de Jujuy (H4) y entrevistar a 5 líderes de Compras / Supply Chain (H1).</p>
     </div>
     <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span>Cada beneficio sale de un ítem del canvas (código a la derecha). Versión traducible, con IDs y glosario: <b>docs/negocio/beneficios.es.md</b>.</span></p>
   </section>
 
-  <section class="hoja vpc-m">
-
-    <h2 class="hoja-tit"><i class="seg m"></i>Propuesta de valor · Minera<span class="pg">4 / 8</span></h2>
+<section class="hoja vpc-a">
+    <h2 class="hoja-tit"><i class="seg m"></i>Propuesta de valor · Minera<span class="pg">4 / 7</span></h2>
     <ol class="como-leer" aria-label="Cómo leer esta hoja">
-      <li class="t">Cómo leer esta hoja</li>
-      <li><b class="paso">1</b>Empezá por el círculo: la minera, sin nombrar a ju-min.</li>
-      <li><b class="paso">2</b>Buscá en el cuadrado la respuesta: el chip <span class="fit d">→ D2</span> dice a qué responde.</li>
-      <li><b class="paso">3</b>Lo que queda sin respuesta es un hueco.</li>
+      <li class="t">Roles dentro de la minera</li>
+      <li><b class="paso">1</b><b>Consulta:</b> Reposición / Almacenes.</li>
+      <li><b class="paso">2</b><b>Hace el pedido y paga:</b> Compras / Supply Chain (en su ERP).</li>
+      <li><b class="paso">3</b>El chip <span class="fit d">→ D2</span> muestra qué dolor resuelve cada ítem.</li>
     </ol>
-    <div class="vpc-titulos" aria-hidden="true"><span><b class="paso">2</b>Mapa de valor · lo que hace ju-min</span><span></span><span><b class="paso">1</b>Empezá acá · Perfil del cliente</span></div>
+    <div class="vpc-titulos" aria-hidden="true"><span><b class="paso">2</b>Mapa de valor · capa sobre su ERP</span><span></span><span><b class="paso">1</b>Empezá acá · Perfil del cliente</span></div>
     <div class="vpc">
       <div class="cuadrado" role="group" aria-label="Mapa de valor">
         <div class="prod zona">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.5 12 3 3 8.5v7L12 21l9-5.5z"/><path d="m3.6 8.8 8.4 4.6 8.4-4.6M12 13.4V21"/></svg>Lo que ofrecemos<span class="of">productos y servicios</span></h3>
           <ul class="post">
-            <li>Panel de stock con alertas por punto de reorden</li>
-            <li>Explorer de proveedores verificados: fichas, certificaciones, vencimientos</li>
-            <li>Agente: consultas → recomendaciones justificadas</li>
-            <li>Informe PDF con código verificable</li>
+            <li>Agente IA que recomienda a quién comprarle y por qué</li>
+            <li>Informe PDF con opción elegida y descartadas</li>
+            <li>Scraping periódico del Reg. Minero de Jujuy y CAPMIN <span class="road">roadmap</span></li>
+            <li>Panel de alertas de falta de stock (conectable al ERP)</li>
           </ul>
         </div>
         <div class="crea zona">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>Cómo lo ayudamos a lograrlo<span class="of">creadores de alegrías</span></h3>
           <ul class="post">
-            <li class="a"><span class="cod">CR1</span><span class="tx">El agente propone; la persona decide en su sistema</span><span class="fit a">→ A2</span></li>
-            <li class="a"><span class="cod">CR2</span><span class="tx">Tres números: precio, lead time, trust score</span><span class="fit a">→ A4</span></li>
-            <li class="a"><span class="cod">CR3</span><span class="tx">Consultas en lenguaje natural, acotadas al dominio</span><span class="fit a">→ A5</span></li>
-            <li class="a"><span class="cod">CR4</span><span class="tx">Trust score 0–100 solo con datos verificables</span><span class="fit a">→ A9</span></li>
+            <li class="a"><span class="cod">CR1</span><span class="tx">Recomendación en un clic, con su explicación</span><span class="fit a">→ A1</span></li>
+            <li class="a"><span class="cod">CR2</span><span class="tx">Precio, plazo y puntaje de confianza a la vista</span><span class="fit a">→ A2</span></li>
+            <li class="a"><span class="cod">CR3</span><span class="tx">Código único que cualquiera verifica en la web</span><span class="fit a">→ A3</span></li>
+            <li class="a"><span class="cod">CR4</span><span class="tx">PDF para enviar a Compras y adjuntar en su ERP</span><span class="fit a">→ A4</span></li>
           </ul>
         </div>
         <div class="alivia zona">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 2.8v5.7c0 4.6-3.2 7.4-7.5 8.7-4.3-1.3-7.5-4.1-7.5-8.7V5.8z"/><path d="M12 8.5v5M9.5 11h5"/></svg>Cómo se lo resolvemos<span class="of">aliviadores de frustraciones</span></h3>
           <ul class="post">
-            <li class="d"><span class="cod">AL1</span><span class="tx">Red ya cargada: 277 proveedores, 188 categorías</span><span class="fit d">→ D1</span></li>
-            <li class="d"><span class="cod">AL2</span><span class="tx">Certificado vencido = fuera de las recomendaciones</span><span class="fit d">→ D2</span></li>
-            <li class="d"><span class="cod">AL3</span><span class="tx">58 reglas de requisitos por categoría en la base</span><span class="fit d">→ D3</span><span class="fit a">→ A1</span></li>
-            <li class="d"><span class="cod">AL4</span><span class="tx">Alerta al cruzar el punto de reorden, con días de margen</span><span class="fit d">→ D4</span><span class="fit a">→ A3</span></li>
+            <li class="d"><span class="cod">AL1</span><span class="tx">Filtra quién cumple el Registro y el rubro</span><span class="fit d">→ D1</span></li>
+            <li class="d"><span class="cod">AL2</span><span class="tx">Actualiza el padrón público por scraping</span><span class="fit d">→ D2</span></li>
+            <li class="d"><span class="cod">AL3</span><span class="tx">Unifica 277 proveedores de CAPMIN y Reg. Jujuy</span><span class="fit d">→ D3</span></li>
+            <li class="d"><span class="cod">AL4</span><span class="tx">PDF con el elegido y por qué descartó al resto</span><span class="fit d">→ D4</span></li>
           </ul>
         </div>
       </div>
@@ -802,236 +849,156 @@
         <div class="zona z-trabajo">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8L6.9 20.4a2.1 2.1 0 0 1-3-3l7-6.9a6 6 0 0 1 8-8z"/></svg>Lo que tiene que hacer<span class="of">trabajos del cliente</span></h3>
           <ul class="post">
-            <li>Reponer insumos antes del punto de reorden</li>
-            <li>Elegir solo proveedores que cumplen los requisitos</li>
-            <li>Comparar ofertas por precio, lead time y confianza</li>
-            <li>Registrar por qué se eligió cada proveedor</li>
+            <li>Comprar a proveedores del Registro Minero</li>
+            <li>Cumplir el 70 % de compre local (Dec. 290)</li>
+            <li>Justificar si compró afuera del Registro</li>
+            <li>Reponer insumos críticos cuando falta stock</li>
           </ul>
         </div>
         <div class="zona z-dolor">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H13z"/></svg>Lo que le complica<span class="of">frustraciones</span></h3>
           <ul class="post">
-            <li class="d"><span class="cod">D1</span><span class="tx">Valida cada proveedor a mano, entre PDFs y planillas</span></li>
-            <li class="d"><span class="cod">D2</span><span class="tx">No sabe si un certificado sigue vigente</span></li>
-            <li class="d"><span class="cod">D3</span><span class="tx">Proveedor sin habilitación (ANMaC, alta montaña): riesgo de seguridad y legal</span></li>
-            <li class="d"><span class="cod">D4</span><span class="tx">Un faltante de insumo crítico puede detener la planta</span></li>
+            <li class="d"><span class="cod">D1</span><span class="tx">Buscar a mano quién cumple en el Registro</span></li>
+            <li class="d"><span class="cod">D2</span><span class="tx">No saber si el CerProv anual del proveedor cayó</span></li>
+            <li class="d"><span class="cod">D3</span><span class="tx">Portales públicos sueltos y sin filtro por rubro</span></li>
+            <li class="d"><span class="cod">D4</span><span class="tx">Justificar descartes ante auditoría y Provincia</span></li>
           </ul>
         </div>
         <div class="zona z-alegria">
           <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Lo que quiere lograr<span class="of">alegrías</span></h3>
           <ul class="post">
-            <li class="a"><span class="cod">A1</span><span class="tx">Ver solo proveedores que cumplen</span><span class="tag">requerida</span></li>
-            <li class="a"><span class="cod">A2</span><span class="tx">Una persona aprueba siempre</span><span class="tag">requerida</span></li>
-            <li class="a"><span class="cod">A3</span><span class="tx">Enterarse antes del faltante</span><span class="tag">esperada</span></li>
-            <li class="a"><span class="cod">A4</span><span class="tx">Comparar ofertas en un solo lugar</span><span class="tag">esperada</span></li>
+            <li class="a"><span class="cod">A1</span><span class="tx">Saber a quién comprar en minutos</span><span class="tag">esperada</span></li>
+            <li class="a"><span class="cod">A2</span><span class="tx">Una elección que se defiende sola</span><span class="tag">requerida</span></li>
+            <li class="a"><span class="cod">A3</span><span class="tx">Un respaldo que la auditoría acepte</span><span class="tag">requerida</span></li>
+            <li class="a"><span class="cod">A4</span><span class="tx">Hacer la compra en su ERP de siempre</span><span class="tag">requerida</span></li>
           </ul>
         </div>
       </div>
     </div>
-    <p class="declaracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg><span>ju-min ayuda a la minera que necesita reponer insumos críticos sin riesgo, avisándole antes del faltante y recomendándole solo proveedores que cumplen todos los requisitos vigentes de la categoría, a diferencia de validar a mano entre PDFs, planillas y directorios.</span></p>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5" stroke-dasharray="3.5 3"/></svg><span>Hueco hoy: solo A6 (integración con ERP). Nivel de encaje: problema–solución en papel. <b>Lista completa en docs/negocio/propuesta-de-valor.md</b>.</span></p>
+    <p class="declaracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg><span>ju-min ayuda a <b>Reposición y Compras de la minera</b> a <b>elegir proveedores del Registro Minero (o justificar por qué se compró afuera, Dec. 290)</b> cuando falta stock, emitiendo un <b>informe PDF verificable con la opción tomada y las descartadas</b> para que Compras ejecute el pedido en su propio ERP.</span></p>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5" stroke-dasharray="3.5 3"/></svg><span>Respaldo documental: Dec. 290-DEyP/2024 (D2, D4, A5 → CR5) y Res. SM 84/2022 (D3). D5 (faltante que para la planta → AL5) es el disparador y está en el .md junto con la conexión al ERP <span class="road">roadmap</span>. <b>Detalle en docs/negocio/propuesta-de-valor.md</b>.</span></p>
   </section>
 
-  <!-- ============ Hoja 2 · VPC Proveedor ============ -->
-  <section class="hoja vpc-p">
-    <h2 class="hoja-tit"><i class="seg p"></i>Propuesta de valor · Proveedor verificado<span class="pg">5 / 8</span></h2>
-    <div class="vpc-titulos" aria-hidden="true"><span><b class="paso">2</b>Mapa de valor · lo que hace ju-min</span><span></span><span><b class="paso">1</b>Empezá acá · Perfil del cliente</span></div>
-    <div class="vpc">
-      <div class="cuadrado" role="group" aria-label="Mapa de valor">
-        <div class="prod zona">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.5 12 3 3 8.5v7L12 21l9-5.5z"/><path d="m3.6 8.8 8.4 4.6 8.4-4.6M12 13.4V21"/></svg>Lo que ofrecemos<span class="of">productos y servicios</span></h3>
-          <ul class="post">
-            <li>Ficha pública en el explorer (CAPMIN y registro de Jujuy)</li>
-            <li>Pipeline de verificación: registrado → homologado</li>
-            <li>Contacto desde la ficha <span class="tag">simulado</span></li>
-            <li>Autogestión de ficha y carga de certificados <span class="road">roadmap</span></li>
-          </ul>
-        </div>
-        <div class="crea zona">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>Cómo lo ayudamos a lograrlo<span class="of">creadores de alegrías</span></h3>
-          <ul class="post">
-            <li class="a"><span class="cod">CRP1</span><span class="tx">Recomendación por cumplimiento, precio y lead time, no por tamaño</span><span class="fit a">→ AP1</span><span class="fit d">→ DP4</span></li>
-            <li class="a"><span class="cod">CRP3</span><span class="tx">Estado del pipeline visible</span><span class="fit a">→ AP3</span></li>
-          </ul>
-        </div>
-        <div class="alivia zona">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 2.8v5.7c0 4.6-3.2 7.4-7.5 8.7-4.3-1.3-7.5-4.1-7.5-8.7V5.8z"/><path d="M12 8.5v5M9.5 11h5"/></svg>Cómo se lo resolvemos<span class="of">aliviadores de frustraciones</span></h3>
-          <ul class="post">
-            <li class="d"><span class="cod">ALP1</span><span class="tx">Una verificación sirve para todas las mineras <span class="road">roadmap</span></span><span class="fit d">→ DP1</span><span class="fit d">→ DP2</span><span class="fit a">→ AP2</span></li>
-            <li class="d"><span class="cod">ALP2</span><span class="tx">Requisitos por categoría visibles</span><span class="fit d">→ DP3</span><span class="fit a">→ AP3</span></li>
-            <li class="d"><span class="cod">ALP3</span><span class="tx">Datos de fuentes oficiales y cámaras</span><span class="fit d">→ DP5</span></li>
-          </ul>
-        </div>
-      </div>
-      <div class="encaje" aria-hidden="true">
-        <b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8.5h10l-2.8-2.8M17.5 15.5h-10l2.8 2.8"/></svg></b>
-        <small>encaje</small>
-      </div>
-      <div class="circulo" role="group" aria-label="Perfil del cliente">
-        <svg class="sectores" viewBox="0 0 100 100" aria-hidden="true">
-          <path class="sec-t" d="M50 50 L73.2 6.3 A49.5 49.5 0 0 1 73.2 93.7 Z"/>
-          <path class="sec-d" d="M50 50 L73.2 93.7 A49.5 49.5 0 0 1 0.5 50 Z"/>
-          <path class="sec-a" d="M50 50 L0.5 50 A49.5 49.5 0 0 1 73.2 6.3 Z"/>
-          <line x1="50" y1="50" x2="73.2" y2="6.3"/><line x1="50" y1="50" x2="73.2" y2="93.7"/><line x1="50" y1="50" x2="0.5" y2="50"/>
-        </svg>
-        <div class="zona z-trabajo">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8L6.9 20.4a2.1 2.1 0 0 1-3-3l7-6.9a6 6 0 0 1 8-8z"/></svg>Lo que tiene que hacer<span class="of">trabajos del cliente</span></h3>
-          <ul class="post">
-            <li>Vender insumos a mineras</li>
-            <li>Pasar la homologación de cada minera</li>
-            <li>Mantener certificaciones al día</li>
-            <li>Aparecer en la categoría correcta</li>
-          </ul>
-        </div>
-        <div class="zona z-dolor">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H13z"/></svg>Lo que le complica<span class="of">frustraciones</span></h3>
-          <ul class="post">
-            <li class="d"><span class="cod">DP1</span><span class="tx">Cada minera exige su propia homologación</span></li>
-            <li class="d"><span class="cod">DP2</span><span class="tx">Repite los mismos papeles <span class="sup">(supuesto)</span></span></li>
-            <li class="d"><span class="cod">DP3</span><span class="tx">No sabe qué certificación le falta <span class="sup">(supuesto)</span></span></li>
-            <li class="d"><span class="cod">DP4</span><span class="tx">PyMEs locales poco visibles <span class="sup">(supuesto)</span></span></li>
-          </ul>
-        </div>
-        <div class="zona z-alegria">
-          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Lo que quiere lograr<span class="of">alegrías</span></h3>
-          <ul class="post">
-            <li class="a"><span class="cod">AP1</span><span class="tx">Llegar a mineras de la Puna</span><span class="tag">requerida</span></li>
-            <li class="a"><span class="cod">AP2</span><span class="tx">Demostrar cumplimiento una vez, para varias mineras</span><span class="tag">deseada</span><span class="road">roadmap</span></li>
-            <li class="a"><span class="cod">AP3</span><span class="tx">Saber qué le falta para calificar</span><span class="tag">deseada</span></li>
-            <li class="a hueco"><span class="cod">AP4</span><span class="tx">Que entregar bien sume puntos</span><span class="hueco-tag">sin respuesta</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <p class="declaracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/></svg><span>ju-min ayuda al proveedor que quiere venderle a la minería del NOA a ser recomendado por lo que cumple y entrega, a diferencia de repetir la homologación con cada minera y depender de directorios desactualizados.</span></p>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5" stroke-dasharray="3.5 3"/></svg><span>Los chips <span class="fit d">→ DPn</span> <span class="fit a">→ APn</span> muestran el encaje. AP4 queda sin respuesta: la recepción ocurre en el sistema de la minera, así que ju-min no ve las entregas. Además, el valor para el proveedor depende de ítems roadmap: hoy recibe valor solo de forma pasiva. <b>Lista completa en docs/negocio/propuesta-de-valor.md</b>.</span></p>
-  </section>
-
-  <!-- ============ Hoja 3 · Business Model Canvas ============ -->
-  <section class="hoja bmc-h">
-    <h2 class="hoja-tit">Business Model Canvas<span class="pg">6 / 8</span></h2>
+<section class="hoja bmc-h">
+    <h2 class="hoja-tit">Business Model Canvas<span class="pg">5 / 7</span></h2>
     <div class="bmc">
       <div class="soc">
         <h3><span class="num">8</span>Socios clave<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7-7.1l-1.2 1.1"/><path d="M14 10a5 5 0 0 0-7.1 0l-2 2a5 5 0 0 0 7 7.1l1.2-1.1"/></svg></h3>
         <ul class="post">
-          <li>CAPMIN, Registro de Proveedores Mineros de Jujuy, CAEM, ARCA</li>
-          <li>Certificadoras: IRAM, DNV, Bureau Veritas, SGS</li>
-          <li>Achilles: socio potencial o competidor</li>
-          <li>OpenCode Zen (DeepSeek), Supabase, Vercel</li>
-          <li class="m">ERPs de las mineras <span class="road">roadmap</span></li>
+          <li>Fuentes públicas: Reg. Minero de Jujuy (Dec. 290) y CAPMIN</li>
+          <li>Cámaras del sector: CAEM y cámaras provinciales del NOA</li>
+          <li>Datos fiscales públicos (ARCA / CUIT) para validar identidad</li>
+          <li class="m">ERPs de las mineras (SAP/Oracle): stock y adjunto PDF</li>
         </ul>
       </div>
       <div class="act">
         <h3><span class="num">7</span>Actividades clave<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.2 5.2l1.7 1.7M17.1 17.1l1.7 1.7M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7"/></svg></h3>
         <ul class="post">
-          <li>Mantener la red: scraping semanal <span class="road">roadmap</span>, CUIT, vigencia</li>
-          <li>Mantener reglas por categoría y jurisdicción</li>
-          <li>Desarrollar producto y agente</li>
-          <li class="m">Venta consultiva y onboarding</li>
-          <li class="p">Sumar proveedores al pipeline <span class="road">roadmap</span></li>
+          <li>1. Scraping periódico de Reg. Minero de Jujuy y CAPMIN <span class="road">roadmap</span></li>
+          <li>2. Mantener el agente IA y las 58 reglas por categoría</li>
+          <li>3. Emitir y resguardar los informes PDF con sello SHA-256</li>
+          <li class="m">4. Venta consultiva B2B y pilotos con Supply Chain</li>
         </ul>
       </div>
       <div class="rec">
         <h3><span class="num">6</span>Recursos clave<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v13c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-13"/><path d="M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></svg></h3>
         <ul class="post">
-          <li>Red: 277 proveedores, 188 categorías</li>
-          <li>58 reglas de requisitos</li>
-          <li>Trust score verificable y pipeline de verificación</li>
-          <li>Agente, app y scraper de CAPMIN</li>
-          <li>Equipo con dominio minero del NOA</li>
+          <li>Base unificada de 277 proveedores y 188 categorías</li>
+          <li>58 reglas de requisitos normativos por categoría</li>
+          <li>Informe inmutable con sello SHA-256 y `/verificar`</li>
+          <li>Scraper propio (`scrape-capmin`) y agente IA (`eve`)</li>
         </ul>
       </div>
       <div class="val">
         <h3><span class="num">2</span>Propuesta de valor<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h11l4 5.7L12 21 2.5 9.2z"/><path d="M2.5 9.2h19M9.6 3.5 8 9.2l4 11.8M14.4 3.5 16 9.2l-4 11.8"/></svg></h3>
         <ul class="post">
-          <li class="m">Reponer insumos críticos sin riesgo: alerta + solo proveedores que cumplen + informe que respalda</li>
-          <li class="m">Recomendación defendible: precio, lead time, trust score</li>
-          <li class="p">Ser recomendado por cumplimiento, no por tamaño</li>
-          <li class="p">Verificarse una vez para toda la red <span class="road">roadmap</span></li>
+          <li class="m">Saber a quién comprarle del Registro Minero cuando falta stock</li>
+          <li class="m">Respaldo del Dec. 290 (70 % local o justificación de compra afuera)</li>
+          <li class="m">Informe PDF (elegido y descartados) para enviar a Compras</li>
+          <li class="m">Padrón público siempre al día vía scraping <span class="road">roadmap</span></li>
         </ul>
       </div>
       <div class="rel">
         <h3><span class="num">4</span>Relación con clientes<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3S4 15.2 4 9.8C4 7 6.1 5 8.6 5c1.5 0 2.7.8 3.4 2 .7-1.2 1.9-2 3.4-2C17.9 5 20 7 20 9.8c0 5.4-8 10.5-8 10.5z"/></svg></h3>
         <ul class="post">
-          <li class="m">Alta asistida: creamos la cuenta y su primer usuario</li>
-          <li class="m">Consultor: no reemplaza su sistema de compras</li>
-          <li class="m">Co-creación de reglas <span class="sup">(supuesto)</span></li>
-          <li class="p">Autoservicio de ficha <span class="road">roadmap</span></li>
+          <li class="m">Alta asistida: ju-min configura la cuenta y el stock inicial</li>
+          <li class="m">Flujo simple: falta stock → agente IA → PDF para Compras</li>
+          <li class="m">Actualización automática del padrón por scraping <span class="road">roadmap</span></li>
+          <li class="m">Co-creación de reglas específicas con la minera <span class="sup">(supuesto)</span></li>
         </ul>
       </div>
       <div class="can">
-        <h3><span class="num">3</span>Canales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></h3>
+        <h3><span class="num">3</span>Canales (embudo B2B)<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.8"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg></h3>
         <ul class="post">
-          <li class="m">INNOA, Seminario del Litio, CAEM</li>
-          <li class="m">Demo y piloto <span class="sup">(supuesto)</span>; venta directa</li>
-          <li>App web: panel, explorer, agente</li>
-          <li class="p">Explorer público; invitación vía cámaras <span class="road">roadmap</span></li>
+          <li class="m">1. Puerta de entrada: CAEM, CAPMIN y líderes de Compre Local</li>
+          <li class="m">2. Diagnóstico en vivo del Dec. 290 → piloto 2 sem <span class="sup">(supuesto)</span></li>
+          <li class="m">3. Venta directa B2B a Supply Chain / Compliance <span class="sup">(supuesto)</span></li>
+          <li class="m">4. Web app + PDF enviado de Reposición a Compras</li>
         </ul>
       </div>
       <div class="seg-b">
         <h3><span class="num">1</span>Segmentos<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="8" r="3.5"/><path d="M3.5 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16.2 4.9a3.5 3.5 0 0 1 0 6.3M18.3 14.7c1.7.9 2.7 2.7 2.7 5.3"/></svg></h3>
         <ul class="post">
-          <li>Plataforma multilateral</li>
-          <li class="m">Mineras de la Puna; primero asociadas a CAEM en Jujuy</li>
-          <li class="p">Proveedores de CAPMIN y del registro de Jujuy (277)</li>
-          <li class="m">Paga: la minera (Gerencia de Supply Chain / Abastecimiento)</li>
+          <li class="m">Único cliente: Operadoras mineras (3 en Jujuy + NOA)</li>
+          <li class="m">Consulta y baja el PDF: Reposición / Almacenes</li>
+          <li class="m">Hace el pedido y paga: Compras / Supply Chain <span class="sup">(supuesto H1)</span></li>
+          <li class="m">Compra ejecutada por fuera de ju-min (en su ERP)</li>
         </ul>
       </div>
       <div class="cos">
         <h3><span class="num">9</span>Estructura de costos<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h14V21l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21z"/><path d="M9 8h6M9 12h6"/></svg></h3>
         <ul class="post">
-          <li>Impulsado por valor</li>
-          <li>Fijos: equipo, hosting, mantenimiento de reglas, venta B2B</li>
-          <li>Variable principal: verificación por proveedor <span class="sup">(supuesto)</span></li>
-          <li>Tokens del modelo por consulta, bajo <span class="sup">(supuesto)</span></li>
+          <li>Impulsado por valor con estructura SaaS pura (margen > 85 %)</li>
+          <li>100 % basado en información pública scrapeada (cero carga manual)</li>
+          <li>Fijos bajos: cloud, crons de scraping, agente IA y venta B2B</li>
+          <li>Escalable al resto del NOA con costo marginal casi nulo</li>
         </ul>
       </div>
       <div class="ing">
         <h3><span class="num">5</span>Fuentes de ingreso<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="10" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6.2 12h.01M17.8 12h.01"/></svg></h3>
         <ul class="post">
-          <li class="m">Suscripción mensual por minera: USD 1.000–3.000 <span class="sup">(supuesto)</span></li>
-          <li class="m">Única fuente: sin comisión y sin procesar pagos</li>
-          <li class="p">Gratis para el proveedor: el trust score no se compra</li>
+          <li class="m">Suscripción mensual B2B por operación minera</li>
+          <li class="m">USD 1.000–3.000 / mes (10–20 oper. NOA = 120–720k/año) <span class="sup">(supuesto)</span></li>
+          <li>Escalón de entrada / piloto pago desde USD 350–500 / mes</li>
+          <li>Sin comisión por compra y sin cobro al proveedor (neutral)</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- ============ Hoja 4 · Hipótesis + pie ============ -->
-  <section class="hoja competencia">
-    <h2 class="hoja-tit">Competencia<span class="pg">7 / 8</span></h2>
+<section class="hoja competencia">
+    <h2 class="hoja-tit">Competencia y convivencia con el ERP<span class="pg">6 / 7</span></h2>
     <div class="tabla-scroll">
     <table>
       <thead><tr><th>Tipo</th><th>Alternativa</th><th>Qué cubre</th><th>Qué no cubre</th></tr></thead>
       <tbody>
-        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>MineriAR</b></td><td data-th="Qué cubre">Directorio argentino con calificación AAA–C</td><td data-th="Qué no cubre">Requisitos obligatorios, stock, agente</td></tr>
-        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>ProveMiner</b></td><td data-th="Qué cubre">Marketplace LATAM; cobra al proveedor</td><td data-th="Qué no cubre">Foco en Chile y Perú; Argentina "por demanda"</td></tr>
-        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>SICEP</b> (Chile)</td><td data-th="Qué cubre">Registro y calificación de proveedores mineros</td><td data-th="Qué no cubre">Argentina, stock, agente</td></tr>
-        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Achilles</b></td><td data-th="Qué cubre">Certificación con auditoría; convenio con CAPMIN</td><td data-th="Qué no cubre">Stock y recomendación de compra</td></tr>
-        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>SAP Ariba, Coupa</b></td><td data-th="Qué cubre">Compras corporativas de punta a punta, incluido el pago</td><td data-th="Qué no cubre">Requisitos locales (ANMaC, IRAM, alta montaña)</td></tr>
-        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>ERP de la minera</b> (p. ej. SAP)</td><td data-th="Qué cubre">Stock y alerta por punto de reorden</td><td data-th="Qué no cubre">Qué proveedor local cumple los requisitos</td></tr>
-        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Listados de CAPMIN y del registro de Jujuy</b></td><td data-th="Qué cubre">Quién existe</td><td data-th="Qué no cubre">Vigencia, comparación, recomendación</td></tr>
-        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Excel, PDFs y portal propio</b></td><td data-th="Qué cubre">Lo que se usa hoy</td><td data-th="Qué no cubre">Vigencia, reglas por categoría, alertas</td></tr>
+        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>MineriAR</b></td><td data-th="Qué cubre">Directorio argentino con calificación AAA–C</td><td data-th="Qué no cubre">Requisitos obligatorios por insumo, cruce con Decreto 290 e informe por compra</td></tr>
+        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>ProveMiner</b></td><td data-th="Qué cubre">Marketplace LATAM; cobra al proveedor</td><td data-th="Qué no cubre">Foco en Chile y Perú; neutralidad ante auditoría (cobra al proveedor)</td></tr>
+        <tr><td><span class="tipo d">Directa</span></td><td data-th="Alternativa"><b>SICEP</b> (Chile)</td><td data-th="Qué cubre">Registro y precalificación compartida de proveedores mineros</td><td data-th="Qué no cubre">Opera en Chile; no cubre normativa argentina ni emite informe por compra</td></tr>
+        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Achilles</b></td><td data-th="Qué cubre">Precalificación general con auditoría (convenio con CAPMIN); cobra al proveedor</td><td data-th="Qué no cubre">Filtro por insumo al comprar, compre local Jujuy (Dec. 290) e informe por orden</td></tr>
+        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>SAP Ariba, Coupa</b></td><td data-th="Qué cubre">Compras corporativas de punta a punta, con pago</td><td data-th="Qué no cubre">Reglas locales listas para usar (ANMaC, IRAM, Registro de Jujuy Dec. 290)</td></tr>
+        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>ERP de la minera</b> (p. ej. SAP)</td><td data-th="Qué cubre"><b>Stock, punto de reorden, aprobación y orden de compra</b> (lo completamos)</td><td data-th="Qué no cubre">Scraping del Registro de Jujuy, recomendación IA y respaldo de descartados (Art. 8)</td></tr>
+        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Registros públicos</b> (CAPMIN, Jujuy, RFPM Res. 84/22)</td><td data-th="Qué cubre">Padrón de quién existe (el RFPM no fiscaliza ni certifica)</td><td data-th="Qué no cubre">Cruzar por insumo cuando falta stock y emitir el informe PDF de elegidos y descartados</td></tr>
+        <tr><td><span class="tipo f">Indirecta</span></td><td data-th="Alternativa"><b>Excel, PDFs y carpetas internas</b></td><td data-th="Qué cubre">Lo que se usa hoy sin costo directo</td><td data-th="Qué no cubre">Padrón actualizado por scraping, trazabilidad y defensa rápida ante auditoría</td></tr>
       </tbody>
     </table>
     </div>
-    <p class="declaracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span><b>Diferencial.</b> La alerta de stock sola no nos distingue: un ERP ya la tiene. Lo que nos distingue es recomendar <b>solo proveedores que cumplen los requisitos locales vigentes</b>, con una justificación que se puede defender.</span></p>
-    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span><b>Directa:</b> resuelve el mismo problema (encontrar proveedores mineros calificados). <b>Indirecta:</b> resuelve una parte, o es lo que la minera usa en lugar de ju-min. Links en docs/negocio/business-model-canvas.md.</span></p>
+    <p class="declaracion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span><b>Diferencial.</b> La compra se sigue haciendo en el ERP de la minera: ju-min conecta la <b>alerta de falta de stock (Reposición)</b> con el <b>padrón actualizado por scraping del Registro Minero de Jujuy y CAPMIN + 58 reglas</b>, generando el <b>informe PDF verificable</b> que Compras adjunta al pedido para cumplir el Decreto 290-DEyP/2024.</span></p>
+    <p class="nota"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v.01M11 11.5h1V16h1"/></svg><span><b>Directa:</b> resuelve el mismo problema (elegir y respaldar proveedores mineros que cumplen). <b>Indirecta:</b> resuelve una parte del flujo o es lo que la minera usa hoy. Links en docs/negocio/business-model-canvas.md.</span></p>
   </section>
 
-  <section class="hoja">
-    <h2 class="hoja-tit">Hipótesis riesgosas<span class="pg">8 / 8</span></h2>
+<section class="hoja hipotesis">
+    <h2 class="hoja-tit">Hipótesis riesgosas y orden de validación<span class="pg">7 / 7</span></h2>
     <div class="tabla-scroll">
     <table>
-      <thead><tr><th>#</th><th>Hipótesis</th><th>Tipo</th><th>Experimento</th><th>Criterio de éxito</th></tr></thead>
+      <thead><tr><th>#</th><th>Hipótesis</th><th>Tipo</th><th>Experimento (empezando por el más accesible)</th><th>Criterio de éxito</th></tr></thead>
       <tbody>
-        <tr><td class="h">H1</td><td data-th="Hipótesis">Validar proveedores es uno de los 3 problemas principales del comprador</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento">5 entrevistas a compradores de mineras de la Puna</td><td data-th="Criterio de éxito">≥3 de 5 lo ubican entre sus 3 problemas principales</td></tr>
-        <tr><td class="h">H2</td><td data-th="Hipótesis">La minera confía en la recomendación para aprobarla en su sistema</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento">Piloto "mago de Oz" de 2 semanas con 1 minera</td><td data-th="Criterio de éxito">≥50 % aprobadas sin pedir otra fuente</td></tr>
-        <tr><td class="h">H3</td><td data-th="Hipótesis">La minera paga una suscripción mensual (USD 1.000–3.000)</td><td data-th="Tipo"><span class="tipo v">Viabilidad</span></td><td data-th="Experimento">Carta de intención o preventa con precio explícito</td><td data-th="Criterio de éxito">≥1 de 3 contactadas firma</td></tr>
-        <tr><td class="h">H4</td><td data-th="Hipótesis">Se pueden verificar certificaciones reales a costo razonable</td><td data-th="Tipo"><span class="tipo f">Factibilidad</span></td><td data-th="Experimento">Verificar a mano 20 proveedores de la red</td><td data-th="Criterio de éxito">≤2 h por proveedor; ≥60 % verificables</td></tr>
-        <tr><td class="h">H5</td><td data-th="Hipótesis">La minera comparte sus datos de stock</td><td data-th="Tipo"><span class="tipo f">Factibilidad</span></td><td data-th="Experimento">Pedir un export de stock real para el piloto</td><td data-th="Criterio de éxito">≥1 entrega un export</td></tr>
-        <tr><td class="h">H6</td><td data-th="Hipótesis">El proveedor mantiene su ficha al día si le trae mineras</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento">Landing "completá tu ficha" para el registro de Jujuy</td><td data-th="Criterio de éxito">≥20 % de los invitados</td></tr>
-        <tr><td class="h">H7</td><td data-th="Hipótesis">La minera adjunta el informe PDF a su orden de compra</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento">Mostrar un informe de ejemplo y preguntar dónde aprueban hoy</td><td data-th="Criterio de éxito">≥3 de 5 lo adjuntarían</td></tr>
+        <tr><td class="h">H4</td><td data-th="Hipótesis">Se puede mantener actualizado por scraping automático el padrón del Registro Minero de Jujuy (`CerProv` aprobado/pendiente) y CAPMIN</td><td data-th="Tipo"><span class="tipo f">Factibilidad</span></td><td data-th="Experimento"><b>Semana 1 (bajo control propio):</b> correr el scraper sobre el Registro de Jujuy (384) y CAPMIN (232) y cruzarlos por CUIT y categoría</td><td data-th="Criterio de éxito">100 % del padrón público actualizado en &lt;10 min sin intervención manual</td></tr>
+        <tr><td class="h">H1</td><td data-th="Hipótesis">Cumplir el 70 % del Registro Minero y justificar cuando se compra afuera (Dec. 290, Arts. 5, 7 y 8) está en el top 3 de Supply Chain / Compre Local</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento"><b>Semana 1–2:</b> 5 entrevistas con líderes de Compras, Supply Chain o Compre Local en Jujuy/NOA (vía CAEM, CAPMIN o directo)</td><td data-th="Criterio de éxito">≥3 de 5 lo ubican en su top 3 y confirman cómo se divide Reposición y Compras</td></tr>
+        <tr><td class="h">H6</td><td data-th="Hipótesis">El informe PDF generado por Reposición (con la opción tomada y las descartadas) les sirve a Compras y Auditoría como respaldo de los Arts. 7 y 8</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento"><b>Semana 2:</b> mostrar un informe PDF real en las entrevistas de H1 (con proveedor elegido, descartados y verificación en `/verificar`)</td><td data-th="Criterio de éxito">≥3 de 5 confirman que lo adjuntarían al pedido en su ERP</td></tr>
+        <tr><td class="h">H5</td><td data-th="Hipótesis">La minera puede conectar o exportar sus alertas de falta de stock del ERP hacia ju-min sin trabas de Seguridad Informática</td><td data-th="Tipo"><span class="tipo f">Factibilidad</span></td><td data-th="Experimento"><b>Semana 2:</b> pedir en las entrevistas de H1 un export Excel/CSV de 20 insumos críticos para disparar las recomendaciones</td><td data-th="Criterio de éxito">≥1 de 5 entrega el listado de stock para correr el piloto</td></tr>
+        <tr><td class="h">H2</td><td data-th="Hipótesis">Reposición y Compras usan el agente y el PDF de ju-min en sus reposiciones semanales antes de emitir el pedido en su ERP</td><td data-th="Tipo"><span class="tipo d">Deseabilidad</span></td><td data-th="Experimento"><b>Semana 3–4:</b> piloto de 2 semanas con 1 operadora minera sobre sus reposiciones reales emitiendo los informes PDF</td><td data-th="Criterio de éxito">≥50 % de las reposiciones evaluadas envían el PDF de ju-min a Compras</td></tr>
+        <tr><td class="h">H3</td><td data-th="Hipótesis">La minera paga una suscripción B2B de USD 1.000–3.000 / mes (o piloto pago desde USD 350–500/mes) por mantener el padrón al día y emitir los PDFs</td><td data-th="Tipo"><span class="tipo v">Viabilidad</span></td><td data-th="Experimento"><b>Semana 4:</b> propuesta comercial o carta de intención al cierre del piloto con precio mensual explícito</td><td data-th="Criterio de éxito">≥1 de 3 operadoras contactadas aprueba el abono mensual</td></tr>
       </tbody>
     </table>
     </div>
@@ -1042,5 +1009,132 @@
   </section>
 
 </main>
+<style>
+  /* Marcas del chequeo: solo en pantalla, nunca en el PDF. */
+  @media screen { [data-falla] { outline: 2px solid #d00 !important; outline-offset: 1px; } }
+</style>
+<script>
+/* Ajuste automático y chequeo de diseño (skill canvas-osterwalder).
+   1. Ajuste: si en una zona del círculo algo se sale del borde, cruza una
+      línea divisoria o no entra, baja la variable --escala de esa zona
+      (hasta 0,62) hasta que entre.
+   2. Chequeo: marca en rojo lo que siga roto y deja el resultado en el
+      atributo data-chequeo del elemento html ("ok" o la lista de problemas),
+      para leerlo con `chrome --headless --dump-dom`.
+   Revisa: bordes y líneas del círculo, letra achicada de más (< 74 %), zonas desbordadas (también las del
+   cuadrado y el BMC), chips de encaje vacíos y campos {{…}} sin completar.
+   En móvil el círculo se apila y no se revisa su geometría. */
+(function () {
+  function rect(el) { return el.getBoundingClientRect(); }
+  function cruza(r, a, b) {
+    var x0 = r.left + 1, x1 = r.right - 1, y0 = r.top + 1, y1 = r.bottom - 1, t0 = 0, t1 = 1;
+    var dx = b[0] - a[0], dy = b[1] - a[1];
+    var p = [-dx, dx, -dy, dy], q = [a[0] - x0, x1 - a[0], a[1] - y0, y1 - a[1]];
+    for (var i = 0; i < 4; i++) {
+      if (p[i] === 0) { if (q[i] < 0) return false; continue; }
+      var t = q[i] / p[i];
+      if (p[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; }
+      else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return true;
+  }
+  function geometria(c) {
+    var svg = c.querySelector(".sectores");
+    if (!svg || getComputedStyle(svg).display === "none") return null;
+    var rc = rect(c), esc = rc.width / 100;
+    return {
+      cx: rc.left + rc.width / 2, cy: rc.top + rc.height / 2, R: rc.width / 2,
+      lineas: Array.prototype.map.call(svg.querySelectorAll("line"), function (l) {
+        return [[rc.left + l.x1.baseVal.value * esc, rc.top + l.y1.baseVal.value * esc],
+                [rc.left + l.x2.baseVal.value * esc, rc.top + l.y2.baseVal.value * esc]];
+      })
+    };
+  }
+  function fallaEn(el, g) {
+    var r = rect(el);
+    var esquinas = [[r.left, r.top], [r.right, r.top], [r.left, r.bottom], [r.right, r.bottom]];
+    if (esquinas.some(function (p) { return Math.hypot(p[0] - g.cx, p[1] - g.cy) > g.R - 1; })) return "se sale del círculo";
+    if (g.lineas.some(function (s) { return cruza(r, s[0], s[1]); })) return "cruza una línea del círculo";
+    return null;
+  }
+  function desborda(z) {
+    // En el círculo la zona es un rectángulo posicionado: se mide que el
+    // título y la lista queden adentro.
+    if (z.closest(".circulo")) {
+      var rz = rect(z);
+      return Array.prototype.some.call(z.children, function (h) {
+        var r = rect(h);
+        return r.top < rz.top - 2 || r.bottom > rz.bottom + 2 || r.left < rz.left - 2 || r.right > rz.right + 2;
+      });
+    }
+    return z.scrollHeight > z.clientHeight + 2 || z.scrollWidth > z.clientWidth + 2;
+  }
+  function zonaRota(z, g) {
+    if (desborda(z)) return true;
+    return Array.prototype.some.call(z.querySelectorAll("li, h3"), function (el) { return fallaEn(el, g); });
+  }
+  function ajustar() {
+    document.querySelectorAll(".vpc .circulo").forEach(function (c) {
+      var g = geometria(c);
+      c.querySelectorAll(".zona").forEach(function (z) {
+        z.style.removeProperty("--escala");
+        if (!g) return;
+        var escala = 1;
+        while (zonaRota(z, g) && escala > 0.62) {
+          escala = Math.round((escala - 0.04) * 100) / 100;
+          z.style.setProperty("--escala", escala);
+        }
+      });
+    });
+  }
+  function revisar() {
+    var problemas = [];
+    function marcar(el, motivo) {
+      el.setAttribute("data-falla", motivo);
+      problemas.push(motivo + ": " + (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 50));
+    }
+    document.querySelectorAll(".vpc .circulo").forEach(function (c) {
+      var g = geometria(c);
+      if (!g) return;
+      c.querySelectorAll(".zona li, .zona h3").forEach(function (el) {
+        var f = fallaEn(el, g);
+        if (f) marcar(el, f);
+      });
+    });
+    document.querySelectorAll(".zona, .bmc > div").forEach(function (z) {
+      if (desborda(z)) marcar(z, "el contenido no entra en la zona");
+    });
+    // Si el ajuste tuvo que achicar mucho la letra, el texto es demasiado largo.
+    document.querySelectorAll(".vpc .circulo .zona").forEach(function (z) {
+      var e = parseFloat(z.style.getPropertyValue("--escala") || "1");
+      if (e < 0.74) marcar(z, "textos demasiado largos (letra al " + Math.round(e * 100) + " %): acortalos");
+    });
+    // Las leyendas (nota al pie, "cómo leer") muestran chips de ejemplo.
+    document.querySelectorAll(".fit:not(.nota .fit):not(.como-leer .fit)").forEach(function (f) {
+      if (!/[A-ZÑ]{1,4}[0-9]+/.test(f.textContent)) marcar(f, "chip de encaje vacío o sin código");
+    });
+    document.querySelectorAll("li, p, h1, h2, h3, td, span, time, div").forEach(function (el) {
+      if (el.children.length === 0 && /\{\{[^}]*\}\}/.test(el.textContent)) marcar(el, "campo sin completar");
+    });
+    document.documentElement.dataset.chequeo = problemas.length ? problemas.join(" | ") : "ok";
+    if (problemas.length && window.console) console.warn("Chequeo de diseño:", problemas);
+  }
+  function correr() {
+    document.querySelectorAll("[data-falla]").forEach(function (el) { el.removeAttribute("data-falla"); });
+    ajustar();
+    revisar();
+  }
+  // El script va al final del <body>: corre ya, al terminar la carga, cuando
+  // llegan las fuentes web, antes de imprimir y al cambiar el tamaño.
+  correr();
+  window.addEventListener("load", correr);
+  window.addEventListener("beforeprint", correr);
+  if (window.matchMedia) window.matchMedia("print").addEventListener("change", correr);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(correr);
+  var espera;
+  window.addEventListener("resize", function () { clearTimeout(espera); espera = setTimeout(correr, 150); });
+})();
+</script>
+
 </body>
 </html>

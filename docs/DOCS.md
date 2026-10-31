@@ -38,6 +38,7 @@ Método de Alex Osterwalder (Value Proposition Canvas + Business Model Canvas).
 
 | Documento | Contenido |
 |---|---|
+| [negocio/como-funciona.md](negocio/como-funciona.md) ([PDF](negocio/como-funciona.pdf)) | Cómo funciona la aplicación de punta a punta, en lenguaje común: recorrido de la minera, informe PDF y verificación, origen de los datos y qué es demo |
 | [negocio/propuesta-de-valor.md](negocio/propuesta-de-valor.md) | Value Proposition Canvas de la minera y del proveedor verificado, encaje y declaraciones de propuesta de valor |
 | [negocio/business-model-canvas.md](negocio/business-model-canvas.md) | Los 9 bloques, patrones (plataforma multilateral) y competencia |
 | [negocio/hipotesis.md](negocio/hipotesis.md) | Hipótesis riesgosas del modelo y experimentos para validarlas |
@@ -49,5 +50,4 @@ Método de Alex Osterwalder (Value Proposition Canvas + Business Model Canvas).
 | Documento | Contenido |
 |---|---|
 | [pitch.md](pitch.md) | Guion extendido del pitch (5 min): gancho, solución, demo, defensibilidad, modelo/roadmap y respuestas al jurado |
-| [como-funciona.md](como-funciona.md) ([PDF](como-funciona.pdf)) | Cómo funciona la aplicación de punta a punta, en lenguaje común: recorrido de la minera, informe PDF y verificación, origen de los datos y qué es demo |
 | [slide-deck.html](../public/slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — se sirve desde la app en `/slide-deck.html` |

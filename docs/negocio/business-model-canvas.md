@@ -1,105 +1,105 @@
-# Modelo de negocio — Business Model Canvas
+# Business Model Canvas — ju-min
 
-Parte de la documentación de ju-min — índice en [DOCS.md](../DOCS.md).
+> **Enfoque del modelo**: **SaaS B2B de un solo lado (100 % para la minera)**.
+> `ju-min` evita la trampa del marketplace de dos lados: no requiere que los proveedores entren a crear cuentas ni que un equipo humano persiga a cientos de PyMEs gratuitas. Toda la vigilancia del padrón local (`CerProv` del Decreto 290/2024 y CAPMIN) ocurre por **scraping automático de fuentes públicas**, y los certificados técnicos privados que la minera ya pide al cotizar se controlan directamente dentro del legajo de la minera en `ju-min`.
 
-Método: Business Model Canvas de Alex Osterwalder (Strategyzer). Segmentos y
-propuestas de valor vienen de [propuesta-de-valor.md](propuesta-de-valor.md);
-las hipótesis riesgosas están en [hipotesis.md](hipotesis.md).
+---
 
-Etiquetas: `[M]` **Minera**, `[P]` **Proveedor verificado**. Mismas fuentes y
-convenciones que la propuesta de valor; **[hoy]** / **[roadmap]** indican si
-existe en la demo.
+## 1. Segmentos de Clientes (*Customer Segments*)
 
-## Canvas
+Un **único segmento cliente que usa y paga**: **Operadoras mineras en producción o construcción en Jujuy y el NOA**.
+- **Mercado directo en Jujuy**: 3 operaciones industriales activas (*Sales de Jujuy / Rio Tinto* en Olaroz, *Minera Exar* en Cauchari-Olaroz y *SSR Mining* en Chinchillas/Pirquitas) más proyectos de litio y metalíferos en etapa de construcción/exploración avanzada en el NOA (Salta y Catamarca: ~10 a 20 operaciones en total).
+- **Roles internos dentro de la minera**:
+  - **Usuario operativo**: Analistas de Compras, Abastecimiento y Almacenes (entran con su email para buscar proveedores, verificar requisitos y descargar el informe PDF de respaldo).
+  - **Comprador económico (quien aprueba y paga)**: Gerencia de Supply Chain / Abastecimiento o Compliance *(supuesto H1)*, que aprueba las órdenes de compra en el ERP de la minera y responde por el cumplimiento del **Decreto Acuerdo Nº 290-DEyP/2024** (70 % de compre local y auditoría anual).
 
-| Bloque | Contenido |
-|---|---|
-| **1. Segmentos de clientes** | Plataforma multilateral.<br>`[M]` Mineras en operación en la Puna (Jujuy, Salta, Catamarca); primer objetivo: asociadas a CAEM con operación en Jujuy (Sales de Jujuy, Minera Exar) `[inv]`.<br>`[P]` Proveedores mineros de CAPMIN y del Registro Provincial de Jujuy; 277 en la red `[pitch]`.<br>Paga: `[M]`.<br>Dentro de la minera: **Almacenes / Inventarios** controla el stock y pide la reposición; **Compras / Abastecimiento** elige proveedor y compra; ambos suelen depender de la **Gerencia de Supply Chain o de Abastecimiento**, que aprueba (conocimiento general del rubro; confirmar en H1). |
-| **2. Propuesta de valor** | `[M]` Reponer insumos críticos sin riesgo: alerta antes del faltante + solo proveedores que cumplen todos los requisitos vigentes + informe que respalda la decisión.<br>`[M]` Recomendación defendible con tres números: precio, lead time, trust score.<br>`[P]` Ser recomendado por cumplimiento y desempeño, no por tamaño ni contactos.<br>`[P]` Verificarse una vez para toda la red **[roadmap]**. |
-| **3. Canales** | Conocimiento: hackathon INNOA, Seminario Internacional del Litio (Jujuy), CAEM y CAPMIN `[web]`.<br>Evaluación: demo y piloto con una minera (supuesto).<br>Compra: venta directa a la Gerencia de Supply Chain o de Abastecimiento.<br>Entrega: aplicación web (panel, explorer, agente).<br>Posventa: onboarding asistido.<br>`[P]` Explorer público y ficha del proveedor **[hoy]**; invitación vía cámaras **[roadmap]**. |
-| **4. Relación con clientes** | `[M]` Alta asistida: ju-min crea la cuenta de la minera y su primer usuario; ese usuario suma a su equipo (cada uno con su email, sin roles).<br>`[M]` Luego, servicio automatizado: alerta → recomendación → informe PDF. ju-min no reemplaza el sistema de compras de la minera.<br>`[M]` Co-creación de reglas de requisitos con cada minera (supuesto).<br>`[P]` Autoservicio: ficha y certificados **[roadmap]**. |
-| **5. Fuentes de ingreso** | `[M]` **Suscripción mensual por minera** `[README]`. Monto sin dato: hipótesis inicial USD 1.000–3.000 por operación, según cantidad de insumos monitoreados (supuesto, H3).<br>**Única fuente de ingreso.** ju-min no cobra comisión por compra ni procesa pagos.<br>`[P]` **Gratis.** El proveedor no paga, así el trust score y las recomendaciones no dependen de quién paga. |
-| **6. Recursos clave** | Red de proveedores: 277 proveedores, 188 categorías `[pitch]`.<br>Base de 58 reglas de requisitos por categoría `[pitch]`.<br>Trust score con datos verificables (sin desempeño hasta tener datos reales) y pipeline de verificación `[clasif]`.<br>Agente (eve + DeepSeek V4.1 Flash vía OpenCode Zen) y aplicación (Next.js + Supabase con RLS).<br>Scraper de CAPMIN `[inv]`.<br>Equipo con conocimiento del dominio minero del NOA. |
-| **7. Actividades clave** | Mantener la red: scraping semanal (CAPMIN, registro de Jujuy) **[roadmap]**, validación de CUIT, control de vigencia.<br>Mantener las reglas regulatorias por categoría y jurisdicción.<br>Desarrollar el producto y el agente.<br>Venta consultiva y onboarding de mineras.<br>Sumar proveedores al pipeline de verificación **[roadmap]**. |
-| **8. Socios clave** | Fuentes de datos: CAPMIN, Registro Provincial de Proveedores Mineros de Jujuy (Decreto 290-DEyP-24), CAEM, ARCA (ex AFIP) `[inv]`.<br>Certificadoras: IRAM, DNV, Bureau Veritas, SGS (validar certificados) `[inv]`.<br>Achilles: certificadora con convenio con CAPMIN; **socio potencial** (consumir su auditoría como señal del trust score) o competidor `[web]`.<br>Tecnología: OpenCode Zen (modelo DeepSeek V4.1 Flash, cambiable), Supabase, Vercel.<br>ERPs de las mineras (SAP u otros) **[roadmap]**. |
-| **9. Estructura de costos** | Impulsado por **valor**, no por costo.<br>Fijos: equipo de desarrollo, hosting (Vercel, Supabase), mantenimiento de reglas, venta B2B con ciclo largo.<br>Variables: **verificación por proveedor** (revisar documentos, consultar registros) — el costo variable principal (supuesto, H4); tokens del modelo por consulta (bajo, supuesto); auditorías vía socios.<br>Economía de alcance: un proveedor verificado sirve a todas las mineras. |
+---
 
-## Patrones
+## 2. Propuesta de Valor (*Value Propositions*)
 
-- **Plataforma multilateral.** El valor para la minera crece con la cantidad de
-  proveedores verificados; el valor para el proveedor crece con la cantidad de
-  mineras. ju-min resolvió el "huevo o la gallina" del lado de la oferta
-  cargando datos públicos (CAPMIN, registro de Jujuy): la minera ve una red
-  útil desde el primer día. El reto pendiente es el lado de la demanda.
-- **Gratis para un lado.** El proveedor no paga; la minera financia la
-  plataforma. Esto sostiene la neutralidad del trust score.
-- **Consultor, no sistema de compras.** ju-min detecta el faltante,
-  recomienda y entrega un **informe PDF** con código único que la minera
-  adjunta en su sistema. La aprobación, la compra, el pago y la recepción
-  siguen allí (orden de compra, factura, Tesorería). Pedirle a una minera que
-  mueva su proceso de compras a una startup es una barrera de adopción;
-  mover dinero además no nos diferencia de SAP Ariba o Coupa y suma riesgo
-  regulatorio. Uso mínimo: una persona, tres clics.
+1. **Vigilancia continua sobre su propio ERP**: Verifica qué proveedores cumplen las 58 reglas técnicas por categoría y quiénes tienen su certificado provincial (`CerProv`) en estado `aprobado` hoy.
+2. **Respaldo auditable del Decreto 290/2024 de Jujuy (70 % local)**: Emite en cada compra un **informe PDF verificable con sello SHA-256** que deja constancia del proveedor elegido y de los descartados con su motivo exacto, sirviendo como respaldo tanto para el informe anual de compras (**Art. 7**) como para la Declaración Jurada anual de insumos sin oferta local (**Art. 8**).
+3. **Control automático de vencimientos sin perseguir proveedores**: Combina **scraping semanal** del Registro Minero de Jujuy y CAPMIN con **lectura automática de vencimientos** sobre los PDFs de certificados técnicos que recibe el comprador, avisándole a la minera 30 días antes de que venza un documento de su cartera.
+4. **Cero migración de software**: El informe PDF se adjunta directamente a la Orden de Compra en el ERP actual de la minera (SAP, Oracle, etc.).
 
-## Cuentas, usuarios e informes
+---
 
-- **La minera es la cuenta**: paga la suscripción y ve solo sus datos.
-- **Alta**: la crea el equipo de ju-min al firmar, con un primer usuario; ese
-  usuario suma a su equipo. Cada persona entra con su email, **sin roles**:
-  todos pueden pedir recomendaciones e informes. Un solo login compartido no
-  sirve para auditar (no dice quién generó cada informe).
-- **Registro abierto**: hoy la configuración de Supabase permite registrarse
-  eligiendo minera y rol. Riesgo a cerrar: el alta solo por invitación.
-- **Informes**: cada PDF queda registrado (fecha, quién, insumo, proveedor,
-  descartados y por qué, precio, plazo, trust score) con un código único. Un
-  auditor puede verificar en ju-min que un informe es auténtico.
-- **Trust score**: solo datos verificables por ju-min (registro de Jujuy,
-  certificados y habilitaciones vigentes, ESG, estado de verificación). El
-  desempeño (entregas a tiempo) sale del cálculo porque la recepción ocurre en
-  el sistema de la minera; vuelve si hay datos reales (pregunta opcional al
-  pedir un nuevo informe, o export del ERP).
+## 3. Canales (*Channels*)
 
-## Proveedores: cómo sumarlos por etapas
+Embudo B2B consultivo hacia las 10–20 operaciones mineras del NOA:
+1. **Puerta de entrada (Descubrimiento y referidos)**: Presentación a través de cámaras mineras (**CAPMIN**, **CAEM**), estudios de auditoría/compliance minero y contacto directo con referentes de Abastecimiento y Relaciones Comunitarias / Compre Local de las operadoras en Jujuy.
+2. **Evaluación (Diagnóstico de cumplimiento Decreto 290)**: Demo en vivo mostrando el padrón real de 277 proveedores de Jujuy/CAPMIN cruzado contra una compra crítica de la minera y cómo se genera el informe PDF para el Art. 8 *(supuesto)*.
+3. **Compra (Piloto B2B)**: Piloto de 2 semanas sobre compras reales de la operación antes de activar el abono mensual *(supuesto)*.
+4. **Entrega y Uso**: Aplicación web (`ju-min`), descarga de informes PDF para adjuntar al ERP y alertas por email al equipo de Compras cuando un proveedor de su cartera está por vencer o cae a estado `pendiente` en el Registro de Jujuy.
 
-Hoy el proveedor es pasivo: sus datos vienen del scraping (CAPMIN, registro de
-Jujuy) y no usa la aplicación. Plan para sumarlo sin cobrarle:
+---
 
-1. **Reclamá tu ficha** **[roadmap]**: el proveedor corrige sus datos y sube
-   sus certificados; pasa de "relevado" a "documentado" en el pipeline.
-2. **Aviso de oportunidad** **[roadmap]**: se le avisa cuando una minera lo
-   contacta o cuando aparece en una recomendación. Es el gancho para que entre.
-3. **Qué te falta** **[roadmap]**: ve qué certificación le falta para calificar
-   en una categoría.
+## 4. Relación con Clientes (*Customer Relationships*)
 
-Para la hackathon: "hoy servimos a la minera; los proveedores entran en la
-etapa 2". Se valida con H6.
+- **Alta asistida (*White-glove onboarding*)**: El equipo de `ju-min` crea la cuenta de la operación minera, da de alta los emails del equipo de Compras y carga su listado inicial de insumos/proveedores frecuentes desde un Excel del ERP.
+- **Uso diario automatizado (*Self-service*)**: Disparo de alerta → filtro por 58 reglas y Registro de Jujuy → consulta al agente IA → descarga de informe PDF para adjuntar al ERP.
+- **Co-creación de reglas específicas**: Ajuste de las reglas de certificaciones exigidas según los estándares internos de Higiene, Seguridad y Medio Ambiente (HSE) de cada operadora *(supuesto)*.
 
-## Competencia y alternativas
+---
 
-**Directa**: resuelve el mismo problema (encontrar proveedores mineros
-calificados). **Indirecta**: resuelve una parte, o es lo que la minera usa en
-lugar de ju-min.
+## 5. Fuentes de Ingresos (*Revenue Streams*)
 
-| Tipo | Alternativa | Qué cubre | Qué no cubre |
-|---|---|---|---|
-| Directa | [MineriAR](https://mineriar.com/proveedores-mineria-argentina) | Directorio argentino con calificación AAA–C | Requisitos obligatorios, stock, agente |
-| Directa | [ProveMiner](https://www.proveminer.com/quienes-somos-para-ia) | Marketplace LATAM; cobra al proveedor | Foco en Chile y Perú; Argentina "por demanda" |
-| Directa | SICEP (Chile) | Registro y calificación de proveedores mineros | Argentina, stock, agente |
-| Indirecta | [Achilles](https://www.achilles.com/industry-insights/capmin-and-achilles-sign-collaboration-agreement) | Certificación de proveedores con auditoría; convenio con CAPMIN | Stock y recomendación de compra |
-| Indirecta | SAP Ariba, Coupa | Compras corporativas de punta a punta, incluido el pago | Contexto regulatorio local (ANMaC, IRAM, alta montaña) |
-| Indirecta | ERP de la minera (p. ej. SAP) | Stock y alerta por punto de reorden | Qué proveedor local cumple los requisitos |
-| Indirecta | Listados de CAPMIN y del registro de Jujuy | Quién existe | Vigencia, comparación, recomendación |
-| Indirecta | Excel, PDFs y portal propio de cada minera | Lo que se usa hoy | Vigencia, reglas por categoría, alertas |
+- **Suscripción mensual B2B (SaaS) por operación minera**:
+  - Cubre la vigilancia semanal por scraping, el control de vencimientos de certificados, el agente IA y la emisión ilimitada de informes PDF verificables.
+  - **Precio objetivo**: **USD 1.000 a USD 3.000 / mes por operación minera** *(supuesto H3)* (con escalón de entrada / piloto desde USD 350–500/mes para validación inicial).
+  - En el mercado del NOA (10 a 20 operaciones activas), representa un potencial de **USD 120.000 a USD 720.000 / año** con un costo marginal casi nulo por cliente adicional.
+- **Sin comisión por transacción y sin cobro al proveedor**: `ju-min` no procesa pagos ni le cobra a los proveedores por figurar, garantizando **neutralidad absoluta** ante las auditorías de Compliance y de la Provincia.
 
-**Diferencial:** la alerta de stock sola no nos distingue (un ERP ya la tiene).
-Lo que nos distingue es recomendar solo proveedores que cumplen los requisitos
-locales vigentes, con una justificación que se puede defender.
+---
 
-## Checklist de coherencia
+## 6. Recursos Clave (*Key Resources*)
 
-- [x] Cada segmento tiene su VPC y al menos una propuesta de valor.
-- [x] Cada propuesta de valor responde a frustraciones o alegrías del VPC.
-- [x] Cada fuente de ingreso dice quién paga, por qué y cuánto (monto como supuesto).
-- [x] Actividades y recursos sirven a alguna propuesta de valor.
-- [x] Los costos cubren actividades y recursos.
-- [x] Mismos nombres de segmentos que el glosario y el VPC.
+- **Base unificada de 277 proveedores reales y 188 categorías** (`CAPMIN` + `Registro Provincial de Proveedores Mineros de Jujuy`).
+- **Motor normativo con 58 reglas de certificaciones obligatorias** por rubro (ANMaC, IRAM, ISO 9001/14001/45001, habilitaciones provinciales).
+- **Sistema de informes inmutables con hash SHA-256** y verificador público en `/verificar`.
+- **Scraper propio de fuentes públicas** (`scripts/scrape-capmin.mjs` y conector al Registro Minero de Jujuy).
+- **Agente IA especializado en compras mineras** (basado en `eve` con acceso controlado de solo lectura al módulo de dominio).
+
+---
+
+## 7. Actividades Clave (*Key Activities*)
+
+1. **Ejecutar y mantener el scraping programado** sobre el Registro Minero de Jujuy (`proveedores.registrominero.jujuy.gob.ar`), CAPMIN y estado fiscal de CUIT (`[roadmap]`).
+2. **Extraer y monitorear fechas de vencimiento** de los certificados técnicos cargados por el comprador de la minera, enviando alertas automáticas 30 días antes del vencimiento (`[roadmap]`).
+3. **Mantener actualizado el catálogo de 58 reglas técnicas** y los requisitos del Decreto Acuerdo Nº 290-DEyP/2024 (y normativas equivalentes de Salta y Catamarca).
+4. **Venta consultiva B2B y soporte de onboarding** a los equipos de Supply Chain y Compliance de las operadoras mineras.
+
+---
+
+## 8. Socios Clave (*Key Partners*)
+
+- **Fuentes públicas de datos**: Registro Provincial de Proveedores Locales de Productores Mineros de Jujuy (Secretaría de Minería e Hidrocarburos / Ministerio de Desarrollo Económico y Producción) y **CAPMIN** (Cámara de Proveedores de Empresas Mineras).
+- **Cámaras empresarias del sector**: **CAEM** (Cámara Argentina de Empresas Mineras) y cámaras provinciales como canal institucional de llegada a las operadoras.
+- **Organismos emisores de normas y registros**: **IRAM**, **ANMaC**, **ARCA (ex AFIP)** para validación de vigencia de matrículas y CUIT.
+- **ERPs corporativos de las mineras (SAP, Oracle, Coupa)**: convivencia complementaria mediante adjunto de PDF hoy e importación de reportes Excel/CSV en `[roadmap]`.
+
+---
+
+## 9. Estructura de Costos (*Cost Structure*)
+
+Modelo **impulsado por valor (*Value-driven*) con estructura de costos SaaS pura (margen bruto > 85 %)**:
+- **Sin costo operativo de perseguir proveedores**: al no requerir que cientos de proveedores gratuitos suban documentos ni auditarlos manualmente uno por uno, el costo variable por proveedor tiende a cero.
+- **Costos fijos mensuales acotados**:
+  - Infraestructura cloud (hosting Next.js, base de datos Supabase, ejecución de crons de scraping).
+  - Consumo de inferencia de IA (consultas al agente y lectura de fechas de vencimiento en PDFs).
+  - Equipo fundador / comercial B2B en Jujuy.
+
+---
+
+## Competencia y Alternativas Actuales
+
+| Tipo | Alternativa | Qué cubre hoy | Qué NO cubre (diferencial de `ju-min`) |
+| :--- | :--- | :--- | :--- |
+| **Directa** | **MineriAR** | Directorio argentino de proveedores con calificación documental AAA–C | No cruza las 58 reglas obligatorias por insumo, no vigila el estado en el Registro de Jujuy (Dec. 290) ni emite un informe PDF auditable por cada compra |
+| **Directa** | **ProveMiner** | Marketplace minero LATAM; cobra membresía al proveedor | Foco en Chile/Perú; al cobrarle al proveedor pierde neutralidad para justificar descartes ante auditoría |
+| **Directa** | **SICEP (Chile)** | Sistema compartido de calificación de proveedores mineros en Chile | Opera en Chile; no cubre el Decreto 290 de Jujuy ni emite el informe por Orden de Compra con los descartados |
+| **Indirecta** | **Achilles** | Precalificación corporativa (convenio con CAPMIN); cobra al proveedor | No filtra por insumo al momento de comprar ni genera el respaldo del Art. 8 (motivo de descarte de oferta local) por cada orden |
+| **Indirecta** | **SAP Ariba / Coupa** | Gestión corporativa de compras de punta a punta y pagos | No trae precargados los 277 proveedores de Jujuy/CAPMIN ni las 58 reglas locales (ANMaC, IRAM, `CerProv`) |
+| **Indirecta** | **ERP de la minera (SAP)** | **Stock, punto de reorden, aprobación y pago** *(convivimos con él)* | No hace scraping externo del Registro de Jujuy ni genera el certificado SHA-256 de elegidos y descartados |
+| **Indirecta** | **Registros públicos** (Jujuy, CAPMIN, RFPM Res. 84/22) | Padrón público de quién existe (el RFPM declara que no fiscaliza ni certifica) | No cruzan requisitos técnicos por insumo, no alertan vencimientos a la minera ni emiten informes auditables |
+| **Indirecta** | **Excel y carpetas internas** | Lo que usa hoy Compras sin costo directo de licencia | Revisión manual en cada compra, certificados que vencen sin aviso y alto riesgo ante la auditoría anual del Decreto 290 |
