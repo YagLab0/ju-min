@@ -12,14 +12,14 @@
 - `pnpm lint` / `pnpm exec tsc --noEmit` / `pnpm build`: verificación.
 - Producción local: `next build` no compila el agente. Correr `pnpm eve:build` (genera `.output/`) antes de `next start`.
 - Smoke test: `curl localhost:3000/eve/v1/health` y `curl localhost:3000/eve/v1/info`.
-- **`NODE_OPTIONS="--conditions=react-server"` es obligatorio** en cualquier proceso que compile o corra módulos authored de eve (`pnpm dev`, `eve:dev`, `eve:build`): las tools importan `src/lib/compras`, que arranca con `import "server-only"`; la condición lo resuelve al export vacío. Los scripts de package.json ya lo llevan.
+- Las tools del agente importan `@/lib/compras/dominio` (sin `import "server-only"`); la app Next importa `@/lib/compras`, que agrega la guarda `server-only` y re-exporta `dominio`. Así eve compila sin `--conditions=react-server`, que en Vercel no llega al build del agente. **No** setear `NODE_OPTIONS=--conditions=react-server` como env var de Vercel: se aplica también en runtime y las funciones de Next crashean (`Cannot find module .../react.react-server.js`). Los scripts locales de package.json la siguen llevando y no molesta.
 
 ## Agente (eve)
 
-- `agent/agent.ts`: modelo. Usa OpenCode Zen (`deepseek-v4.1-flash`) directo vía `@ai-sdk/openai-compatible` (`createOpenAICompatible` con `baseURL` `https://opencode.ai/inference/openai/v1`), no AI Gateway. `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Zen expone endpoints nativos por proveedor bajo `/inference/<proveedor>/v1` — para cambiar de familia (Claude/Gemini/GPT) cambiar el SDK y el baseURL.
+- `agent/agent.ts`: modelo. Usa OpenCode Go (el modelo sale de `OPENCODE_MODEL`, default `beam-free` gratis bajo la suscripción) vía `@ai-sdk/openai-compatible` (`createOpenAICompatible` con `baseURL` `https://opencode.ai/inference/go/openai/v1` — Go tiene base URL distinta del pay-as-you-go), no AI Gateway. El gateway exige `x-opencode-session` + user-agent propio en headers, y `modelContextWindowTokens` va explícito porque el modelo no se resuelve por el catálogo de Gateway. Lista de modelos Go: `GET https://opencode.ai/zen/go/v1/models`.
 - `agent/instructions.md`: system prompt (en español).
-- `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `localDev()` abre localhost en dev; `placeholderAuth()` rechaza requests de browser en producción hasta reemplazarlo por auth real (o `none()` para demo pública).
-- `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio `src/lib/compras`; nunca crean clientes de Supabase ni leen tablas.
+- `agent/channels/eve.ts`: auth de las rutas `/eve/v1`. `sesionApp()` acepta la cookie firmada `ju-min.sesion` (el mismo login de `/panel`, verificada con `src/lib/auth/sello.ts` y `JUMIN_AUTH_SECRET`); después `vercelOidc()` para el TUI/deployments y `localDev()` para localhost. Sin sesión válida, producción responde 401.
+- `agent/tools/`: solo lectura, una tool por archivo (el nombre de la tool es el nombre del archivo). Acceden a los datos solo por el módulo de dominio (`@/lib/compras/dominio`); nunca crean clientes de Supabase ni leen tablas.
 - Credenciales: `OPENCODE_API_KEY` en `.env.local` (gitignored). eve dev y Next leen `.env.local`. En deploy, configurarla como env var del servidor.
 
 ## pnpm 12

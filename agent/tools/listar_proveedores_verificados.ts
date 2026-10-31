@@ -4,7 +4,7 @@ import {
   listarCategorias,
   listarProveedoresVerificados,
   type ProveedorVerificado,
-} from "@/lib/compras";
+} from "@/lib/compras/dominio";
 
 function normalizarTexto(texto: string): string {
   return texto
