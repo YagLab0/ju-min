@@ -22,8 +22,9 @@ quién y por qué — siempre con aprobación humana.
 
 ### 1. Gancho + problema (45 s)
 
-> "Imaginen que la planta deja de moler porque faltan bolas de acero. El
-> insumo cuesta centavos el kilo. La planta parada cuesta miles por hora."
+> "Imaginen que el turno no puede entrar a la mina porque se acabaron los
+> respiradores. Cada uno cuesta unos miles de pesos. La mina parada cuesta
+> miles de dólares por hora."
 
 El responsable de compras de una minera valida cada proveedor a mano. Las
 certificaciones viven en PDFs, los listados están desactualizados y nadie sabe
@@ -53,29 +54,31 @@ Jumin junta tres piezas que hoy están separadas:
 > ANMaC, geomembranas exigen GRI-GM13, EPP exige IRAM. La regla vive en la base
 > de datos, no en el prompt del agente."
 
-### 3. El demo (90 s)
+### 3. Cómo funciona: un caso real (90 s)
 
-> "Alerta de stock → consulta → recomendación justificada → aprobación humana."
+Sin demo en vivo: el caso se cuenta sobre la lámina 3 del deck, con datos de la
+base.
 
-1. El panel muestra un insumo en alerta (bajo el punto de reorden).
-2. La minera le consulta al agente: *"¿quién me entrega respiradores más
-   rápido?"* — el agente entiende "rápido" y pondera lead time.
-3. El agente responde con la oferta justificada: proveedor, precio, lead time y
-   trust score — con datos reales, nunca inventados.
-4. La minera aprueba o rechaza en el panel. El agente nunca compra: propone, la
-   persona decide.
-5. Bonus para el jurado: probarle *"¿cómo está el clima?"* — responde un
-   rechazo fijo. Está acotado a su dominio por diseño.
+1. **Detecta:** los respiradores bajan a 30 unidades y el punto de reorden es
+   50; salta la alerta.
+2. **Compara:** solo entran proveedores verificados que cumplen los requisitos
+   de la categoría (ISO 9001 e IRAM-EPP). Quedan BAC Dall ($42.700, 10 días) y
+   Seguridad Puna ($45.800, 4 días), los dos con trust score 87.
+3. **Recomienda con justificación:** Seguridad Puna. Cuesta un 7 % más, pero
+   llega 6 días antes, y con el stock bajo el mínimo el plazo pesa más.
+4. **La minera decide:** la recomendación queda pendiente hasta que alguien la
+   aprueba o la rechaza. El agente nunca compra.
 
-*(Mención opcional: el catálogo de insumos compara las ofertas lado a lado, y
-la ficha del proveedor muestra certificaciones y vencimientos — la evidencia
-que hoy vive en PDFs, estructurada.)*
+*(Mención opcional: el agente está acotado a abastecimiento; si le preguntan
+por el clima, responde con un rechazo fijo. En la app, el catálogo de insumos
+compara las ofertas lado a lado y la ficha del proveedor muestra
+certificaciones y vencimientos.)*
 
 ### 4. Por qué es defendible (45 s)
 
 - **Datos reales**: 277 proveedores (271 scrapeados de CAPMIN con scraper
   propio), 188 categorías, 58 reglas de requisitos por categoría. Si Supabase
-  no responde, la app cae a un seed en memoria — el demo nunca queda en blanco.
+  no responde, la app cae a un seed en memoria, así que nunca queda en blanco.
 - **Seguridad real**: RLS en Postgres — el público solo ve la red verificada;
   cada minera ve solo sus datos; roles comprador/aprobador/admin.
 - **Auditable**: cada recomendación guarda su justificación; el historial de

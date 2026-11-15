@@ -37,5 +37,5 @@ tema; el vocabulario del dominio está en [`../GLOSSARY.md`](../GLOSSARY.md).
 | Documento | Contenido |
 |---|---|
 | [pitch.md](pitch.md) | Guion extendido del pitch (5 min): gancho, solución, demo, defensibilidad, modelo/roadmap y respuestas al jurado |
-| [GUION.md](GUION.md) | Guion del pitch corto (2:30): tiempos por lámina, texto a decir, demo en vivo, checklist y plan B |
-| [slide-deck.html](../public/slide-deck.html) | Deck de 8 láminas 16:9 con navegación por flechas — se sirve desde la app en `/slide-deck.html` |
+| [GUION.md](GUION.md) | Guion del pitch corto (2:30, sin demo): tiempos por lámina, texto a decir, checklist y plan B. `pitch.pdf` se genera desde acá |
+| [slide-deck.html](../public/slide-deck.html) | Deck de 6 láminas 16:9 más un anexo técnico, con navegación por flechas — se sirve desde la app en `/slide-deck.html` |
