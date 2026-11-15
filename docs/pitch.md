@@ -1,6 +1,6 @@
-# Pitch — ju-min (versión extendida)
+# Pitch — Jumin (versión extendida)
 
-**Desafío:** El problema de los proveedores mineros certificados (Hackathon INNOA — Jujuy)
+**Desafío:** El problema de los proveedores mineros certificados
 
 ---
 
@@ -11,7 +11,7 @@ certificaciones ISO, estándares ESG y habilitaciones para alta montaña. Hoy es
 significa horas entre listas estáticas, planillas sueltas y PDFs — y nadie sabe
 si el certificado sigue vigente.
 
-**ju-min** es un consultor inteligente de compras para minería: una red de
+**Jumin** es un consultor inteligente de compras para minería: una red de
 proveedores verificados con trust score transparente, alertas de stock por
 punto de reorden y un agente en lenguaje natural que recomienda qué comprar, a
 quién y por qué — siempre con aprobación humana.
@@ -36,14 +36,14 @@ venderle y por qué puede confiar en ese quién?")*
 
 ### 2. La solución (60 s)
 
-ju-min junta tres piezas que hoy están separadas:
+Jumin junta tres piezas que hoy están separadas:
 
 - **Red de proveedores verificados** — 277 proveedores en la red, relevados de
   fuentes públicas reales (directorio CAPMIN + Registro Provincial de Jujuy).
   Cada uno con un **trust score 0–100 con desglose**: identidad, compliance,
   desempeño, ESG y capacidad.
 - **Alertas de stock** — la minera carga su stock con punto de reorden por
-  insumo; ju-min detecta qué está por faltar y cuántos días de margen quedan.
+  insumo; Jumin detecta qué está por faltar y cuántos días de margen quedan.
 - **El agente** — un consultor en lenguaje natural, acotado al dominio de
   abastecimiento, que compara ofertas y recomienda con justificación de precio,
   lead time y trust score.
@@ -67,8 +67,9 @@ ju-min junta tres piezas que hoy están separadas:
 5. Bonus para el jurado: probarle *"¿cómo está el clima?"* — responde un
    rechazo fijo. Está acotado a su dominio por diseño.
 
-*(Mención opcional: el explorer muestra las fichas con certificaciones y
-vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
+*(Mención opcional: el catálogo de insumos compara las ofertas lado a lado, y
+la ficha del proveedor muestra certificaciones y vencimientos — la evidencia
+que hoy vive en PDFs, estructurada.)*
 
 ### 4. Por qué es defendible (45 s)
 
@@ -89,7 +90,7 @@ vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
   compras públicas (ChileCompra), integración con ERPs y facturación
   electrónica.
 
-> "ju-min no reemplaza al comprador: le devuelve las horas que hoy pierde
+> "Jumin no reemplaza al comprador: le devuelve las horas que hoy pierde
 > verificando PDFs, y deja la decisión en manos humanas. Proveedores reales,
 > reglas claras, y cada recomendación se defiende con tres números: precio,
 > lead time, trust score."
@@ -98,7 +99,7 @@ vencimientos — la evidencia que hoy vive en PDFs, estructurada.)*
 
 ## Stack
 
-Next.js 16 · eve (agente durable de Vercel) con Gemini · Assistant UI ·
+Next.js 16 · eve (agente durable de Vercel) con DeepSeek V4.1 Flash vía OpenCode Go · Assistant UI ·
 Supabase (Postgres + Auth + RLS + Storage) · TypeScript · Tailwind.
 Datos: 271 proveedores CAPMIN con scraper propio + seed curado.
 
