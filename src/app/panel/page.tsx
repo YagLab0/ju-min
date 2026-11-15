@@ -661,7 +661,12 @@ function FilaStock({ item: s }: { item: StockInsumo }) {
   return (
     <tr className="border-b border-linea last:border-0">
       <th scope="row" className="px-5 py-3 font-normal">
-        <span className="font-semibold text-tinta">{s.insumo.nombre}</span>
+        <Link
+          href={`/insumos/${s.insumo.id}`}
+          className="font-semibold text-tinta transition-colors hover:text-cobre"
+        >
+          {s.insumo.nombre}
+        </Link>
         {s.insumo.especificacion && (
           <span className="block text-micro text-piedra">
             {s.insumo.especificacion}

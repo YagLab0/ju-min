@@ -41,6 +41,11 @@ test.describe("autenticación del demo", () => {
     await expect(page).toHaveURL(/\/login\?desde=/);
   });
 
+  test("sin sesión, /insumos también redirige a /login", async ({ page }) => {
+    await page.goto("/insumos");
+    await expect(page).toHaveURL(/\/login\?desde=/);
+  });
+
   test("con sesión, /login redirige al panel y Cerrar sesión la cierra", async ({
     page,
   }) => {

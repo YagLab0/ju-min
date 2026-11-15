@@ -124,6 +124,8 @@ export interface ProveedorVerificado {
   trustScore: TrustScore;
   categorias: Categoria[];
   certificaciones: CertificacionAcreditada[];
+  /** Ofertas que el proveedor tiene publicadas. */
+  cantidadOfertas: number;
 }
 
 /** Oferta con el insumo resuelto: lo que muestra la ficha del proveedor
@@ -155,6 +157,27 @@ export interface Oferta {
   moneda: string;
   leadTimeDias: number | null;
   disponible: boolean;
+}
+
+/** Oferta con el proveedor verificado que la emite: lo que se compara en la
+ * ficha de un insumo. */
+export interface OfertaConProveedor extends Oferta {
+  proveedor: ProveedorVerificado;
+}
+
+/** Insumo del catálogo con el resumen de sus ofertas en la red verificada. */
+export interface InsumoEnCatalogo extends Insumo {
+  categoria: Categoria | null;
+  cantidadOfertas: number;
+  mejorPrecio: { precio: number; moneda: string } | null;
+  leadTimeMinimoDias: number | null;
+}
+
+/** Ficha de un insumo: el insumo con sus ofertas en la red verificada,
+ * de menor a mayor precio. */
+export interface InsumoDetalle extends Insumo {
+  categoria: Categoria | null;
+  ofertas: OfertaConProveedor[];
 }
 
 export type EstadoStock = "normal" | "alerta";

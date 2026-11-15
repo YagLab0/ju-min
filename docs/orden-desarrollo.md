@@ -77,11 +77,19 @@ Los datos de proveedores vienen de un scraper que está armando otro integrante 
 44. Como integrante que conecta el LLM, quiero una interfaz del agente ya definida y usada por el panel, para reemplazar la implementación guionada sin tocar la interfaz de usuario.
 45. Como integrante del equipo, quiero tests que verifiquen el flujo del demo de punta a punta, para detectar si algo se rompe antes de presentar.
 
+### Catálogo de insumos
+
+46. Como minera, quiero ver el catálogo de insumos con la cantidad de ofertas, el mejor precio y la entrega más rápida de cada uno, para saber qué consigo en la red verificada.
+47. Como minera, quiero filtrar insumos por categoría y buscarlos por nombre o especificación, para llegar rápido al que necesito reponer.
+48. Como minera, quiero comparar lado a lado las ofertas de un insumo (precio, lead time, disponibilidad y trust score del proveedor), para elegir a quién comprarle.
+49. Como minera, quiero ir desde una oferta del insumo a la ficha del proveedor verificado, y desde la ficha del proveedor a cada insumo que ofrece, para revisar los dos lados antes de decidir.
+
 ## Implementation Decisions
 
 ### Rutas
 
-- Landing en la raíz, panel de la minera en `/panel`, explorer en `/proveedores` y ficha en `/proveedores/[id]`.
+- Landing en la raíz, panel de la minera en `/panel`, catálogo de insumos en `/insumos` con su ficha de ofertas comparadas en `/insumos/[id]`, y directorio de proveedores en `/proveedores` con su ficha en `/proveedores/[id]`.
+- `/proveedores` lista proveedores, no ofertas: la tarjeta no destaca precio ni insumo. Comparar precios de un insumo es trabajo de `/insumos/[id]`.
 - La página inicial del scaffold de create-next-app se reemplaza por la landing.
 - Solo español. Sin estructura de i18n.
 

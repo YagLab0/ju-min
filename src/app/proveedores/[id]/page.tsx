@@ -295,9 +295,12 @@ function OfertasFicha({ proveedor: p }: { proveedor: ProveedorVerificadoDetalle 
                         />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-tinta">
+                        <Link
+                          href={`/insumos/${o.insumo.id}`}
+                          className="font-medium text-tinta transition-colors hover:text-cobre"
+                        >
                           {o.insumo.nombre}
-                        </p>
+                        </Link>
                         {o.insumo.especificacion && (
                           <p className="text-micro text-piedra">
                             {o.insumo.especificacion}

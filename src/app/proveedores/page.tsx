@@ -2,13 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { arquetipoParaInsumo } from "@/components/insumo-escena";
-import { PreviewInsumo } from "@/components/preview-insumo";
 import {
   listarCategorias,
   listarInsumos,
   listarProveedoresVerificados,
-  obtenerProveedorVerificado,
   type OrdenProveedores,
   type ProveedorVerificado,
 } from "@/lib/compras";
@@ -30,8 +27,16 @@ export default function Proveedores(props: PageProps<"/proveedores">) {
         Proveedores verificados
       </h1>
       <p className="mt-3 max-w-2xl text-subtitulo text-piedra">
-        Marketplace de la red verificada: cada oferta muestra precio, unidad,
-        plazo de entrega y el trust score del proveedor que la emite.
+        Directorio de la red verificada: cada proveedor con su trust score,
+        categorías y ofertas publicadas. Para comparar precios de un insumo,
+        andá al{" "}
+        <Link
+          href="/insumos"
+          className="text-tinta underline decoration-cobre/40 underline-offset-4 hover:text-cobre"
+        >
+          catálogo de insumos
+        </Link>
+        .
       </p>
       <Suspense
         fallback={
@@ -84,25 +89,6 @@ async function ExplorerProveedores({
     redCompleta.flatMap((p) => p.categorias.map((c) => c.id)),
   );
   const opcionesCategoria = categorias.filter((c) => categoriasEnRed.has(c.id));
-
-  // Cada tarjeta destaca una oferta del proveedor: se resuelven los detalles
-  // en paralelo (la fuente en memoria lo vuelve barato).
-  const detalles = await Promise.all(
-    proveedores.map((p) => obtenerProveedorVerificado(p.id)),
-  );
-  const ofertaDestacada = new Map(
-    proveedores.map((p, i) => [
-      p.id,
-      detalles[i]?.ofertas
-        .filter((o) => o.disponible)
-        .sort((a, b) => (a.leadTimeDias ?? 999) - (b.leadTimeDias ?? 999))[0] ??
-        detalles[i]?.ofertas[0] ??
-        null,
-    ]),
-  );
-  const totalOfertas = new Map(
-    proveedores.map((p, i) => [p.id, detalles[i]?.ofertas.length ?? 0]),
-  );
 
   return (
     <div className="mt-8 grid items-start gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
@@ -208,12 +194,7 @@ async function ExplorerProveedores({
         </div>
       </form>
 
-      <Resultados
-        proveedores={proveedores}
-        total={redCompleta.length}
-        ofertaDestacada={ofertaDestacada}
-        totalOfertas={totalOfertas}
-      />
+      <Resultados proveedores={proveedores} total={redCompleta.length} />
     </div>
   );
 }
@@ -221,13 +202,9 @@ async function ExplorerProveedores({
 function Resultados({
   proveedores,
   total,
-  ofertaDestacada,
-  totalOfertas,
 }: {
   proveedores: ProveedorVerificado[];
   total: number;
-  ofertaDestacada: Map<string, OfertaDetalle>;
-  totalOfertas: Map<string, number>;
 }) {
   if (proveedores.length === 0) {
     return (
@@ -262,165 +239,96 @@ function Resultados({
       </p>
       <ul className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {proveedores.map((p) => (
-          <TarjetaOferta
-            key={p.id}
-            proveedor={p}
-            oferta={ofertaDestacada.get(p.id) ?? null}
-            cantidadOfertas={totalOfertas.get(p.id) ?? 0}
-          />
+          <TarjetaProveedor key={p.id} proveedor={p} />
         ))}
       </ul>
     </div>
   );
 }
 
-type OfertaDetalle = NonNullable<
-  Awaited<ReturnType<typeof obtenerProveedorVerificado>>
->["ofertas"][number] | null;
+/** Categorías visibles en la tarjeta antes de resumir el resto. */
+const MAX_CATEGORIAS = 3;
 
-function formatoPrecio(precio: number, moneda: string): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: moneda,
-    maximumFractionDigits: 0,
-  }).format(precio);
-}
-
-/* Fondo del preview: patrón CSS-only determinístico según el slug con la
-   inicial de la categoría. Queda debajo del render 3D y es el respaldo si
-   WebGL no está disponible. */
-const PATRONES_CATEGORIA = [
-  "bg-[repeating-linear-gradient(-45deg,var(--color-linea)_0_8px,transparent_8px_18px)]",
-  "bg-[radial-gradient(var(--color-linea)_1.5px,transparent_1.5px)] bg-[size:14px_14px]",
-  "bg-[repeating-linear-gradient(90deg,var(--color-linea)_0_2px,transparent_2px_16px)]",
-  "bg-[repeating-linear-gradient(0deg,var(--color-linea)_0_2px,transparent_2px_16px)]",
-];
-
-function FondoCategoria({ nombre, slug }: { nombre: string; slug: string }) {
-  let hash = 0;
-  for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
-  const patron = PATRONES_CATEGORIA[Math.abs(hash) % PATRONES_CATEGORIA.length];
-  return (
-    <div aria-hidden="true" className={`absolute inset-0 ${patron}`}>
-      <span className="absolute bottom-2 left-3 font-display text-4xl font-bold text-tinta/15">
-        {nombre.slice(0, 1).toUpperCase()}
-      </span>
-    </div>
-  );
-}
-
-function TarjetaOferta({
-  proveedor: p,
-  oferta,
-  cantidadOfertas,
-}: {
-  proveedor: ProveedorVerificado;
-  oferta: OfertaDetalle;
-  cantidadOfertas: number;
-}) {
-  const categoria = p.categorias[0];
-  const conPreview = !!(categoria || oferta);
+function TarjetaProveedor({ proveedor: p }: { proveedor: ProveedorVerificado }) {
+  const trust = Math.round(p.trustScore.valor);
+  const visibles = p.categorias.slice(0, MAX_CATEGORIAS);
+  const resto = p.categorias.length - visibles.length;
 
   return (
     <li className="overflow-hidden rounded-2xl border border-linea bg-ficha shadow-sm transition-shadow hover:shadow-md">
-      <article className="flex h-full flex-col">
-        {conPreview && (
-          <div className="relative h-24 overflow-hidden border-b border-linea bg-papel">
-            {categoria && (
-              <FondoCategoria nombre={categoria.nombre} slug={categoria.slug} />
+      <article className="flex h-full flex-col gap-3 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-cuerpo font-semibold text-tinta">
+              <Link
+                href={`/proveedores/${p.id}`}
+                className="transition-colors hover:text-cobre"
+              >
+                {p.nombreFantasia ?? p.razonSocial}
+              </Link>
+            </h2>
+            {p.nombreFantasia && (
+              <p className="truncate text-micro text-piedra">{p.razonSocial}</p>
             )}
-            <PreviewInsumo
-              arquetipo={arquetipoParaInsumo(
-                oferta?.insumo.nombre ?? categoria?.nombre ?? "",
-                categoria?.slug,
-              )}
-              className="absolute inset-0"
-            />
-            {p.estado === "homologado" && (
-              <span className="absolute right-3 top-2.5 rounded-md bg-senal px-1.5 py-0.5 text-micro font-semibold text-tinta shadow-sm">
-                homologado
+            <p className="truncate text-micro text-piedra">
+              {[p.localidad, p.provincia].filter(Boolean).join(", ")}
+            </p>
+          </div>
+          {/* Badge de trust score */}
+          <div className="shrink-0 rounded-lg border border-linea bg-papel px-2 py-1 text-center">
+            <p className="font-display text-subtitulo font-bold leading-none text-cobre">
+              {trust}
+            </p>
+            <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-piedra">
+              trust
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="h-1 bg-linea"
+          role="img"
+          aria-label={`Trust score ${trust} de 100`}
+        >
+          <div className="h-1 bg-cobre" style={{ width: `${trust}%` }} />
+        </div>
+
+        {visibles.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {visibles.map((c) => (
+              <span
+                key={c.id}
+                className="rounded-md border border-linea px-2 py-0.5 text-micro text-piedra"
+              >
+                {c.nombre}
               </span>
-            )}
-            {categoria && (
-              <span className="absolute bottom-2 right-3 rounded-md bg-ficha/90 px-2 py-0.5 text-micro font-semibold text-piedra ring-1 ring-linea">
-                {categoria.nombre}
+            ))}
+            {resto > 0 && (
+              <span className="px-1 py-0.5 text-micro text-piedra">
+                +{resto}
               </span>
             )}
           </div>
         )}
 
-        <div className="flex flex-1 flex-col gap-2.5 p-3.5">
-          {/* Insumo de la oferta destacada */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate text-micro font-semibold uppercase tracking-wide text-piedra">
-                {oferta?.insumo.nombre ?? "Insumos de la categoría"}
-              </p>
-              <h2 className="mt-0.5 truncate font-display text-cuerpo font-semibold text-tinta">
-                <Link
-                  href={`/proveedores/${p.id}`}
-                  className="transition-colors hover:text-cobre"
-                >
-                  {p.nombreFantasia ?? p.razonSocial}
-                </Link>
-              </h2>
-              <p className="truncate text-micro text-piedra">
-                {[p.localidad, p.provincia].filter(Boolean).join(", ")}
-              </p>
-            </div>
-            {/* Badge de trust score */}
-            <div className="shrink-0 rounded-lg border border-linea bg-papel px-1.5 py-0.5 text-center">
-              <p className="font-display text-cuerpo font-bold leading-none text-cobre">
-                {Math.round(p.trustScore.valor)}
-              </p>
-              <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-piedra">
-                trust
-              </p>
-            </div>
-          </div>
-
-          {/* Precio, unidad y lead time de la oferta */}
-          {oferta && (
-            <div className="rounded-xl border border-linea bg-papel px-3 py-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="font-display text-cuerpo font-bold text-tinta">
-                  {formatoPrecio(oferta.precio, oferta.moneda)}
-                </p>
-                <p className="text-micro text-piedra">
-                  por {oferta.insumo.unidad}
-                </p>
-              </div>
-              <p className="mt-0.5 text-micro text-piedra">
-                {oferta.leadTimeDias === null
-                  ? "Plazo a convenir"
-                  : `Entrega en ${oferta.leadTimeDias} días`}
-                {" · "}
-                {oferta.disponible ? "Disponible" : "A pedido"}
-              </p>
-            </div>
-          )}
-
-          <div className="mt-auto flex items-center justify-between gap-3">
-            <p className="text-micro text-piedra">
-              {cantidadOfertas}{" "}
-              {cantidadOfertas === 1 ? "oferta publicada" : "ofertas publicadas"}
-              {/* Sin bloque de preview el tag vuelve a su lugar en el pie. */}
-              {p.estado === "homologado" && !conPreview && (
-                <span className="ml-2 rounded-md bg-senal px-1.5 py-0.5 font-semibold text-tinta">
-                  homologado
-                </span>
-              )}
-            </p>
-            <Link
-              href={`/proveedores/${p.id}`}
-              className="rounded-lg border border-linea px-3.5 py-1.5 font-display text-detalle font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
-            >
-              Ver ficha
-            </Link>
-          </div>
+        <div className="mt-auto flex items-center justify-between gap-3 pt-1">
+          <p className="text-micro text-piedra">
+            {p.cantidadOfertas}{" "}
+            {p.cantidadOfertas === 1 ? "oferta publicada" : "ofertas publicadas"}
+            {p.estado === "homologado" && (
+              <span className="ml-2 rounded-md bg-senal px-1.5 py-0.5 font-semibold text-tinta">
+                homologado
+              </span>
+            )}
+          </p>
+          <Link
+            href={`/proveedores/${p.id}`}
+            className="rounded-lg border border-linea px-3.5 py-1.5 font-display text-detalle font-semibold text-tinta transition-colors hover:border-cobre hover:text-cobre"
+          >
+            Ver ficha
+          </Link>
         </div>
       </article>
     </li>
   );
 }
-

@@ -8,12 +8,14 @@ import {
   decidirRecomendacion,
   listarCategorias,
   listarHistorialConsultas,
+  listarCatalogoInsumos,
   listarInsumos,
   listarOfertasDeInsumo,
   listarProveedoresVerificados,
   listarRecomendacionesDecididas,
   listarRecomendacionesPendientes,
   listarStockMinera,
+  obtenerInsumoConOfertas,
   obtenerMinera,
   obtenerProveedorVerificado,
   registrarConsulta,
@@ -131,6 +133,15 @@ describe("listarProveedoresVerificados", () => {
     ]);
   });
 
+  it("cuenta las ofertas publicadas por cada proveedor", async () => {
+    const proveedores = await listarProveedoresVerificados();
+    const porNombre = new Map(
+      proveedores.map((p) => [p.razonSocial, p.cantidadOfertas]),
+    );
+    expect(porNombre.get("Andina de Seguridad Industrial S.R.L.")).toBe(4);
+    expect(porNombre.get("Explosivos Andinos S.A.")).toBe(0);
+  });
+
   it("devuelve lista vacía cuando nada coincide", async () => {
     const proveedores = await listarProveedoresVerificados({
       busqueda: "nombre que no existe",
@@ -201,6 +212,78 @@ describe("listarOfertasDeInsumo", () => {
     expect(ofertas).toHaveLength(2);
     const precios = ofertas.map((o) => o.precio).sort((a, b) => a - b);
     expect(precios).toEqual([3800, 4100]);
+  });
+});
+
+describe("listarCatalogoInsumos", () => {
+  it("lista todos los insumos ordenados por nombre, con su categoría", async () => {
+    const catalogo = await listarCatalogoInsumos();
+    expect(catalogo).toHaveLength(15);
+    const nombres = catalogo.map((i) => i.nombre);
+    expect(nombres).toEqual(
+      [...nombres].sort((a, b) => a.localeCompare(b, "es")),
+    );
+    const guante = catalogo.find((i) => i.id === ID_GUANTE);
+    expect(guante!.categoria?.id).toBe(ID_EPP);
+  });
+
+  it("resume las ofertas de la red verificada: cantidad, mejor precio y entrega más rápida", async () => {
+    const catalogo = await listarCatalogoInsumos();
+    const guante = catalogo.find((i) => i.id === ID_GUANTE);
+    expect(guante!.cantidadOfertas).toBe(2);
+    expect(guante!.mejorPrecio).toEqual({ precio: 3800, moneda: "ARS" });
+    expect(guante!.leadTimeMinimoDias).toBe(7);
+  });
+
+  it("filtra por categoría", async () => {
+    const catalogo = await listarCatalogoInsumos({ categoriaId: ID_FILTROS });
+    expect(catalogo.map((i) => i.nombre)).toEqual([
+      "Filtro de aceite para motor diésel",
+      "Filtro de aire primario",
+    ]);
+  });
+
+  it("busca por nombre y especificación, sin distinguir acentos", async () => {
+    const porAcido = await listarCatalogoInsumos({ busqueda: "acido" });
+    expect(porAcido.map((i) => i.nombre)).toEqual(["Ácido sulfúrico 98%"]);
+
+    const porEspecificacion = await listarCatalogoInsumos({
+      busqueda: "acarreo",
+    });
+    expect(porEspecificacion).toHaveLength(2);
+  });
+
+  it("devuelve lista vacía cuando nada coincide", async () => {
+    expect(await listarCatalogoInsumos({ busqueda: "noexiste" })).toEqual([]);
+  });
+});
+
+describe("obtenerInsumoConOfertas", () => {
+  it("devuelve el insumo con sus ofertas comparables, de menor a mayor precio", async () => {
+    const insumo = await obtenerInsumoConOfertas(ID_GUANTE);
+    expect(insumo).not.toBeNull();
+    expect(insumo!.nombre).toBe("Guante de nitrilo industrial");
+    expect(insumo!.categoria?.id).toBe(ID_EPP);
+    expect(insumo!.ofertas.map((o) => o.precio)).toEqual([3800, 4100]);
+    const primera = insumo!.ofertas[0];
+    expect(primera.id).toBe(ID_OFERTA_GUANTE_ANDINA);
+    expect(primera.leadTimeDias).toBe(7);
+    expect(primera.proveedor.id).toBe(ID_ANDINA);
+    expect(primera.proveedor.trustScore.valor).toBe(91);
+  });
+
+  it("solo incluye ofertas de proveedores de la red verificada", async () => {
+    const insumo = await obtenerInsumoConOfertas(ID_FILTRO_ACEITE);
+    expect(insumo!.ofertas.length).toBeGreaterThan(0);
+    for (const o of insumo!.ofertas) {
+      expect(["validado", "homologado"]).toContain(o.proveedor.estado);
+    }
+  });
+
+  it("devuelve null para un insumo inexistente", async () => {
+    expect(
+      await obtenerInsumoConOfertas("99999999-9999-4999-8999-999999999999"),
+    ).toBeNull();
   });
 });
 

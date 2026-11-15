@@ -16,8 +16,11 @@ import type {
   ConsultaDetallada,
   DecisionRecomendacion,
   Insumo,
+  InsumoDetalle,
+  InsumoEnCatalogo,
   Minera,
   Oferta,
+  OfertaConProveedor,
   ProveedorVerificado,
   ProveedorVerificadoDetalle,
   Recomendacion,
@@ -264,6 +267,90 @@ export async function listarOfertasDeInsumo(
 ): Promise<Oferta[]> {
   const t = await tablas();
   return t.ofertas.filter((o) => o.insumo_id === insumoId).map(mapearOferta);
+}
+
+// ---------- Catálogo de insumos ----------
+
+export interface FiltrosInsumos {
+  busqueda?: string;
+  categoriaId?: string;
+}
+
+/** Ofertas de un insumo emitidas por proveedores de la red verificada, con
+ * el proveedor resuelto, de menor a mayor precio (a igual precio, entrega
+ * más rápida primero). */
+function ofertasEnRed(insumoId: string, t: TablasCompras): OfertaConProveedor[] {
+  const proveedores = new Map(
+    t.proveedores
+      .filter((p) => ESTADOS_RED.has(p.estado))
+      .map((p) => [p.id, p]),
+  );
+  return t.ofertas
+    .filter((o) => o.insumo_id === insumoId)
+    .flatMap((o) => {
+      const proveedor = proveedores.get(o.proveedor_id);
+      if (!proveedor) return [];
+      return [{ ...mapearOferta(o), proveedor: mapearProveedor(proveedor, t) }];
+    })
+    .sort(
+      (a, b) =>
+        a.precio - b.precio ||
+        (a.leadTimeDias ?? Infinity) - (b.leadTimeDias ?? Infinity),
+    );
+}
+
+/** Catálogo de insumos con el resumen de sus ofertas en la red verificada
+ * (cantidad, mejor precio y entrega más rápida). Filtra por categoría y
+ * busca por nombre o especificación; ordenado por nombre. */
+export async function listarCatalogoInsumos(
+  filtros: FiltrosInsumos = {},
+): Promise<InsumoEnCatalogo[]> {
+  const t = await tablas();
+  const categorias = new Map(t.categorias.map((c) => [c.id, c]));
+  const busqueda = normalizarTexto(filtros.busqueda ?? "");
+
+  return t.insumos
+    .filter((i) => !filtros.categoriaId || i.categoria_id === filtros.categoriaId)
+    .filter(
+      (i) =>
+        !busqueda ||
+        normalizarTexto(i.nombre).includes(busqueda) ||
+        (i.especificacion !== null &&
+          normalizarTexto(i.especificacion).includes(busqueda)),
+    )
+    .map((i) => {
+      const ofertas = ofertasEnRed(i.id, t);
+      const plazos = ofertas.flatMap((o) =>
+        o.leadTimeDias === null ? [] : [o.leadTimeDias],
+      );
+      const categoria = categorias.get(i.categoria_id);
+      return {
+        ...mapearInsumo(i),
+        categoria: categoria ? mapearCategoria(categoria) : null,
+        cantidadOfertas: ofertas.length,
+        mejorPrecio: ofertas[0]
+          ? { precio: ofertas[0].precio, moneda: ofertas[0].moneda }
+          : null,
+        leadTimeMinimoDias: plazos.length ? Math.min(...plazos) : null,
+      };
+    })
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+}
+
+/** Ficha de un insumo con sus ofertas comparables en la red verificada.
+ * null si el insumo no existe. */
+export async function obtenerInsumoConOfertas(
+  id: string,
+): Promise<InsumoDetalle | null> {
+  const t = await tablas();
+  const fila = t.insumos.find((i) => i.id === id);
+  if (!fila) return null;
+  const categoria = t.categorias.find((c) => c.id === fila.categoria_id);
+  return {
+    ...mapearInsumo(fila),
+    categoria: categoria ? mapearCategoria(categoria) : null,
+    ofertas: ofertasEnRed(id, t),
+  };
 }
 
 // ---------- Stock de la minera ----------
@@ -559,6 +646,7 @@ function mapearProveedor(
       .map(mapearCategoria)
       .sort((a, b) => a.nombre.localeCompare(b.nombre, "es")),
     certificaciones,
+    cantidadOfertas: t.ofertas.filter((o) => o.proveedor_id === f.id).length,
   };
 }
 

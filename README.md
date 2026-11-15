@@ -35,7 +35,9 @@ justificación → aprobación humana*.
 | --- | --- |
 | `/` | Landing: hero con maqueta industrial 3D, widgets en loop de stock, proveedores y recomendación; control humano, preguntas frecuentes y accesos al panel y al explorer. |
 | `/panel` | Panel de la minera: stock con alertas de punto de reorden, consultas al agente, cola de recomendaciones pendientes e historial con las decisiones tomadas. |
-| `/proveedores` | Explorer: catálogo de proveedores verificados filtrable por insumo/categoría, con trust score, ubicación y certificaciones. |
+| `/insumos` | Catálogo de insumos filtrable por categoría y nombre; cada insumo resume sus ofertas en la red verificada (cantidad, precio desde, entrega más rápida). |
+| `/insumos/[id]` | Ficha del insumo: sus ofertas comparadas lado a lado (precio, lead time, disponibilidad y trust score del proveedor), cada una con enlace a la ficha del proveedor. |
+| `/proveedores` | Directorio de la red verificada filtrable por insumo/categoría, con trust score, ubicación, categorías y cantidad de ofertas. |
 | `/proveedores/[id]` | Ficha del proveedor: insumos ofrecidos con precio y lead time, historial de entregas, desglose del trust score y botón "Contactar" (mock). |
 
 La landing conserva la paleta mineral (papel, tinta, amarillo señal y cobre).

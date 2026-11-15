@@ -55,6 +55,21 @@ test.describe("explorer de proveedores verificados", () => {
     ).toContainText("RepuCali");
   });
 
+  test("la tarjeta muestra el proveedor, no una oferta destacada", async ({
+    page,
+  }) => {
+    await page.goto("/proveedores");
+
+    const andina = page
+      .getByRole("article")
+      .filter({ has: page.getByRole("heading", { name: "Andina EPP" }) });
+    await expect(andina).toContainText("4 ofertas publicadas");
+    await expect(andina).not.toContainText("$");
+
+    await andina.getByRole("link", { name: "Ver ficha" }).click();
+    await expect(page).toHaveURL(/\/proveedores\/.+/);
+  });
+
   test("estado vacío explica cómo ampliar la búsqueda", async ({ page }) => {
     await page.goto("/proveedores");
 

@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 const enlaces = [
   { href: "/", etiqueta: "Inicio" },
   { href: "/panel", etiqueta: "Panel" },
+  { href: "/insumos", etiqueta: "Insumos" },
   { href: "/proveedores", etiqueta: "Proveedores" },
 ] as const;
 

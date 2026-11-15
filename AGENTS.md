@@ -11,6 +11,7 @@
 - `pnpm eve:dev`: terminal UI de eve para chatear con el agente sin frontend (`--no-ui` para headless).
 - `pnpm lint` / `pnpm exec tsc --noEmit` / `pnpm build`: verificación.
 - Producción local: `next build` no compila el agente. Correr `pnpm eve:build` (genera `.output/`) antes de `next start`.
+- E2E (`pnpm test:e2e`): levanta `next build && next start` en :3200, así que necesita `.output/` de `pnpm eve:build`. Si Playwright pide otra revisión de Chromium, `pnpm e2e:install`.
 - Smoke test: `curl localhost:3000/eve/v1/health` y `curl localhost:3000/eve/v1/info`.
 - Las tools del agente importan `@/lib/compras/dominio` (sin `import "server-only"`); la app Next importa `@/lib/compras`, que agrega la guarda `server-only` y re-exporta `dominio`. Así eve compila sin `--conditions=react-server`, que en Vercel no llega al build del agente. **No** setear `NODE_OPTIONS=--conditions=react-server` como env var de Vercel: se aplica también en runtime y las funciones de Next crashean (`Cannot find module .../react.react-server.js`). Los scripts locales de package.json la siguen llevando y no molesta.
 
